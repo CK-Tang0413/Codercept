@@ -1,9 +1,9 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="signUp.aspx.cs" Inherits="Codercept.signUp" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="signIn.aspx.cs" Inherits="Codercept.signIn" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Sign Up - Codercept</title>
+    <title>Sign In - Codercept</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body, html { height: 100%; background-color: #ffffff; }
@@ -29,10 +29,16 @@
         .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
         .form-control:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
-        .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .checkbox-wrapper label { font-size: 0.85rem; color: #71717a; cursor: pointer;}
-        .btn-submit { width: 100%; padding: 0.875rem; background: #c084fc; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-submit:hover { background: #a855f7; }
+        .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+        .checkbox-wrapper label { font-size: 0.85rem; color: #71717a; cursor: pointer; }
+        .forgot-link { font-size: 0.85rem; color: #7c3aed; text-decoration: none; font-weight: 600; }
+        .forgot-link:hover { text-decoration: underline; }
+        .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-submit:hover { background: #6d28d9; }
+        .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
+        .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
         @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
     </style>
 </head>
@@ -49,65 +55,64 @@
                 <div class="snippet snip-3">ts const learn = () => grow()</div>
                 <div class="snippet snip-4">css color: #7c5aed;</div>
                 <div class="hero-content">
-                    <h1>Start your<br /><span class="text-purple">coding</span><br />journey.</h1>
-                    <p>Learn programming from scratch — no prior experience needed. Your fundamentals start here.</p>
+                    <h1>Welcome<br /> <span class="text-purple">back,</span><br /> coder.</h1>
+                    <p>Pick up right where you left off. Every line of code you write builds your future.</p>
                 </div>
             </div>
 
             <div class="right-panel">
                 <div class="form-container">
                     <div class="auth-toggle">
-                        <a href="signIn.aspx">Sign In</a>
-                        <a href="signUp.aspx" class="active">Sign Up</a>
+                        <a href="signIn.aspx" class="active">Sign In</a>
+                        <a href="signUp.aspx">Sign Up</a>
                     </div>
                     <div class="form-header">
-                        <h2>Join Codercept</h2>
-                        <p>Create a free account and start learning today.</p>
+                        <h2>Welcome back</h2>
+                        <p>Sign in to continue your learning journey.</p>
                     </div>
                     <div class="tech-badges">
                         <span class="badge">Python</span> <span class="badge">JavaScript</span> <span class="badge">HTML/CSS</span> <span class="badge">TypeScript</span> <span class="badge">React</span>
                     </div>
 
                     <div class="form-group">
-                        <label>Full name</label>
-                        <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" placeholder="Alex Tran"></asp:TextBox>
-                    </div>
-                    <div class="form-group">
                         <label>Email address</label>
                         <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" placeholder="you@example.com"></asp:TextBox>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="At least 8 characters"></asp:TextBox>
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm password</label>
-                        <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="Repeat your password"></asp:TextBox>
+                        <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
                     </div>
 
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" id="chkShowPassword" onclick="toggleSignUpPassword()" />
-                        <label for="chkShowPassword">Show Password</label>
+                    <div class="options-row">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="chkShowPasswordSignIn" onclick="toggleSignInPassword()" />
+                            <label for="chkShowPasswordSignIn">Show Password</label>
+                        </div>
+                        <a href="forgotPassword.aspx" class="forgot-link">Forgot password?</a>
                     </div>
 
-                    <asp:Button ID="btnSignUp" runat="server" Text="Create my free account" CssClass="btn-submit" OnClick="btnSignUp_Click" />
+                    <asp:Button ID="btnSignIn" runat="server" Text="Sign in to Codercept" CssClass="btn-submit" OnClick="btnSignIn_Click" />
+
+                    <div class="auth-footer">
+                        <p>New to Codercept? <a href="signUp.aspx">Create a free account</a></p>
+                        <p style="margin-top: 0.8rem;">
+                            <a href="teacherSignUp.aspx">Register as Teacher / Teaching Assistant?</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </form>
 
     <script type="text/javascript">
-        function toggleSignUpPassword() {
+        function toggleSignInPassword() {
             var pwd = document.getElementById('<%= txtPassword.ClientID %>');
-            var confirmPwd = document.getElementById('<%= txtConfirmPassword.ClientID %>');
             
-            if (pwd != null && confirmPwd != null) {
+            if (pwd != null) {
                 if (pwd.type === "password") {
                     pwd.type = "text";
-                    confirmPwd.type = "text";
                 } else {
                     pwd.type = "password";
-                    confirmPwd.type = "password";
                 }
             }
         }

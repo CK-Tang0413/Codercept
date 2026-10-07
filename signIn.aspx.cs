@@ -7,14 +7,14 @@ using System.Web.UI.WebControls;
 
 namespace Codercept
 {
-    public partial class signUp : System.Web.UI.Page
+    public partial class signIn : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
 
         }
 
-        protected void btnSignUp_Click(object sender, EventArgs e)
+        protected void btnSignIn_Click(object sender, EventArgs e)
         {
 
         }
