@@ -44,6 +44,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
@@ -94,12 +97,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="About.aspx" />
+    <Content Include="Admin Community.aspx" />
+    <Content Include="Admin Courses.aspx" />
+    <Content Include="Admin Dashboard.aspx" />
+    <Content Include="Admin User Management.aspx" />
+    <Content Include="Administrator Nav Bar.aspx" />
     <Content Include="App_Data\Codercept_db.mdf" />
     <Content Include="App_Data\Codercept_db_log.ldf">
       <DependentUpon>Codercept_db.mdf</DependentUpon>
@@ -192,6 +195,41 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin Community.aspx.cs">
+      <DependentUpon>Admin Community.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin Community.aspx.designer.cs">
+      <DependentUpon>Admin Community.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin Courses.aspx.cs">
+      <DependentUpon>Admin Courses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin Courses.aspx.designer.cs">
+      <DependentUpon>Admin Courses.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin Dashboard.aspx.cs">
+      <DependentUpon>Admin Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin Dashboard.aspx.designer.cs">
+      <DependentUpon>Admin Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin User Management.aspx.cs">
+      <DependentUpon>Admin User Management.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin User Management.aspx.designer.cs">
+      <DependentUpon>Admin User Management.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administrator Nav Bar.aspx.cs">
+      <DependentUpon>Administrator Nav Bar.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Administrator Nav Bar.aspx.designer.cs">
+      <DependentUpon>Administrator Nav Bar.aspx</DependentUpon>
+    </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
       <DependentUpon>About.aspx</DependentUpon>
