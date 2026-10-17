@@ -22,9 +22,7 @@
         .auth-toggle a { flex: 1; text-align: center; padding: 0.6rem; text-decoration: none; color: #71717a; font-weight: 600; font-size: 0.9rem; border-radius: 6px; }
         .auth-toggle a.active { background: white; color: #18181b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .form-header h2 { font-size: 2rem; color: #18181b; margin-bottom: 0.5rem; }
-        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .tech-badges { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .badge { background: #f3e8ff; color: #7c3aed; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 2rem; } /* Increased margin-bottom since badges are gone */
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
@@ -63,9 +61,6 @@
                     <div class="form-header">
                         <h2>Join Codercept</h2>
                         <p>Create a free account and start learning today.</p>
-                    </div>
-                    <div class="tech-badges">
-                        <span class="badge">Python</span> <span class="badge">JavaScript</span> <span class="badge">HTML/CSS</span> <span class="badge">TypeScript</span> <span class="badge">React</span>
                     </div>
 
                     <div class="form-group">

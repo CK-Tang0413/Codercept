@@ -22,9 +22,7 @@
         .auth-toggle a { flex: 1; text-align: center; padding: 0.6rem; text-decoration: none; color: #71717a; font-weight: 600; font-size: 0.9rem; border-radius: 6px; }
         .auth-toggle a.active { background: white; color: #18181b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .form-header h2 { font-size: 2rem; color: #18181b; margin-bottom: 0.5rem; }
-        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .tech-badges { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .badge { background: #f3e8ff; color: #7c3aed; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 2rem; }
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
@@ -36,6 +34,8 @@
         .forgot-link:hover { text-decoration: underline; }
         .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-submit:hover { background: #6d28d9; }
+        .btn-guest { display: block; width: 100%; padding: 0.875rem; background: #f4f4f5; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
+        .btn-guest:hover { background: #e4e4e7; color: #18181b; }
         .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
         .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
@@ -70,9 +70,6 @@
                         <h2>Welcome back</h2>
                         <p>Sign in to continue your learning journey.</p>
                     </div>
-                    <div class="tech-badges">
-                        <span class="badge">Python</span> <span class="badge">JavaScript</span> <span class="badge">HTML/CSS</span> <span class="badge">TypeScript</span> <span class="badge">React</span>
-                    </div>
 
                     <div class="form-group">
                         <label>Email address</label>
@@ -92,11 +89,13 @@
                     </div>
 
                     <asp:Button ID="btnSignIn" runat="server" Text="Sign in to Codercept" CssClass="btn-submit" OnClick="btnSignIn_Click" />
+                    
+                    <a href="LearnerDashboard.aspx" class="btn-guest">Continue as Guest</a>
 
                     <div class="auth-footer">
                         <p>New to Codercept? <a href="signUp.aspx">Create a free account</a></p>
                         <p style="margin-top: 0.8rem;">
-                            <a href="teacherSignUp.aspx">Register as Teacher / Teaching Assistant?</a>
+                            <a href="TeacherRegistration.aspx">Register as Teacher / Teaching Assistant?</a>
                         </p>
                     </div>
                 </div>

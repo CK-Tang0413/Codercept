@@ -107,6 +107,7 @@
     <Content Include="App_Data\Codercept_db_log.ldf">
       <DependentUpon>Codercept_db.mdf</DependentUpon>
     </Content>
+    <Content Include="Certificates.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -125,12 +126,22 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="CourseCatalog.aspx" />
+    <Content Include="CourseDetails.aspx" />
+    <Content Include="CourseViewer.aspx" />
+    <Content Include="css\global.css" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="img\Codercept_Icon.png" />
     <Content Include="img\Codercept_Title.png" />
     <Content Include="img\Codercept_Title_with_Slogan.png" />
+    <Content Include="LearnerAddPost.aspx" />
+    <Content Include="LearnerDashboard.aspx" />
+    <Content Include="LearnerForum.aspx" />
+    <Content Include="LearnerSideBar.ascx" />
+    <Content Include="MyProgress.aspx" />
+    <Content Include="profile.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -189,6 +200,7 @@
     <Content Include="signIn.aspx" />
     <Content Include="signUp.aspx" />
     <Content Include="Site.Master" />
+    <Content Include="TeacherRegistration.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -239,12 +251,40 @@
       <DependentUpon>About.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Certificates.aspx.cs">
+      <DependentUpon>Certificates.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Certificates.aspx.designer.cs">
+      <DependentUpon>Certificates.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Contact.aspx.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CourseCatalog.aspx.cs">
+      <DependentUpon>CourseCatalog.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CourseCatalog.aspx.designer.cs">
+      <DependentUpon>CourseCatalog.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CourseDetails.aspx.cs">
+      <DependentUpon>CourseDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CourseDetails.aspx.designer.cs">
+      <DependentUpon>CourseDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CourseViewer.aspx.cs">
+      <DependentUpon>CourseViewer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CourseViewer.aspx.designer.cs">
+      <DependentUpon>CourseViewer.aspx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -255,6 +295,48 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="LearnerAddPost.aspx.cs">
+      <DependentUpon>LearnerAddPost.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LearnerAddPost.aspx.designer.cs">
+      <DependentUpon>LearnerAddPost.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearnerDashboard.aspx.cs">
+      <DependentUpon>LearnerDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LearnerDashboard.aspx.designer.cs">
+      <DependentUpon>LearnerDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearnerForum.aspx.cs">
+      <DependentUpon>LearnerForum.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LearnerForum.aspx.designer.cs">
+      <DependentUpon>LearnerForum.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearnerSideBar.ascx.cs">
+      <DependentUpon>LearnerSideBar.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LearnerSideBar.ascx.designer.cs">
+      <DependentUpon>LearnerSideBar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="MyProgress.aspx.cs">
+      <DependentUpon>MyProgress.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MyProgress.aspx.designer.cs">
+      <DependentUpon>MyProgress.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="profile.aspx.cs">
+      <DependentUpon>profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="profile.aspx.designer.cs">
+      <DependentUpon>profile.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="signIn.aspx.cs">
@@ -284,6 +366,13 @@
     </Compile>
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherRegistration.aspx.cs">
+      <DependentUpon>TeacherRegistration.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherRegistration.aspx.designer.cs">
+      <DependentUpon>TeacherRegistration.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
