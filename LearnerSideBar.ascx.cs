@@ -6,22 +6,40 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Bind user data here later
+            if (Session["UserType"] != null)
+            {
+                if (Session["UserType"].ToString() == "Guest")
+                {
+                    // Hide Learner features and show the sign-up prompt
+                    phRestrictedNav.Visible = false;
+                    phUserProfile.Visible = false;
+                    phGuestAction.Visible = true;
+                }
+                else if (Session["UserName"] != null && Session["UserEmail"] != null)
+                {
+                    // Populate standard Learner data
+                    string fullName = Session["UserName"].ToString();
+                    litUserNameNav.Text = fullName;
+                    litUserEmailNav.Text = Session["UserEmail"].ToString();
+
+                    if (!string.IsNullOrEmpty(fullName))
+                    {
+                        litUserInitial.Text = fullName.Substring(0, 1).ToUpper();
+                    }
+                }
+            }
         }
 
         protected string GetActiveCssClass(string targetPageName)
         {
             string currentPageName = System.IO.Path.GetFileNameWithoutExtension(Request.Url.AbsolutePath);
 
-            // Special rule: If we are checking the "LearnerForum" nav button, 
-            // but the user is currently on the "LearnerAddPost" page, keep it active.
             if (targetPageName.Equals("LearnerForum", StringComparison.OrdinalIgnoreCase) &&
                 currentPageName.Equals("LearnerAddPost", StringComparison.OrdinalIgnoreCase))
             {
                 return "active";
             }
 
-            // Standard check for all other pages
             if (string.Equals(currentPageName, targetPageName, StringComparison.OrdinalIgnoreCase))
             {
                 return "active";
@@ -32,6 +50,8 @@ namespace Codercept
 
         protected void lnkSignOut_Click(object sender, EventArgs e)
         {
+            Session.Clear();
+            Session.Abandon();
             Response.Redirect("signIn.aspx");
         }
     }

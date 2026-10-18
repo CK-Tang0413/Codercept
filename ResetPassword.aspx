@@ -1,0 +1,114 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ResetPassword.aspx.cs" Inherits="Codercept.ResetPassword" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Set New Password - Codercept</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { height: 100%; background-color: #ffffff; }
+        .split-layout { display: flex; min-height: 100vh; }
+        .left-panel { flex: 1; background: #0f0a19; background-image: radial-gradient(circle at 50% 50%, #2e1065 0%, #0f0a19 60%), linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 100% 100%, 40px 40px, 40px 40px; color: white; padding: 3rem; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 700; }
+        .hero-content { margin-top: auto; margin-bottom: auto; max-width: 80%; position: relative; z-index: 2; }
+        .hero-content h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 1.5rem; }
+        .hero-content p { color: #a1a1aa; font-size: 1.1rem; line-height: 1.6; margin-bottom: 3rem; max-width: 400px; }
+        .text-purple { color: #7c3aed; }
+        .snippet { position: absolute; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.5rem 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; color: #a1a1aa; backdrop-filter: blur(4px); }
+        .snip-1 { top: 20%; left: 10%; color: #4ade80; } .snip-2 { top: 35%; right: 15%; color: #60a5fa; } .snip-3 { bottom: 25%; left: 15%; color: #c084fc; } .snip-4 { bottom: 10%; right: 20%; color: #34d399; }
+        .right-panel { flex: 1; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+        .form-container { width: 100%; max-width: 420px; }
+        .form-header h2 { font-size: 2rem; color: #18181b; margin-bottom: 0.5rem; }
+        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
+        .form-control:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+        .error-message { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
+        .success-message { color: #16a34a; font-size: 0.95rem; margin-bottom: 1.5rem; display: block; font-weight: 600; text-align: center; }
+        .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-bottom: 1rem; }
+        .btn-submit:hover { background: #6d28d9; }
+        .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
+        .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
+        @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="split-layout">
+            <div class="left-panel">
+                <div class="brand">
+                    <img src="~/img/Codercept_Icon.png" alt="Codercept Logo" runat="server" style="height: 40px; width: auto;" />
+                    Codercept
+                </div>
+                <div class="snippet snip-1">const hash = await bcrypt.hash(pwd, 10);</div>
+                <div class="snippet snip-2">db.execute('UPDATE...', [hash]);</div>
+                <div class="snippet snip-3">console.log("Secured");</div>
+                <div class="snippet snip-4">Session.Clear();</div>
+                <div class="hero-content">
+                    <h1>Secure your<br /> <span class="text-purple">account.</span></h1>
+                    <p>Enter a strong, unique password to protect your progress and keep your learning journey safe.</p>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2>Set New Password</h2>
+                        <p>Your identity has been verified. Please enter your new password below.</p>
+                    </div>
+
+                    <asp:Label ID="lblSuccess" runat="server" CssClass="success-message" Visible="false"></asp:Label>
+                    <asp:Label ID="lblSystemError" runat="server" CssClass="error-message" style="margin-bottom: 1rem; text-align:center;"></asp:Label>
+
+                    <asp:Panel ID="pnlResetForm" runat="server">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <asp:TextBox ID="txtNewPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New password is required" Display="Dynamic" CssClass="error-message" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="rfvConfirmPassword" runat="server" ControlToValidate="txtConfirmPassword" ErrorMessage="Please confirm your password" Display="Dynamic" CssClass="error-message" />
+                            <asp:CompareValidator ID="cvPasswords" runat="server" ControlToValidate="txtConfirmPassword" ControlToCompare="txtNewPassword" ErrorMessage="Passwords do not match" Display="Dynamic" CssClass="error-message" />
+                        </div>
+
+                        <div class="options-row" style="margin-bottom: 1.5rem; justify-content: flex-start;">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="chkShowPasswords" onclick="toggleResetPasswords()" />
+                                <label for="chkShowPasswords">Show Passwords</label>
+                            </div>
+                        </div>
+                        <asp:Button ID="btnResetPassword" runat="server" Text="Update Password" CssClass="btn-submit" OnClick="btnResetPassword_Click" />
+                    </asp:Panel>
+                    
+                    <div class="auth-footer">
+                        <a href="signIn.aspx">Back to Sign In</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        function toggleResetPasswords() {
+            var pwdNew = document.getElementById('<%= txtNewPassword.ClientID %>');
+            var pwdConfirm = document.getElementById('<%= txtConfirmPassword.ClientID %>');
+
+            if (pwdNew != null && pwdConfirm != null) {
+                if (pwdNew.type === "password") {
+                    pwdNew.type = "text";
+                    pwdConfirm.type = "text";
+                } else {
+                    pwdNew.type = "password";
+                    pwdConfirm.type = "password";
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
 
 namespace Codercept
 {
@@ -11,12 +13,165 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
         }
 
         protected void btnSignIn_Click(object sender, EventArgs e)
         {
+            // Clear previous errors
+            lblEmailError.Text = "";
+            lblPasswordError.Text = "";
 
+            string email = txtEmail.Text.Trim();
+            string passwordInput = txtPassword.Text;
+            string connString = ConfigurationManager.ConnectionStrings["Codercept_db"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connString))
+            {
+                con.Open();
+
+                // ==========================================
+                // 1. CHECK ADMIN TABLE
+                // ==========================================
+                using (SqlCommand cmd = new SqlCommand("SELECT AdminId, Name, Password, Role FROM [dbo].[Admin] WHERE Email = @Email", con))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Use BCrypt to safely verify the hashed password
+                            if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
+                            {
+                                Session["UserId"] = reader["AdminId"];
+                                Session["UserType"] = reader["Role"].ToString(); // Dynamically captures "Admin" or "SuperAdmin"
+                                Session["UserName"] = reader["Name"].ToString();
+                                Session["UserEmail"] = email;
+
+                                Response.Redirect("Admin Dashboard.aspx");
+                            }
+                            else
+                            {
+                                lblPasswordError.Text = "Incorrect password.";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // ==========================================
+                // 2. CHECK LEARNER TABLE
+                // ==========================================
+                using (SqlCommand cmd = new SqlCommand("SELECT LearnerId, Name, Password, AccStatus FROM [dbo].[Learner] WHERE Email = @Email", con))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (reader["AccStatus"].ToString() != "Active")
+                            {
+                                lblEmailError.Text = "Your account is not active.";
+                                return;
+                            }
+
+                            if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
+                            {
+                                Session["UserId"] = reader["LearnerId"];
+                                Session["UserType"] = "Learner";
+                                Session["UserName"] = reader["Name"].ToString();
+                                Session["UserEmail"] = email;
+                                Response.Redirect("LearnerDashboard.aspx");
+                            }
+                            else
+                            {
+                                lblPasswordError.Text = "Incorrect password.";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // ==========================================
+                // 3. CHECK TEACHER TABLE
+                // ==========================================
+                using (SqlCommand cmd = new SqlCommand("SELECT TeacherId, Name, Password, AccStatus FROM [dbo].[Teacher] WHERE Email = @Email", con))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (reader["AccStatus"].ToString() != "Active")
+                            {
+                                lblEmailError.Text = "Your account is not active.";
+                                return;
+                            }
+
+                            if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
+                            {
+                                Session["UserId"] = reader["TeacherId"];
+                                Session["UserType"] = "Teacher";
+                                Session["UserName"] = reader["Name"].ToString();
+                                Session["UserEmail"] = email;
+                                // Response.Redirect("TeacherDashboard.aspx");
+                            }
+                            else
+                            {
+                                lblPasswordError.Text = "Incorrect password.";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // ==========================================
+                // 4. CHECK TEACHING ASSISTANT TABLE
+                // ==========================================
+                using (SqlCommand cmd = new SqlCommand("SELECT TA_Id, Name, Password, AccStatus FROM [dbo].[Teaching_Assistant] WHERE Email = @Email", con))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (reader["AccStatus"].ToString() != "Active")
+                            {
+                                lblEmailError.Text = "Your account is not active.";
+                                return;
+                            }
+
+                            if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
+                            {
+                                Session["UserId"] = reader["TA_Id"];
+                                Session["UserType"] = "TA";
+                                Session["UserName"] = reader["Name"].ToString();
+                                Session["UserEmail"] = email;
+                                // Response.Redirect("TADashboard.aspx");
+                            }
+                            else
+                            {
+                                lblPasswordError.Text = "Incorrect password.";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // ==========================================
+                // 5. NO MATCH FOUND IN ANY TABLE
+                // ==========================================
+                lblEmailError.Text = "Email not found.";
+            }
+        }
+
+        protected void btnGuest_Click(object sender, EventArgs e)
+        {
+            // Assign generic guest attributes to bypass the login check securely
+            Session["UserType"] = "Guest";
+            Session["UserName"] = "Future Coder"; // Used for the dashboard greeting
+            Session["UserEmail"] = "";
+
+            Response.Redirect("LearnerDashboard.aspx");
         }
     }
 }

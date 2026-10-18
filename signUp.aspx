@@ -22,15 +22,20 @@
         .auth-toggle a { flex: 1; text-align: center; padding: 0.6rem; text-decoration: none; color: #71717a; font-weight: 600; font-size: 0.9rem; border-radius: 6px; }
         .auth-toggle a.active { background: white; color: #18181b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .form-header h2 { font-size: 2rem; color: #18181b; margin-bottom: 0.5rem; }
-        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 2rem; } /* Increased margin-bottom since badges are gone */
+        .form-header p { color: #71717a; font-size: 0.95rem; margin-bottom: 2rem; }
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
         .form-control:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
-        .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .checkbox-wrapper label { font-size: 0.85rem; color: #71717a; cursor: pointer;}
-        .btn-submit { width: 100%; padding: 0.875rem; background: #c084fc; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-submit:hover { background: #a855f7; }
+        .error-message { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
+        .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+        .checkbox-wrapper label { font-size: 0.85rem; color: #71717a; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-submit:hover { background: #6d28d9; }
+        .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
+        .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
         @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
     </style>
 </head>
@@ -42,13 +47,13 @@
                     <img src="~/img/Codercept_Icon.png" alt="Codercept Logo" runat="server" style="height: 40px; width: auto;" />
                     Codercept
                 </div>
-                <div class="snippet snip-1">py print("Hello, World!")</div>
-                <div class="snippet snip-2">js console.log("Codercept")</div>
-                <div class="snippet snip-3">ts const learn = () => grow()</div>
-                <div class="snippet snip-4">css color: #7c5aed;</div>
+                <div class="snippet snip-1">git commit -m "Start learning"</div>
+                <div class="snippet snip-2">INSERT INTO Future VALUES (You)</div>
+                <div class="snippet snip-3">while(alive) { code(); }</div>
+                <div class="snippet snip-4">status: 201 Created</div>
                 <div class="hero-content">
-                    <h1>Start your<br /><span class="text-purple">coding</span><br />journey.</h1>
-                    <p>Learn programming from scratch — no prior experience needed. Your fundamentals start here.</p>
+                    <h1>Start your<br /> <span class="text-purple">journey.</span></h1>
+                    <p>Join our community of developers. Build projects, master new languages, and level up your skills.</p>
                 </div>
             </div>
 
@@ -59,50 +64,69 @@
                         <a href="signUp.aspx" class="active">Sign Up</a>
                     </div>
                     <div class="form-header">
-                        <h2>Join Codercept</h2>
-                        <p>Create a free account and start learning today.</p>
+                        <h2>Create an account</h2>
+                        <p>Join as a Learner and start coding today.</p>
                     </div>
 
+                    <asp:Label ID="lblSystemError" runat="server" CssClass="error-message" style="margin-bottom: 1rem; text-align:center; font-weight: bold;"></asp:Label>
+
                     <div class="form-group">
-                        <label>Full name</label>
-                        <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" placeholder="Alex Tran"></asp:TextBox>
+                        <label>Full Name</label>
+                        <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="John Doe"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvName" runat="server" ControlToValidate="txtName" ErrorMessage="Name is required" Display="Dynamic" CssClass="error-message" />
                     </div>
+
                     <div class="form-group">
                         <label>Email address</label>
                         <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" placeholder="you@example.com"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvEmail" runat="server" ControlToValidate="txtEmail" ErrorMessage="Email is required" Display="Dynamic" CssClass="error-message" />
                     </div>
+                    
                     <div class="form-group">
                         <label>Password</label>
-                        <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="At least 8 characters"></asp:TextBox>
+                        <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvPassword" runat="server" ControlToValidate="txtPassword" ErrorMessage="Password is required" Display="Dynamic" CssClass="error-message" />
                     </div>
+
                     <div class="form-group">
-                        <label>Confirm password</label>
-                        <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="Repeat your password"></asp:TextBox>
+                        <label>Confirm Password</label>
+                        <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvConfirmPassword" runat="server" ControlToValidate="txtConfirmPassword" ErrorMessage="Please confirm your password" Display="Dynamic" CssClass="error-message" />
+                        <asp:CompareValidator ID="cvPasswords" runat="server" ControlToValidate="txtConfirmPassword" ControlToCompare="txtPassword" ErrorMessage="Passwords do not match" Display="Dynamic" CssClass="error-message" />
                     </div>
 
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" id="chkShowPassword" onclick="toggleSignUpPassword()" />
-                        <label for="chkShowPassword">Show Password</label>
+                    <div class="options-row" style="justify-content: flex-start;">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="chkShowPasswordSignUp" onclick="toggleSignUpPasswords()" />
+                            <label for="chkShowPasswordSignUp">Show Passwords</label>
+                        </div>
                     </div>
 
-                    <asp:Button ID="btnSignUp" runat="server" Text="Create my free account" CssClass="btn-submit" OnClick="btnSignUp_Click" />
+                    <asp:Button ID="btnSignUp" runat="server" Text="Create Account" CssClass="btn-submit" OnClick="btnSignUp_Click" />
+                    
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="signIn.aspx">Sign in here</a></p>
+                        <p style="margin-top: 0.8rem;">
+                            <a href="TeacherRegistration.aspx">Want to teach instead? Register here</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </form>
 
     <script type="text/javascript">
-        function toggleSignUpPassword() {
+        function toggleSignUpPasswords() {
             var pwd = document.getElementById('<%= txtPassword.ClientID %>');
-            var confirmPwd = document.getElementById('<%= txtConfirmPassword.ClientID %>');
+            var pwdConfirm = document.getElementById('<%= txtConfirmPassword.ClientID %>');
             
-            if (pwd != null && confirmPwd != null) {
+            if (pwd != null && pwdConfirm != null) {
                 if (pwd.type === "password") {
                     pwd.type = "text";
-                    confirmPwd.type = "text";
+                    pwdConfirm.type = "text";
                 } else {
                     pwd.type = "password";
-                    confirmPwd.type = "password";
+                    pwdConfirm.type = "password";
                 }
             }
         }

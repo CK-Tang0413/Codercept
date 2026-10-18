@@ -95,76 +95,79 @@
                 <!-- Greeting -->
                 <div class="greeting-section">
                     <h1>Welcome back, <asp:Literal ID="litWelcomeName" runat="server" Text="Alex"></asp:Literal> 👋</h1>
-                    <p>You have 2 active courses. Keep up the momentum!</p>
+                    <p><asp:Literal ID="litGreetingDesc" runat="server" Text="You have 2 active courses. Keep up the momentum!"></asp:Literal></p>
                 </div>
                 
-                <!-- User Overview Blocks -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value">2</div>
-                        <div class="stat-label">Enrolled Courses</div>
+                <!-- Hidden for Guests -->
+                <asp:PlaceHolder ID="phLearnerData" runat="server">
+                    <!-- User Overview Blocks -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Enrolled Courses</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">Chapters Done</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">83%</div>
+                            <div class="stat-label">Avg. Score</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">45%</div>
+                            <div class="stat-label">Total Progress</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">5</div>
-                        <div class="stat-label">Chapters Done</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">83%</div>
-                        <div class="stat-label">Avg. Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">45%</div>
-                        <div class="stat-label">Total Progress</div>
-                    </div>
-                </div>
 
-                <!-- Continue Learning Progress -->
+                    <!-- Continue Learning Progress -->
+                    <div class="section-header">
+                        <h2>Continue Learning</h2>
+                        <a href="MyProgress.aspx" class="view-all">View all active courses &rarr;</a>
+                    </div>
+                    <div class="course-grid">
+                        
+                        <!-- Course Card 1 -->
+                        <a href="CourseDetails.aspx?id=1" class="course-card">
+                            <div class="card-header">
+                                <span class="lang-badge">Python</span>
+                            </div>
+                            <h3 class="course-title">Python for Beginners</h3>
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    <span>Progress</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: 60%;"></div>
+                                </div>
+                                <span class="next-step-text">Next: Functions &rarr;</span>
+                            </div>
+                        </a>
+
+                        <!-- Course Card 2 -->
+                        <a href="CourseDetails.aspx?id=2" class="course-card">
+                            <div class="card-header">
+                                <span class="lang-badge">Java</span>
+                            </div>
+                            <h3 class="course-title">Java Fundamentals</h3>
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    <span>Progress</span>
+                                    <span>33%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: 33%;"></div>
+                                </div>
+                                <span class="next-step-text">Next: Control Flow &rarr;</span>
+                            </div>
+                        </a>
+                    </div>
+                </asp:PlaceHolder>
+
+                <!-- Recommended Courses (Visible to Everyone) -->
                 <div class="section-header">
-                    <h2>Continue Learning</h2>
-                    <a href="MyProgress.aspx" class="view-all">View all active courses &rarr;</a>
-                </div>
-                <div class="course-grid">
-                    
-                    <!-- Course Card 1 (Changed to <a> tag) -->
-                    <a href="CourseDetails.aspx?id=1" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge">Python</span>
-                        </div>
-                        <h3 class="course-title">Python for Beginners</h3>
-                        <div class="progress-container">
-                            <div class="progress-info">
-                                <span>Progress</span>
-                                <span>60%</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 60%;"></div>
-                            </div>
-                            <span class="next-step-text">Next: Functions &rarr;</span>
-                        </div>
-                    </a>
-
-                    <!-- Course Card 2 (Changed to <a> tag) -->
-                    <a href="CourseDetails.aspx?id=2" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge">Java</span>
-                        </div>
-                        <h3 class="course-title">Java Fundamentals</h3>
-                        <div class="progress-container">
-                            <div class="progress-info">
-                                <span>Progress</span>
-                                <span>33%</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 33%;"></div>
-                            </div>
-                            <span class="next-step-text">Next: Control Flow &rarr;</span>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Recommended Courses -->
-                <div class="section-header">
-                    <h2>Recommended for You</h2>
+                    <h2 id="recommendationHeader" runat="server">Recommended for You</h2>
                     <a href="CourseCatalog.aspx" class="view-all">View all recommendations &rarr;</a>
                 </div>
                 <div class="course-grid">

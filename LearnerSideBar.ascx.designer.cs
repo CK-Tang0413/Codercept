@@ -24,6 +24,24 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlImage imgBrandLogo;
 
         /// <summary>
+        /// phRestrictedNav control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phRestrictedNav;
+
+        /// <summary>
+        /// phUserProfile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phUserProfile;
+
+        /// <summary>
         /// litUserInitial control.
         /// </summary>
         /// <remarks>
@@ -42,6 +60,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litUserNameNav;
 
         /// <summary>
+        /// litUserEmailNav control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litUserEmailNav;
+
+        /// <summary>
         /// lnkSignOut control.
         /// </summary>
         /// <remarks>
@@ -49,5 +76,14 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lnkSignOut;
+
+        /// <summary>
+        /// phGuestAction control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phGuestAction;
     }
 }

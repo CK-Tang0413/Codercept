@@ -11,7 +11,16 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
+            {
+                Response.Redirect("signIn.aspx");
+                return;
+            }
 
+            if (!IsPostBack)
+            {
+                // Your normal page loading logic goes here
+            }
         }
 
         protected void lnkSignOut_Click(object sender, EventArgs e)

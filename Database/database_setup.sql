@@ -1,4 +1,7 @@
-﻿-- ==========================================
+﻿USE [Codercept_db];
+GO
+
+-- ==========================================
 -- 1. DROP ALL TABLES (Reverse Dependency Order)
 -- ==========================================
 DROP TABLE IF EXISTS [dbo].[LearnerProgress];
@@ -74,8 +77,8 @@ CREATE TABLE [dbo].[Learner] (
     [Name]       NVARCHAR (50)  NOT NULL,
     [Email]      NVARCHAR (50)  NOT NULL,
     [Password]   NVARCHAR (255) NOT NULL,
-    [DateJoined] DATETIME       NOT NULL,
-    [AccStatus]  NVARCHAR (50)  NOT NULL,
+    [DateJoined] DATETIME       NOT NULL DEFAULT GETDATE(),
+    [AccStatus]  NVARCHAR (50)  NOT NULL DEFAULT 'Active',
     [Age]        INT            NULL,
     [Address]    NVARCHAR (MAX) NULL,
     [Occupation] NVARCHAR (50)  NULL,
@@ -88,11 +91,11 @@ CREATE TABLE [dbo].[Teacher] (
     [Name]          NVARCHAR (50)  NOT NULL,
     [Email]         NVARCHAR (50)  NOT NULL,
     [Password]      NVARCHAR (255) NOT NULL,
-    [Age]           INT            NOT NULL,
-    [Region]        NVARCHAR (50)  NOT NULL,
-    [TeachingLevel] NVARCHAR (50)  NOT NULL,
-    [AccStatus]     NVARCHAR (50)  NOT NULL,
-    [ApplicationId] INT            NOT NULL,
+    [Age]           INT            NULL,
+    [Region]        NVARCHAR (50)  NULL,
+    [TeachingLevel] NVARCHAR (50)  NULL,
+    [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [ApplicationId] INT            NULL,
     PRIMARY KEY CLUSTERED ([TeacherId] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
     CONSTRAINT [FK_Teacher_Application] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Application] ([ApplicationId])
@@ -103,10 +106,10 @@ CREATE TABLE [dbo].[Teaching_Assistant] (
     [Name]          NVARCHAR (50)  NOT NULL,
     [Email]         NVARCHAR (50)  NOT NULL,
     [Password]      NVARCHAR (255) NOT NULL,
-    [Region]        NVARCHAR (50)  NOT NULL,
-    [TeachingLevel] NVARCHAR (50)  NOT NULL,
-    [AccStatus]     NVARCHAR (50)  NOT NULL,
-    [ApplicationId] INT            NOT NULL,
+    [Region]        NVARCHAR (50)  NULL,
+    [TeachingLevel] NVARCHAR (50)  NULL,
+    [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [ApplicationId] INT            NULL,
     PRIMARY KEY CLUSTERED ([TA_Id] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
     CONSTRAINT [FK_TeachingAssistant_Application] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Application] ([ApplicationId])
@@ -385,8 +388,10 @@ CREATE TABLE [dbo].[LearnerProgress] (
 
 -- Insert SuperAdmin Account
 INSERT INTO [dbo].[Admin] ([Name], [Email], [Password], [Role])
-VALUES ('Tang Chee Kin', 'tang1234@gmail.com', 'Tang1234', 'SuperAdmin');
+VALUES ('Tang Chee Kin', 'tang1234@gmail.com', '$2a$12$L0eoOITSHTUuJNtBrjDnB.D8yZ.usDG7ZhmUhXh14lG6K6uff.7y2', 'SuperAdmin');
 
 -- Insert Learner Account
 INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
-VALUES ('Kylan Shane Sedrick', 'kylan1234@gmail.com', 'Kylan1234', GETDATE(), 'Active', 21, 'Selangor, Malaysia', 'Student');
+VALUES ('Kylan Shane Sedrick', 'kylan1234@gmail.com', '$2a$12$cNIkYdVSLG5nagfnR3fD4.zdnNIpAj7GHgY7a1qC2LmOPUt73mbs2', GETDATE(), 'Active', 21, 'Negeri Sembilan, Malaysia', 'Student');
+INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
+VALUES ('Wan Hon Kit', 'wan1234@gmail.com', '$2a$12$UtK5EgXtoXPquMKIIrcTuufwaCSlhcz6o6xpWX3zcWuDag3j5yJoO', GETDATE(), 'Active', 21, 'Penang, Malaysia', 'Student');

@@ -27,6 +27,7 @@
         .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #27272a; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
         .form-control:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+        .error-message { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
         .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; }
         .checkbox-wrapper label { font-size: 0.85rem; color: #71717a; cursor: pointer; }
@@ -74,10 +75,15 @@
                     <div class="form-group">
                         <label>Email address</label>
                         <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" TextMode="Email" placeholder="you@example.com"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvEmail" runat="server" ControlToValidate="txtEmail" ErrorMessage="Email is required" Display="Dynamic" CssClass="error-message" />
+                        <asp:Label ID="lblEmailError" runat="server" CssClass="error-message"></asp:Label>
                     </div>
+                    
                     <div class="form-group">
                         <label>Password</label>
                         <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvPassword" runat="server" ControlToValidate="txtPassword" ErrorMessage="Password is required" Display="Dynamic" CssClass="error-message" />
+                        <asp:Label ID="lblPasswordError" runat="server" CssClass="error-message"></asp:Label>
                     </div>
 
                     <div class="options-row">
@@ -85,12 +91,12 @@
                             <input type="checkbox" id="chkShowPasswordSignIn" onclick="toggleSignInPassword()" />
                             <label for="chkShowPasswordSignIn">Show Password</label>
                         </div>
-                        <a href="forgotPassword.aspx" class="forgot-link">Forgot password?</a>
+                        <a href="ForgotPassword.aspx" class="forgot-link">Forgot password?</a>
                     </div>
 
                     <asp:Button ID="btnSignIn" runat="server" Text="Sign in to Codercept" CssClass="btn-submit" OnClick="btnSignIn_Click" />
                     
-                    <a href="LearnerDashboard.aspx" class="btn-guest">Continue as Guest</a>
+                    <asp:LinkButton ID="btnGuest" runat="server" CssClass="btn-guest" OnClick="btnGuest_Click" CausesValidation="false">Continue as Guest</asp:LinkButton>
 
                     <div class="auth-footer">
                         <p>New to Codercept? <a href="signUp.aspx">Create a free account</a></p>
