@@ -11,7 +11,8 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
+            // Security Check: Allow BOTH Learners and Guests
+            if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
             {
                 Response.Redirect("signIn.aspx");
                 return;
@@ -19,12 +20,29 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                // Your normal page loading logic goes here
+                if (Session["UserType"].ToString() == "Guest")
+                {
+                    // 1. Hide the progress bar panel
+                    pnlEnrolledProgress.Visible = false;
+
+                    // 2. Change the button text to "Enroll"
+                    btnCourseAction.Text = "Enroll";
+
+                    // 3. Intercept the click to show the modal
+                    btnCourseAction.OnClientClick = "showGuestModal(); return false;";
+                }
+                else
+                {
+                    // For logged-in Learners: ensure the progress bar is visible and button text is correct
+                    pnlEnrolledProgress.Visible = true;
+                    btnCourseAction.Text = "Continue Learning &rarr;";
+                }
             }
         }
 
         protected void btnCourseAction_Click(object sender, EventArgs e)
         {
+            // Only logged-in Learners will reach this server-side click event
             Response.Redirect("CourseViewer.aspx");
         }
     }

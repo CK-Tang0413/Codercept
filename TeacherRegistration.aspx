@@ -137,7 +137,7 @@
                             <label for="roleTeacher">Teacher</label>
 
                             <input type="radio" id="roleAssistant" name="RoleSelection" value="Assistant" />
-                            <label for="roleAssistant"></label>
+                            <label for="roleAssistant">Teaching Assistant</label>
                         </div>
 
                         <!-- Qualifications[cite: 9] -->

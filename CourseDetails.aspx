@@ -220,7 +220,7 @@
                 <div class="chapter-list">
                     
                     <!-- Chapter 1: Completed -->
-                    <a href="CourseViewer.aspx?chapter=1" class="chapter-item">
+                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item">
                         <div class="ch-status completed">
                             <!-- Checkmark SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,7 +243,7 @@
                     </a>
 
                     <!-- Chapter 2: Completed -->
-                    <a href="CourseViewer.aspx?chapter=2" class="chapter-item">
+                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item">
                         <div class="ch-status completed">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -265,7 +265,7 @@
                     </a>
 
                     <!-- Chapter 3: Active / Next up -->
-                    <a href="CourseViewer.aspx?chapter=3" class="chapter-item" style="border-color: rgba(124, 58, 237, 0.4);">
+                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item" style="border-color: rgba(124, 58, 237, 0.4);">
                         <div class="ch-status completed" style="background: rgba(124, 58, 237, 0.2); color: #c084fc;">
                             <!-- Play SVG indicating active chapter -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
@@ -331,5 +331,43 @@
             </main>
         </div>
     </form>
+
+    <!-- Guest Registration Modal -->
+    <div id="guestModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px); justify-content: center; align-items: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%;">
+        
+            <h3 style="margin-bottom: 1rem; color: #18181b; font-size: 1.5rem;">Registration Required</h3>
+            <p style="margin-bottom: 2rem; color: #71717a; font-size: 0.95rem; line-height: 1.5;">
+                You need a free account to view topic details and enroll in courses. Ready to start your learning journey?
+            </p>
+        
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="button" onclick="hideGuestModal()" style="padding: 0.75rem 1.5rem; border: 1px solid #e4e4e7; background: transparent; border-radius: 8px; cursor: pointer; color: #71717a; font-weight: 600; flex: 1; transition: background 0.2s;">
+                    Cancel
+                </button>
+                <a href="signUp.aspx" style="padding: 0.75rem 1.5rem; background: #7c3aed; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; flex: 1; transition: background 0.2s; display: inline-block;">
+                    Register Now
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function showGuestModal() {
+            var overlay = document.getElementById('guestModalOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function hideGuestModal() {
+            var overlay = document.getElementById('guestModalOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+    </script>
+
 </body>
 </html>

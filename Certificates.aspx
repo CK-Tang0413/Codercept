@@ -146,66 +146,36 @@
                     <p>View and download your earned credentials</p>
                 </div>
 
+                <asp:Label ID="lblNoCerts" runat="server" Visible="false" CssClass="cert-details" style="text-align: center; display: block; margin-top: 2rem;">
+                    You haven't earned any certificates yet. Complete a course to see your credentials here!
+                </asp:Label>
+
                 <div class="cert-grid">
-                    
-                    <!-- Certificate Card 1 -->
-                    <div class="cert-card">
-                        <div class="cert-title">Java Fundamentals</div>
-                        
-                        <div class="cert-img-wrapper">
-                            <!-- Placeholder image using your logo -->
-                            <img src="img/Codercept_Icon.png" alt="Codercept Certificate Placeholder" />
-                        </div>
-                        
-                        <div class="cert-details">
-                            <div>Issued by: <strong>Codercept</strong></div>
-                            <div>Issue Date: <strong>24 September 2026</strong></div>
-                            <div>Credential ID: <strong>CC-JAV-8921</strong></div>
-                        </div>
-                        
-                        <asp:LinkButton ID="btnDownloadJava" runat="server" CssClass="btn-download">
-                            Download PDF
-                        </asp:LinkButton>
-                    </div>
-
-                    <!-- Certificate Card 2 -->
-                    <div class="cert-card">
-                        <div class="cert-title">Python For Beginners</div>
-                        
-                        <div class="cert-img-wrapper">
-                            <img src="img/Codercept_Icon.png" alt="Codercept Certificate Placeholder" />
-                        </div>
-                        
-                        <div class="cert-details">
-                            <div>Issued by: <strong>Codercept</strong></div>
-                            <div>Issue Date: <strong>15 August 2026</strong></div>
-                            <div>Credential ID: <strong>CC-PYT-4430</strong></div>
-                        </div>
-                        
-                        <asp:LinkButton ID="btnDownloadPython" runat="server" CssClass="btn-download">
-                            Download PDF
-                        </asp:LinkButton>
-                    </div>
-
-                    <!-- Certificate Card 3 -->
-                    <div class="cert-card">
-                        <div class="cert-title">C++ Object-Oriented</div>
-                        
-                        <div class="cert-img-wrapper">
-                            <img src="img/Codercept_Icon.png" alt="Codercept Certificate Placeholder" />
-                        </div>
-                        
-                        <div class="cert-details">
-                            <div>Issued by: <strong>Codercept</strong></div>
-                            <div>Issue Date: <strong>02 July 2026</strong></div>
-                            <div>Credential ID: <strong>CC-CPP-1192</strong></div>
-                        </div>
-                        
-                        <asp:LinkButton ID="btnDownloadCpp" runat="server" CssClass="btn-download">
-                            Download PDF
-                        </asp:LinkButton>
-                    </div>
-
+                    <asp:Repeater ID="rptCertificates" runat="server" OnItemCommand="rptCertificates_ItemCommand">
+                        <ItemTemplate>
+                            <div class="cert-card">
+                                <div class="cert-title"><%# Eval("CourseTitle") %></div>
+                
+                                <div class="cert-img-wrapper">
+                                    <!-- This calls a C# method to generate the stamped image as a Base64 string -->
+                                    <img src='<%# GetCertificateImageBase64(Eval("CourseTitle").ToString(), Eval("IssueDate", "{0:MMMM dd, yyyy}")) %>' alt="Certificate Preview" style="max-height: 120px; opacity: 1; filter: none;" />
+                                </div>
+                
+                                <div class="cert-details">
+                                    <div>Issued by: <strong><%# Eval("Issuer") %></strong></div>
+                                    <div>Issue Date: <strong><%# Eval("IssueDate", "{0:dd MMM yyyy}") %></strong></div>
+                                    <div>Credential ID: <strong><%# Eval("CertId") %></strong></div>
+                                </div>
+                
+                                <!-- Passes the CourseName and Date to the backend click event -->
+                                <asp:LinkButton ID="btnDownload" runat="server" CssClass="btn-download" 
+                                    CommandName="DownloadPDF" 
+                                    CommandArgument='<%# Eval("CourseTitle") + "|" + Eval("IssueDate", "{0:MMMM dd, yyyy}") %>'>
+                                    Download PDF
+                                </asp:LinkButton>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
 
             </main>

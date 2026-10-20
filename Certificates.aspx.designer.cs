@@ -33,30 +33,21 @@ namespace Codercept
         protected global::Codercept.LearnerSideBar LearnerSideBarCtrl;
 
         /// <summary>
-        /// btnDownloadJava control.
+        /// lblNoCerts control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnDownloadJava;
+        protected global::System.Web.UI.WebControls.Label lblNoCerts;
 
         /// <summary>
-        /// btnDownloadPython control.
+        /// rptCertificates control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnDownloadPython;
-
-        /// <summary>
-        /// btnDownloadCpp control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnDownloadCpp;
+        protected global::System.Web.UI.WebControls.Repeater rptCertificates;
     }
 }
