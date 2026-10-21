@@ -42,85 +42,85 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtSearch;
 
         /// <summary>
-        /// btnFilterAllLang control.
+        /// btnLangAll control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterAllLang;
+        protected global::System.Web.UI.WebControls.LinkButton btnLangAll;
 
         /// <summary>
-        /// btnFilterPython control.
+        /// btnLangPython control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterPython;
+        protected global::System.Web.UI.WebControls.LinkButton btnLangPython;
 
         /// <summary>
-        /// btnFilterJava control.
+        /// btnLangJava control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterJava;
+        protected global::System.Web.UI.WebControls.LinkButton btnLangJava;
 
         /// <summary>
-        /// btnFilterC control.
+        /// btnLangC control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterC;
+        protected global::System.Web.UI.WebControls.LinkButton btnLangC;
 
         /// <summary>
-        /// btnFilterCpp control.
+        /// btnLangCpp control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterCpp;
+        protected global::System.Web.UI.WebControls.LinkButton btnLangCpp;
 
         /// <summary>
-        /// btnFilterAllLevel control.
+        /// btnLevelAll control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterAllLevel;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelAll;
 
         /// <summary>
-        /// btnFilterBeginner control.
+        /// btnLevelBeginner control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterBeginner;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelBeginner;
 
         /// <summary>
-        /// btnFilterIntermediate control.
+        /// btnLevelIntermediate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterIntermediate;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelIntermediate;
 
         /// <summary>
-        /// btnFilterAdvanced control.
+        /// btnLevelAdvanced control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnFilterAdvanced;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelAdvanced;
 
         /// <summary>
         /// litResultsCount control.
@@ -130,5 +130,14 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litResultsCount;
+
+        /// <summary>
+        /// rptCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptCourses;
     }
 }

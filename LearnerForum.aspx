@@ -160,10 +160,21 @@
 
         .comment-text { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem; }
         
+        /* Updated Comment Actions */
         .comment-actions { display: flex; gap: 0.75rem; }
-        .comment-actions button { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; font-weight: 600; transition: color 0.2s; }
-        .comment-actions button:hover { color: var(--text-primary); }
-        .comment-actions button.action-flag:hover { color: #ef4444; }
+        .action-btn { 
+            background: none; 
+            border: none; 
+            color: var(--text-muted); 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: color 0.2s; 
+            padding: 0; 
+            font-family: inherit;
+        }
+        .action-btn:hover { color: var(--text-primary); }
+        .action-btn.action-flag:hover { color: #ef4444; }
 
         /* Comment Input Area */
         .comment-input-area {
@@ -228,143 +239,79 @@
                 </div>
 
                 <div class="forum-container">
-                    
                     <!-- LEFT PANEL: Posts List -->
                     <div class="posts-column">
-                        
-                        <!-- Post 1 -->
-                        <div class="post-card">
-                            <h2 class="post-title">What is String in Python?</h2>
-                            <p class="post-desc">I am currently going through the Python for Beginners module and I'm a bit confused about Strings. Are they mutable or immutable? If they are immutable, how do we modify text inside a variable? Any help is appreciated!</p>
-                            <div class="post-tags">#Python #Fundamental #Urgent</div>
-                            <div class="action-group">
-                                <button type="button" class="btn-action active-comment">Comment (4)</button>
-                                <button type="button" class="btn-action">Pin</button>
-                                <button type="button" class="btn-action">Flag</button>
-                            </div>
-                        </div>
-
-                        <!-- Post 2 -->
-                        <div class="post-card">
-                            <h2 class="post-title">Error setting up Visual Studio for C++</h2>
-                            <p class="post-desc">Every time I try to compile my first Hello World program, it throws an error saying "MSVCP140.dll was not found". Has anyone encountered this while setting up their environment?</p>
-                            <div class="post-tags">#C++ #Environment #Error</div>
-                            <div class="action-group">
-                                <button type="button" class="btn-action">Comment (1)</button>
-                                <button type="button" class="btn-action">Pin</button>
-                                <button type="button" class="btn-action">Flag</button>
-                            </div>
-                        </div>
-
-                        <!-- Post 3 -->
-                        <div class="post-card">
-                            <h2 class="post-title">Tips for memorizing Java syntax?</h2>
-                            <p class="post-desc">I'm transitioning from Python to Java and the verbosity is overwhelming. Does anyone have good tips or cheat sheets for remembering things like public static void main(String[] args)?</p>
-                            <div class="post-tags">#Java #Discussion #Tips</div>
-                            <div class="action-group">
-                                <button type="button" class="btn-action">Comment (0)</button>
-                                <button type="button" class="btn-action">Pin</button>
-                                <button type="button" class="btn-action">Flag</button>
-                            </div>
-                        </div>
-
+                        <asp:Repeater ID="rptPosts" runat="server" OnItemCommand="rptPosts_ItemCommand">
+                            <ItemTemplate>
+                                <div class="post-card">
+                                    <h2 class="post-title"><%# Eval("Title") %></h2>
+                                    <p class="post-desc"><%# Eval("Description") %></p>
+                                    <div class="post-tags"><%# Eval("Tags") %></div>
+                                    <div class="action-group">
+                                        <asp:Button ID="btnComment" runat="server" CssClass='<%# Convert.ToBoolean(Eval("IsActive")) ? "btn-action active-comment" : "btn-action" %>' Text='<%# "Comment (" + Eval("CommentCount") + ")" %>' CommandName="SelectPost" CommandArgument='<%# Eval("Id") %>' />
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
 
                     <!-- RIGHT PANEL: Comments Section -->
-                    <div class="comments-column" id="commentsPanel">
-                        
+                    <asp:Panel ID="pnlComments" runat="server" CssClass="comments-column" Visible="false">
+    
                         <div class="comments-header">
-                            Discussion: What is String in Python?
+                            Discussion: <asp:Literal ID="litActivePostTitle" runat="server"></asp:Literal>
                         </div>
 
                         <div class="comments-list">
-                            
-                            <!-- Normal Message (Learner) -->
-                            <div class="comment-item">
-                                <div class="comment-top">
-                                    <div class="comment-user">
-                                        <div class="c-avatar">K</div>
-                                        <div class="c-name">Kylan Shane</div>
-                                    </div>
-                                    <div class="role-badge learner">Learner</div>
-                                </div>
-                                <div class="comment-text">String is just a sequence of characters. In Python, they are strictly immutable. You can't change them in place!</div>
-                                <div class="comment-actions">
-                                    <button type="button">Reply</button>
-                                    <button type="button">Pin</button>
-                                    <button type="button" class="action-flag">Flag</button>
-                                </div>
-                            </div>
+                            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand">
+                                <ItemTemplate>
+                
+                                    <!-- Dynamic CSS classes for Pinning and Flagging -->
+                                    <div class='comment-item <%# Convert.ToBoolean(Eval("IsPinned")) ? "pinned" : "" %> <%# Convert.ToBoolean(Eval("IsFlagged")) ? "flagged" : "" %>'>
+                    
+                                        <!-- Only show if it's a reply -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ReplyToName")?.ToString()) %>'>
+                                            <div class="reply-context">
+                                                ↳ Replying to <%# Eval("ReplyToName") %>
+                                            </div>
+                                        </asp:PlaceHolder>
 
-                            <!-- Pinned Message (Teacher) -->
-                            <div class="comment-item pinned">
-                                <div class="comment-top">
-                                    <div class="comment-user">
-                                        <div class="c-avatar">E</div>
-                                        <div class="c-name">Mr. Elaveenthan</div>
+                                        <div class="comment-top">
+                                            <div class="comment-user">
+                                                <div class="c-avatar"><%# Eval("AvatarInitials") %></div>
+                                                <div class="c-name"><%# Eval("AuthorName") %></div>
+                                            </div>
+                                            <div class='role-badge <%# Eval("RoleCssClass") %>'><%# Eval("RoleDisplay") %></div>
+                                        </div>
+                    
+                                        <div class="comment-text">
+                                            <asp:Literal runat="server" Visible='<%# Convert.ToBoolean(Eval("IsPinned")) %>' Text="📌 "></asp:Literal>
+                                            <%# Eval("Message") %>
+                                        </div>
+                    
+                                        <div class="comment-actions">
+                                            <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("Id") %>' />
+                                            <asp:Button ID="btnPin" runat="server" Text='<%# Convert.ToBoolean(Eval("IsPinned")) ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("Id") %>' />
+                                            <asp:Button ID="btnFlag" runat="server" Text='<%# Convert.ToBoolean(Eval("IsFlagged")) ? "Unflag" : "Flag" %>' CssClass='<%# Convert.ToBoolean(Eval("IsFlagged")) ? "action-btn" : "action-btn action-flag" %>' CommandName="ToggleFlag" CommandArgument='<%# Eval("Id") %>' />
+                                        </div>
                                     </div>
-                                    <div class="role-badge teacher">Teacher</div>
-                                </div>
-                                <div class="comment-text">📌 Kylan is correct! Because they are immutable, if you want to "modify" a string, you actually create a brand new string and reassign it to the variable. (e.g., `text = text + "new"`).</div>
-                                <div class="comment-actions">
-                                    <button type="button">Reply</button>
-                                    <button type="button">Unpin</button>
-                                    <button type="button" class="action-flag">Flag</button>
-                                </div>
-                            </div>
 
-                            <!-- Reply Message (TA) -->
-                            <div class="comment-item">
-                                <div class="reply-context">
-                                    ↳ Replying to Mr. Elaveenthan
-                                </div>
-                                <div class="comment-top">
-                                    <div class="comment-user">
-                                        <div class="c-avatar">A</div>
-                                        <div class="c-name">Alex Chen</div>
-                                    </div>
-                                    <div class="role-badge ta">TA</div>
-                                </div>
-                                <div class="comment-text">Exactly this! If you look at chapter 3 in the module, there is a great visual diagram explaining how memory allocation works for this.</div>
-                                <div class="comment-actions">
-                                    <button type="button">Reply</button>
-                                    <button type="button">Pin</button>
-                                    <button type="button" class="action-flag">Flag</button>
-                                </div>
-                            </div>
-
-                            <!-- Flagged Message -->
-                            <div class="comment-item flagged">
-                                <div class="comment-top">
-                                    <div class="comment-user">
-                                        <div class="c-avatar">U</div>
-                                        <div class="c-name">Unknown User</div>
-                                    </div>
-                                    <div class="role-badge learner">Learner</div>
-                                </div>
-                                <div class="comment-text">Just copy the answers from ChatGPT for the quiz, it's easier anyway.</div>
-                                <div class="comment-actions">
-                                    <button type="button">Reply</button>
-                                    <button type="button">Pin</button>
-                                    <button type="button" class="action-flag">Unflag</button>
-                                </div>
-                            </div>
-
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </div>
 
                         <!-- Chat Input -->
                         <div class="comment-input-area">
+                            <asp:HiddenField ID="hfReplyToId" runat="server" />
                             <asp:TextBox ID="txtComment" runat="server" CssClass="input-chat" placeholder="Type comment here..."></asp:TextBox>
-                            <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send">
-                                <!-- Paper plane SVG icon -->
+                            <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send" OnClick="btnSendComment_Click">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                                   <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
                                 </svg>
                             </asp:LinkButton>
                         </div>
 
-                    </div>
-
+                    </asp:Panel>
                 </div>
             </main>
         </div>

@@ -174,8 +174,7 @@
 
                     <div class="form-actions">
                         <a href="LearnerForum.aspx" class="btn-cancel">Cancel</a>
-                        <asp:Button ID="btnPublishPost" runat="server" Text="Publish Post" CssClass="btn-submit" />
-                    </div>
+                        <asp:Button ID="btnPublishPost" runat="server" Text="Publish Post" CssClass="btn-submit" OnClick="btnPublishPost_Click" />                    </div>
 
                 </div>
 

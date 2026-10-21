@@ -60,6 +60,51 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.PlaceHolder phLearnerData;
 
         /// <summary>
+        /// litStatEnrolled control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litStatEnrolled;
+
+        /// <summary>
+        /// litStatChapters control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litStatChapters;
+
+        /// <summary>
+        /// litStatAvgScore control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litStatAvgScore;
+
+        /// <summary>
+        /// litStatProgress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litStatProgress;
+
+        /// <summary>
+        /// rptActiveCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptActiveCourses;
+
+        /// <summary>
         /// recommendationHeader control.
         /// </summary>
         /// <remarks>
@@ -67,5 +112,14 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl recommendationHeader;
+
+        /// <summary>
+        /// rptRecommended control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptRecommended;
     }
 }

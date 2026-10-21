@@ -103,19 +103,19 @@
                     <!-- User Overview Blocks -->
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-value">2</div>
+                            <div class="stat-value"><asp:Literal ID="litStatEnrolled" runat="server"></asp:Literal></div>
                             <div class="stat-label">Enrolled Courses</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">5</div>
+                            <div class="stat-value"><asp:Literal ID="litStatChapters" runat="server"></asp:Literal></div>
                             <div class="stat-label">Chapters Done</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">83%</div>
+                            <div class="stat-value"><asp:Literal ID="litStatAvgScore" runat="server"></asp:Literal></div>
                             <div class="stat-label">Avg. Score</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">45%</div>
+                            <div class="stat-value"><asp:Literal ID="litStatProgress" runat="server"></asp:Literal></div>
                             <div class="stat-label">Total Progress</div>
                         </div>
                     </div>
@@ -125,43 +125,28 @@
                         <h2>Continue Learning</h2>
                         <a href="MyProgress.aspx" class="view-all">View all active courses &rarr;</a>
                     </div>
+    
                     <div class="course-grid">
-                        
-                        <!-- Course Card 1 -->
-                        <a href="CourseDetails.aspx?id=1" class="course-card">
-                            <div class="card-header">
-                                <span class="lang-badge">Python</span>
-                            </div>
-                            <h3 class="course-title">Python for Beginners</h3>
-                            <div class="progress-container">
-                                <div class="progress-info">
-                                    <span>Progress</span>
-                                    <span>60%</span>
-                                </div>
-                                <div class="progress-bar-bg">
-                                    <div class="progress-bar-fill" style="width: 60%;"></div>
-                                </div>
-                                <span class="next-step-text">Next: Functions &rarr;</span>
-                            </div>
-                        </a>
-
-                        <!-- Course Card 2 -->
-                        <a href="CourseDetails.aspx?id=2" class="course-card">
-                            <div class="card-header">
-                                <span class="lang-badge">Java</span>
-                            </div>
-                            <h3 class="course-title">Java Fundamentals</h3>
-                            <div class="progress-container">
-                                <div class="progress-info">
-                                    <span>Progress</span>
-                                    <span>33%</span>
-                                </div>
-                                <div class="progress-bar-bg">
-                                    <div class="progress-bar-fill" style="width: 33%;"></div>
-                                </div>
-                                <span class="next-step-text">Next: Control Flow &rarr;</span>
-                            </div>
-                        </a>
+                        <asp:Repeater ID="rptActiveCourses" runat="server">
+                            <ItemTemplate>
+                                <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                                    <div class="card-header">
+                                        <span class="lang-badge"><%# Eval("Language") %></span>
+                                    </div>
+                                    <h3 class="course-title"><%# Eval("Title") %></h3>
+                                    <div class="progress-container">
+                                        <div class="progress-info">
+                                            <span>Progress</span>
+                                            <span><%# Eval("Progress") %>%</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" style='width: <%# Eval("Progress") %>%;'></div>
+                                        </div>
+                                        <span class="next-step-text">Next: <%# Eval("NextChapter") %> &rarr;</span>
+                                    </div>
+                                </a>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
                 </asp:PlaceHolder>
 
@@ -170,51 +155,25 @@
                     <h2 id="recommendationHeader" runat="server">Recommended for You</h2>
                     <a href="CourseCatalog.aspx" class="view-all">View all recommendations &rarr;</a>
                 </div>
+
                 <div class="course-grid">
-                    <!-- Recommended Card 1 -->
-                    <a href="CourseDetails.aspx?id=3" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge">C</span>
-                            <span class="level-badge">Intermediate</span>
-                        </div>
-                        <h3 class="course-title">C Programming Essentials</h3>
-                        <p class="course-desc">Master C programming — the language that powers operating systems and embedded systems. Learn pointers, memory management, and more.</p>
-                        <div class="course-meta">
-                            <span>📖 5 chapters</span>
-                            <span>⭐ 4.5 Rating</span>
-                            <span>👥 67 enrolled</span>
-                        </div>
-                    </a>
-
-                    <!-- Recommended Card 2 -->
-                    <a href="CourseDetails.aspx?id=4" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge">C++</span>
-                            <span class="level-badge">Intermediate</span>
-                        </div>
-                        <h3 class="course-title">C++ Object-Oriented Programming</h3>
-                        <p class="course-desc">Deep dive into C++ with a focus on OOP principles. Learn classes, inheritance, polymorphism, and templates to build robust apps.</p>
-                        <div class="course-meta">
-                            <span>📖 4 chapters</span>
-                            <span>⭐ 4.7 Rating</span>
-                            <span>👥 82 enrolled</span>
-                        </div>
-                    </a>
-
-                    <!-- Recommended Card 3 -->
-                    <a href="CourseDetails.aspx?id=5" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge">HTML/CSS</span>
-                            <span class="level-badge">Beginner</span>
-                        </div>
-                        <h3 class="course-title">Responsive Web Design</h3>
-                        <p class="course-desc">Start building beautiful, responsive websites from scratch using modern HTML5 and CSS3 techniques like Flexbox and Grid.</p>
-                        <div class="course-meta">
-                            <span>📖 6 chapters</span>
-                            <span>⭐ 4.9 Rating</span>
-                            <span>👥 124 enrolled</span>
-                        </div>
-                    </a>
+                    <asp:Repeater ID="rptRecommended" runat="server">
+                        <ItemTemplate>
+                            <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                                <div class="card-header">
+                                    <span class="lang-badge"><%# Eval("Language") %></span>
+                                    <span class="level-badge"><%# Eval("Level") %></span>
+                                </div>
+                                <h3 class="course-title"><%# Eval("Title") %></h3>
+                                <p class="course-desc"><%# Eval("Description") %></p>
+                                <div class="course-meta">
+                                    <span>📖 <%# Eval("Chapters") %> chapters</span>
+                                    <span>⭐ <%# Eval("Rating") %> Rating</span>
+                                    <span>👥 <%# Eval("EnrolledCount") %> enrolled</span>
+                                </div>
+                            </a>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
 
             </main>

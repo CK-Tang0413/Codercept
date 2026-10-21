@@ -311,191 +311,136 @@
                         Back to course
                     </a>
                     <div class="course-title-side">Python for Beginners</div>
-                    <div class="course-meta-side">5 chapters</div>
+                    <div class="course-meta-side"><asp:Literal ID="litTotalChapters" runat="server"></asp:Literal> chapters</div>
                 </div>
 
-                <!-- Chapter 1 (Active) -->
-                <a href="CourseViewer.aspx?ch=1" class="nav-chapter active">
-                    <div class="nav-status completed">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                    </div>
-                    <div class="nav-details">
-                        <div class="nav-title">Introduction to Python</div>
-                        <div class="nav-time">45 min</div>
-                    </div>
-                </a>
+                <!-- Dynamic Chapters List -->
+                <asp:Repeater ID="rptSidebar" runat="server" OnItemDataBound="rptSidebar_ItemDataBound">
+                    <ItemTemplate>
+                        <!-- Main Chapter Link -->
+                        <a href='<%# Eval("Status").ToString() == "locked" ? "javascript:void(0);" : "CourseViewer.aspx?ch=" + Eval("Id") %>' 
+                           class='nav-chapter <%# Convert.ToBoolean(Eval("IsActive")) ? "active" : "" %>' 
+                           style='<%# Eval("Status").ToString() == "locked" ? "cursor: not-allowed; opacity: 0.6;" : "" %>'>
+                
+                            <div class='nav-status <%# Eval("Status") %>'>
+                                <asp:Literal ID="litStatusIcon" runat="server"></asp:Literal>
+                            </div>
+                
+                            <div class="nav-details">
+                                <div class="nav-title"><%# Eval("Title") %></div>
+                                <div class="nav-time"><%# Eval("Duration") %></div>
+                            </div>
+                        </a>
 
-                <!-- Chapter 2 -->
-                <a href="CourseViewer.aspx?ch=2" class="nav-chapter">
-                    <div class="nav-status completed">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                    </div>
-                    <div class="nav-details">
-                        <div class="nav-title">Variables & Data Types</div>
-                        <div class="nav-time">60 min</div>
-                    </div>
-                </a>
+                        <!-- Sub-Chapters (Only visible if the chapter has them) -->
+                        <asp:Repeater ID="rptSubChapters" runat="server" DataSource='<%# Eval("SubChapters") %>'>
+                            <ItemTemplate>
+                                <a href='CourseViewer.aspx?ch=<%# Eval("ChapterId") %>&sub=<%# Eval("Id") %>' 
+                                   class='nav-subchapter <%# Convert.ToBoolean(Eval("IsActive")) ? "active" : "" %>'>
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <%# Eval("Title") %>
+                                </a>
+                            </ItemTemplate>
+                        </asp:Repeater>
 
-                <!-- Chapter 3 (With Sub-chapters example) -->
-                <a href="CourseViewer.aspx?ch=3" class="nav-chapter">
-                    <div class="nav-status pending">3</div>
-                    <div class="nav-details">
-                        <div class="nav-title">Control Flow — if, elif, else & Loops</div>
-                        <div class="nav-time">75 min</div>
-                    </div>
-                </a>
-                <!-- Sub-chapters -->
-                <a href="CourseViewer.aspx?ch=3&sub=1" class="nav-subchapter">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    If / Else Statements
-                </a>
-                <a href="CourseViewer.aspx?ch=3&sub=2" class="nav-subchapter">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
-                    For Loops
-                </a>
-
-                <!-- Chapter 4 -->
-                <div class="nav-chapter" style="cursor: not-allowed; opacity: 0.6;">
-                    <div class="nav-status locked">4</div>
-                    <div class="nav-details">
-                        <div class="nav-title">Functions</div>
-                        <div class="nav-time">70 min</div>
-                    </div>
-                </div>
-
-                <!-- Final Assessment -->
-                <div class="nav-chapter" style="cursor: not-allowed; opacity: 0.6;">
-                    <div class="nav-status locked">5</div>
-                    <div class="nav-details">
-                        <div class="nav-title">Final Assessment — Build a Calculator</div>
-                        <div class="nav-time">90 min</div>
-                    </div>
-                </div>
+                    </ItemTemplate>
+                </asp:Repeater>
             </aside>
 
             <!-- Right Panel: Main Content Flow -->
             <main class="viewer-content">
-                
-                <!-- NEW: Scrollable Content Wrapper -->
+    
                 <div class="content-wrapper">
                     <div class="content-scrollable">
-                        
+            
                         <!-- Content Header -->
                         <div class="content-header">
-                            <span class="ch-label">Ch. 1 • 45 min</span>
+                            <span class="ch-label">Ch. <asp:Literal ID="litChNumber" runat="server"></asp:Literal> • <asp:Literal ID="litChDuration" runat="server"></asp:Literal></span>
                             <h1 class="ch-main-title">
-                                Introduction to Python
-                                <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <asp:Literal ID="litChTitle" runat="server"></asp:Literal>
+                                <asp:PlaceHolder ID="phCheckmark" runat="server" Visible="false">
+                                    <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </asp:PlaceHolder>
                             </h1>
                         </div>
 
                         <!-- 1. Video Section -->
-                        <div class="section-divider">Part 1: Video Lecture</div>
-                        <div class="video-container">
-                            <div class="play-btn">
-                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/></svg>
+                        <asp:Panel ID="pnlVideo" runat="server">
+                            <div class="section-divider">Part 1: Video Lecture</div>
+                            <div class="video-container">
+                                <div class="play-btn">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/></svg>
+                                </div>
+                                <h3 style="color: white; margin-bottom: 0.5rem;"><asp:Literal ID="litVideoTitle" runat="server"></asp:Literal></h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Video lecture</p>
                             </div>
-                            <h3 style="color: white; margin-bottom: 0.5rem;">Python Tutorial for Beginners — Full Course</h3>
-                            <p style="color: var(--text-muted); font-size: 0.85rem;">Video lecture — 45 min</p>
-                        </div>
+                        </asp:Panel>
 
                         <!-- 2. Theory Section -->
-                        <div class="section-divider">Part 2: Theory & Concepts</div>
-                        <div class="theory-content">
-                            <h2>What is Python?</h2>
-                            <p>Python is a high-level, interpreted programming language created by Guido van Rossum in 1991. It is known for its clean, readable syntax that resembles plain English, making it an excellent choice for beginners and professionals alike.</p>
-                            
-                            <h2>Why Learn Python?</h2>
-                            <ul>
-                                <li>Simple and readable syntax — great for beginners</li>
-                                <li>Versatile: web dev, data science, AI, automation</li>
-                                <li>Massive community with thousands of libraries</li>
-                                <li>High demand in the job market</li>
-                            </ul>
+                        <asp:Panel ID="pnlTheory" runat="server">
+                            <div class="section-divider">Part 2: Theory & Concepts</div>
+                            <div class="theory-content">
+                                <asp:Literal ID="litTheoryHtml" runat="server"></asp:Literal>
+                            </div>
+                        </asp:Panel>
 
-                            <h2>Your First Python Program</h2>
-                            <p>Every programmer starts with a "Hello, World!" program. In Python, this is beautifully simple:</p>
+                        <!-- 3. Assessment / Quiz Section -->
+                        <asp:Panel ID="pnlQuiz" runat="server">
+                            <div class="section-divider">Part 3: Knowledge Check</div>
+                
+                            <div class="quiz-question">
+                                <div class="q-title">Q1. What is the correct way to assign a string value to a variable in Python?</div>
+                                <div class="q-option"><div class="q-radio"></div><span>str name = Alice</span></div>
+                                <div class="q-option"><div class="q-radio"></div><span>name = Alice</span></div>
+                                <div class="q-option"><div class="q-radio"></div><span>name = "Alice"</span></div>
+                            </div>
 
-                            <div class="code-block">
+                            <div class="quiz-question">
+                                <div class="q-title">Q2. What does the len() function return when used on a string?</div>
+                                <div class="q-option"><div class="q-radio"></div><span>The string in uppercase</span></div>
+                                <div class="q-option"><div class="q-radio"></div><span>The number of characters in the string</span></div>
+                            </div>
+                        </asp:Panel>
+
+                        <!-- 4. Coding Section -->
+                        <asp:Panel ID="pnlCode" runat="server">
+                            <div class="section-divider">Part 4: Coding Challenge</div>
+                            <div class="challenge-box">
+                                <h3 style="color: white; margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
+                                <p><asp:Literal ID="litCodeDesc" runat="server"></asp:Literal></p>
+                            </div>
+
+                            <div class="ide-placeholder">
                                 <div class="code-header">
-                                    python
+                                    editor.py
                                     <div class="code-dots"><span class="dot-g"></span><span class="dot-y"></span><span class="dot-r"></span></div>
                                 </div>
                                 <div class="code-body">
-<span class="code-comment"># This is a comment — Python ignores it</span>
-print("Hello, World!")
+            <span class="code-comment"># Write your solution here...</span>
+
+
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- 3. Assessment / Quiz Section -->
-                        <div class="section-divider">Part 3: Knowledge Check</div>
-                        
-                        <div class="quiz-question">
-                            <div class="q-title">Q1. What is the correct way to assign a string value to a variable in Python?</div>
-                            
-                            <div class="q-option">
-                                <div class="q-radio"></div>
-                                <span>str name = Alice</span>
-                            </div>
-                            <div class="q-option">
-                                <div class="q-radio"></div>
-                                <span>name = Alice</span>
-                            </div>
-                            <div class="q-option">
-                                <div class="q-radio"></div>
-                                <span>name = "Alice"</span>
-                            </div>
-                        </div>
-
-                        <div class="quiz-question">
-                            <div class="q-title">Q2. What does the len() function return when used on a string?</div>
-                            
-                            <div class="q-option">
-                                <div class="q-radio"></div>
-                                <span>The string in uppercase</span>
-                            </div>
-                            <div class="q-option">
-                                <div class="q-radio"></div>
-                                <span>The number of characters in the string</span>
-                            </div>
-                        </div>
-
-                        <!-- 4. Coding Section -->
-                        <div class="section-divider">Part 4: Coding Challenge</div>
-                        <div class="challenge-box">
-                            <h3 style="color: white; margin-bottom: 0.5rem;">FizzBuzz Challenge</h3>
-                            <p>Write a Python program that prints numbers from 1 to 20. For multiples of 3, print "Fizz" instead of the number. For multiples of 5, print "Buzz". For multiples of both 3 and 5, print "FizzBuzz".</p>
-                        </div>
-
-                        <div class="ide-placeholder">
-                            <div class="code-header">
-                                editor.py
-                                <div class="code-dots"><span class="dot-g"></span><span class="dot-y"></span><span class="dot-r"></span></div>
-                            </div>
-                            <div class="code-body">
-<span class="code-comment"># Write your solution here...</span>
-
-
-                            </div>
-                        </div>
+                        </asp:Panel>
 
                     </div>
                 </div>
 
-                <!-- Footer Navigation (Now fixed at the bottom)[cite: 45] -->
+                <!-- Footer Navigation -->
                 <div class="viewer-footer">
-                    <button type="button" class="btn-nav">
+                    <asp:HyperLink ID="lnkPrev" runat="server" CssClass="btn-nav">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         Previous
-                    </button>
-                    
-                    <span class="step-indicator">1 / 5</span>
-                    
-                    <button type="button" class="btn-nav primary">
+                    </asp:HyperLink>
+        
+                    <span class="step-indicator"><asp:Literal ID="litStepIndicator" runat="server"></asp:Literal></span>
+        
+                    <asp:HyperLink ID="lnkNext" runat="server" CssClass="btn-nav primary">
                         Next
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
+                    </asp:HyperLink>
                 </div>
 
             </main>

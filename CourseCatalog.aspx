@@ -108,23 +108,23 @@
                     <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <asp:TextBox ID="txtSearch" runat="server" CssClass="search-input" placeholder="Search courses..."></asp:TextBox>
+                    <asp:TextBox ID="txtSearch" runat="server" CssClass="search-input" placeholder="Search courses... (Press Enter)" AutoPostBack="true" OnTextChanged="txtSearch_TextChanged"></asp:TextBox>
                 </div>
 
                 <!-- Filters -->
                 <div class="filter-section">
                     <div class="filter-group">
-                        <asp:LinkButton ID="btnFilterAllLang" runat="server" CssClass="filter-pill active">All Languages</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterPython" runat="server" CssClass="filter-pill">Python</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterJava" runat="server" CssClass="filter-pill">Java</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterC" runat="server" CssClass="filter-pill">C</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterCpp" runat="server" CssClass="filter-pill">C++</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangAll" runat="server" CssClass="filter-pill active" CommandArgument="All" OnClick="FilterLang_Click">All Languages</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangPython" runat="server" CssClass="filter-pill" CommandArgument="Python" OnClick="FilterLang_Click">Python</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangJava" runat="server" CssClass="filter-pill" CommandArgument="Java" OnClick="FilterLang_Click">Java</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangC" runat="server" CssClass="filter-pill" CommandArgument="C" OnClick="FilterLang_Click">C</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangCpp" runat="server" CssClass="filter-pill" CommandArgument="C++" OnClick="FilterLang_Click">C++</asp:LinkButton>
                     </div>
                     <div class="filter-group">
-                        <asp:LinkButton ID="btnFilterAllLevel" runat="server" CssClass="filter-pill active">All Levels</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterBeginner" runat="server" CssClass="filter-pill">Beginner</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterIntermediate" runat="server" CssClass="filter-pill">Intermediate</asp:LinkButton>
-                        <asp:LinkButton ID="btnFilterAdvanced" runat="server" CssClass="filter-pill">Advanced</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelAll" runat="server" CssClass="filter-pill active" CommandArgument="All" OnClick="FilterLevel_Click">All Levels</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelBeginner" runat="server" CssClass="filter-pill" CommandArgument="Beginner" OnClick="FilterLevel_Click">Beginner</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelIntermediate" runat="server" CssClass="filter-pill" CommandArgument="Intermediate" OnClick="FilterLevel_Click">Intermediate</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelAdvanced" runat="server" CssClass="filter-pill" CommandArgument="Advanced" OnClick="FilterLevel_Click">Advanced</asp:LinkButton>
                     </div>
                 </div>
 
@@ -132,137 +132,47 @@
                     <asp:Literal ID="litResultsCount" runat="server" Text="6 courses found"></asp:Literal>
                 </div>
 
-                <!-- Course Grid -->
+                <!-- Course Grid using Repeater -->
                 <div class="course-grid">
-    
-                    <!-- Course 1 (Active/Enrolled) -->
-                    <a href="CourseDetails.aspx?id=1" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge python">Python</span>
-                            <span class="level-badge beginner">Beginner</span>
-                        </div>
-                        <h3 class="course-title">Python for Beginners</h3>
-                        <p class="course-desc">Start your programming journey with Python. Learn syntax, data types, control flow, and functions through hands-on...</p>
-                        <div class="course-meta">
-                            <span>📖 5 chapters</span>
-                            <span>⏱️ 6h</span>
-                            <span>⭐ 4.8</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="progress-info">
-                                <span>Progress</span>
-                                <span>60%</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 60%;"></div>
-                            </div>
-                        </div>
-                    </a>
+                    <asp:Repeater ID="rptCourses" runat="server">
+                        <ItemTemplate>
+                            <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                                <div class="card-header">
+                                    <!-- Dynamic CSS classes based on language and level -->
+                                    <span class='lang-badge <%# Eval("LanguageCSS") %>'><%# Eval("Language") %></span>
+                                    <span class='level-badge <%# Eval("Level").ToString().ToLower() %>'><%# Eval("Level") %></span>
+                                </div>
+                                <h3 class="course-title"><%# Eval("Title") %></h3>
+                                <p class="course-desc"><%# Eval("Description") %></p>
+                                <div class="course-meta">
+                                    <span>📖 <%# Eval("Chapters") %> chapters</span>
+                                    <span>⏱️ <%# Eval("Duration") %></span>
+                                    <span>⭐ <%# Eval("Rating") %></span>
+                                </div>
+                                <div class="card-footer">
+                    
+                                    <!-- Show if Enrolled -->
+                                    <asp:PlaceHolder runat="server" Visible='<%# Convert.ToBoolean(Eval("IsEnrolled")) %>'>
+                                        <div class="progress-info">
+                                            <span>Progress</span>
+                                            <span><%# Eval("Progress") %>%</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" style='width: <%# Eval("Progress") %>%;'></div>
+                                        </div>
+                                    </asp:PlaceHolder>
 
-                    <!-- Course 2 (Active/Enrolled) -->
-                    <a href="CourseDetails.aspx?id=2" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge java">Java</span>
-                            <span class="level-badge beginner">Beginner</span>
-                        </div>
-                        <h3 class="course-title">Java Fundamentals</h3>
-                        <p class="course-desc">Master the fundamentals of Java, the backbone of enterprise software. Learn OOP concepts, type system, control flow, a...</p>
-                        <div class="course-meta">
-                            <span>📖 6 chapters</span>
-                            <span>⏱️ 8h</span>
-                            <span>⭐ 4.6</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="progress-info">
-                                <span>Progress</span>
-                                <span>33%</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 33%;"></div>
-                            </div>
-                        </div>
-                    </a>
+                                    <!-- Show if NOT Enrolled -->
+                                    <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsEnrolled")) %>'>
+                                        <div class="enrolled-info">
+                                            👥 <%# Eval("EnrolledCount") %> enrolled
+                                        </div>
+                                    </asp:PlaceHolder>
 
-                    <!-- Course 3 (Unenrolled) -->
-                    <a href="CourseDetails.aspx?id=3" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge c">C</span>
-                            <span class="level-badge intermediate">Intermediate</span>
-                        </div>
-                        <h3 class="course-title">C Programming Essentials</h3>
-                        <p class="course-desc">Master C programming — the language that powers operating systems and embedded systems. Learn pointers, memory...</p>
-                        <div class="course-meta">
-                            <span>📖 5 chapters</span>
-                            <span>⏱️ 8h</span>
-                            <span>⭐ 4.5</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="enrolled-info">
-                                👥 67 enrolled
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- Course 4 (Unenrolled) -->
-                    <a href="CourseDetails.aspx?id=4" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge cpp">C++</span>
-                            <span class="level-badge intermediate">Intermediate</span>
-                        </div>
-                        <h3 class="course-title">C++ Object-Oriented Programming</h3>
-                        <p class="course-desc">Deep dive into C++ with a focus on OOP principles. Learn classes, inheritance, polymorphism, and templates to build...</p>
-                        <div class="course-meta">
-                            <span>📖 4 chapters</span>
-                            <span>⏱️ 6h</span>
-                            <span>⭐ 4.7</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="enrolled-info">
-                                👥 82 enrolled
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- Course 5 (Unenrolled) -->
-                    <a href="CourseDetails.aspx?id=5" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge python">Python</span>
-                            <span class="level-badge advanced">Advanced</span>
-                        </div>
-                        <h3 class="course-title">Advanced Python — Data Structures</h3>
-                        <p class="course-desc">Level up with Python by mastering data structures and algorithms. Essential prep for technical interviews,...</p>
-                        <div class="course-meta">
-                            <span>📖 3 chapters</span>
-                            <span>⏱️ 5h</span>
-                            <span>⭐ 4.9</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="enrolled-info">
-                                👥 45 enrolled
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- Course 6 (Unenrolled) -->
-                    <a href="CourseDetails.aspx?id=6" class="course-card">
-                        <div class="card-header">
-                            <span class="lang-badge cpp">C++</span>
-                            <span class="level-badge advanced">Advanced</span>
-                        </div>
-                        <h3 class="course-title">Data Structures with C++</h3>
-                        <p class="course-desc">Implement fundamental data structures from scratch in C++: linked lists, binary trees, hash tables, and graphs with...</p>
-                        <div class="course-meta">
-                            <span>📖 3 chapters</span>
-                            <span>⏱️ 5h</span>
-                            <span>⭐ 4.4</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="enrolled-info">
-                                👥 38 enrolled
-                            </div>
-                        </div>
-                    </a>
-
+                                </div>
+                            </a>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
             </main>
         </div>

@@ -111,6 +111,7 @@ namespace Codercept
                 Session["ResetEmail"] = email;
                 Session["ResetRole"] = role;
                 Session["ResetOTP"] = otp;
+                Session["OTPExpiry"] = DateTime.Now.AddMinutes(5);
 
                 // 6. Redirect to the OTP input page (Create this page next if you haven't)
                 Response.Redirect("VerifyOTP.aspx");

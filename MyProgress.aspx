@@ -103,95 +103,78 @@
                     <p>Track your learning journey and scores</p>
                 </div>
 
-                <!-- Overview Stats Grid[cite: 14] -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value val-active">
-                            <asp:Literal ID="litActiveCourses" runat="server" Text="2"></asp:Literal>
-                        </div>
-                        <div class="stat-label">Active Courses</div>
+            <!-- Overview Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value val-active">
+                        <asp:Literal ID="litActiveCourses" runat="server"></asp:Literal>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value val-completed">
-                            <asp:Literal ID="litCompletedCourses" runat="server" Text="0"></asp:Literal>
-                        </div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value val-quiz">
-                            <asp:Literal ID="litQuizAvg" runat="server" Text="82%"></asp:Literal>
-                        </div>
-                        <div class="stat-label">Quiz Avg.</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value val-code">
-                            <asp:Literal ID="litCodeAvg" runat="server" Text="85%"></asp:Literal>
-                        </div>
-                        <div class="stat-label">Code Avg.</div>
-                    </div>
+                    <div class="stat-label">Active Courses</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value val-completed">
+                        <asp:Literal ID="litCompletedCourses" runat="server"></asp:Literal>
+                    </div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value val-quiz">
+                        <asp:Literal ID="litQuizAvg" runat="server"></asp:Literal>
+                    </div>
+                    <div class="stat-label">Quiz Avg.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value val-code">
+                        <asp:Literal ID="litCodeAvg" runat="server"></asp:Literal>
+                    </div>
+                    <div class="stat-label">Code Avg.</div>
+                </div>
+            </div>
 
-                <!-- Course Grades Section[cite: 14] -->
-                <div class="section-header">
-                    <h2>Course Grades</h2>
-                </div>
-                
-                <div class="table-container">
-                    <table class="grades-table">
-                        <thead>
-                            <tr>
-                                <th>Course</th>
-                                <th>Progress</th>
-                                <th>Quiz Avg</th>
-                                <th>Coding Avg</th>
-                                <th>Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Row 1: Python[cite: 14] -->
-                            <tr>
-                                <td>
-                                    <div class="course-info">
-                                        <span class="course-name">Python for Beginners</span>
-                                        <span class="course-lang lang-python">Python</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="progress-wrapper">
-                                        <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" style="width: 60%;"></div>
-                                        </div>
-                                        <span class="progress-text">60%</span>
-                                    </div>
-                                </td>
-                                <td><span class="score-text">90%</span></td>
-                                <td><span class="score-text">85%</span></td>
-                                <td><span class="grade-badge grade-b">B</span></td>
-                            </tr>
+            <!-- Course Grades Section -->
+            <div class="section-header">
+                <h2>Course Grades</h2>
+            </div>
 
-                            <!-- Row 2: Java[cite: 14] -->
-                            <tr>
-                                <td>
-                                    <div class="course-info">
-                                        <span class="course-name">Java Fundamentals</span>
-                                        <span class="course-lang lang-java">Java</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="progress-wrapper">
-                                        <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" style="width: 33%;"></div>
+            <div class="table-container">
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Progress</th>
+                            <th>Quiz Avg</th>
+                            <th>Coding Avg</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Repeater for Rows -->
+                        <asp:Repeater ID="rptGrades" runat="server">
+                            <ItemTemplate>
+                                <tr>
+                                    <td>
+                                        <div class="course-info">
+                                            <span class="course-name"><%# Eval("CourseName") %></span>
+                                            <span class="course-lang <%# Eval("LangClass") %>"><%# Eval("Language") %></span>
                                         </div>
-                                        <span class="progress-text">33%</span>
-                                    </div>
-                                </td>
-                                <td><span class="score-text">67%</span></td>
-                                <td><span class="score-text">&ndash;</span></td>
-                                <td><span class="grade-badge grade-d">D</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                    </td>
+                                    <td>
+                                        <div class="progress-wrapper">
+                                            <div class="progress-bar-bg">
+                                                <div class="progress-bar-fill" style='width: <%# Eval("Progress") %>%;'></div>
+                                            </div>
+                                            <span class="progress-text"><%# Eval("Progress") %>%</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="score-text"><%# Eval("QuizAvg") %></span></td>
+                                    <td><span class="score-text"><%# Eval("CodeAvg") %></span></td>
+                                    <td><span class="grade-badge <%# Eval("GradeClass") %>"><%# Eval("Grade") %></span></td>
+                                </tr>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </tbody>
+                </table>
+            </div>
 
             </main>
         </div>

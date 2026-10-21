@@ -170,7 +170,7 @@
 
             <!-- Main Content -->
             <main class="main-content">
-                
+    
                 <a href="CourseCatalog.aspx" class="back-nav">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -181,152 +181,70 @@
                 <!-- Hero Section -->
                 <div class="course-hero">
                     <div class="hero-tags">
-                        <span class="badge badge-lang">Python</span>
-                        <span class="badge badge-level">Beginner</span>
-                        <span class="badge badge-featured">Featured</span>
+                        <asp:Literal ID="litTags" runat="server"></asp:Literal>
                     </div>
 
-                    <h1>Python for Beginners</h1>
-                    <p>Start your programming journey with Python. Learn syntax, data types, control flow, and functions through hands-on exercises and real projects.</p>
-                    
+                    <h1><asp:Literal ID="litTitle" runat="server"></asp:Literal></h1>
+                    <p><asp:Literal ID="litDescription" runat="server"></asp:Literal></p>
+        
                     <div class="hero-meta">
-                        <span>👨‍🏫 Dr. Sarah Park</span>
-                        <span>📖 5 chapters</span>
-                        <span>⏱️ 6h total</span>
-                        <span>👥 128 enrolled</span>
-                        <span>⭐ 4.8/5.0</span>
+                        <span>👨‍🏫 <asp:Literal ID="litInstructor" runat="server"></asp:Literal></span>
+                        <span>📖 <asp:Literal ID="litChapterCount" runat="server"></asp:Literal></span>
+                        <span>⏱️ <asp:Literal ID="litDuration" runat="server"></asp:Literal></span>
+                        <span>👥 <asp:Literal ID="litEnrolledCount" runat="server"></asp:Literal> enrolled</span>
+                        <span>⭐ <asp:Literal ID="litRating" runat="server"></asp:Literal></span>
                     </div>
 
-                    <!-- Enrolled State Panel: Progress Bar -->
-                    <!-- Wrap this in an ASP:Panel to hide if the user hasn't enrolled yet -->
+                    <!-- Progress Bar (Visible only if enrolled) -->
                     <asp:Panel ID="pnlEnrolledProgress" runat="server" CssClass="progress-section">
                         <div class="progress-header">
                             <span>Your progress</span>
-                            <strong>60%</strong>
+                            <strong><asp:Literal ID="litProgressText" runat="server"></asp:Literal></strong>
                         </div>
                         <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: 60%;"></div>
+                            <asp:Panel ID="pnlProgressBarFill" runat="server" CssClass="progress-bar-fill"></asp:Panel>
                         </div>
                     </asp:Panel>
 
-                    <!-- Main Call to Action Button[cite: 37, 38] -->
-                    <!-- Text can be swapped between "Enroll for Free &rarr;" and "Continue Learning &rarr;" -->
-                    <asp:Button ID="btnCourseAction" runat="server" Text="Continue Learning &rarr;" CssClass="btn-action" OnClick="btnCourseAction_Click" />
+                    <!-- Main Call to Action Button -->
+                    <asp:Button ID="btnCourseAction" runat="server" CssClass="btn-action" OnClick="btnCourseAction_Click" />
                 </div>
 
                 <h2 class="section-title">Course Chapters</h2>
 
-                <!-- Chapters List -->
+                <!-- Chapters List using Repeater -->
                 <div class="chapter-list">
+                    <asp:Repeater ID="rptChapters" runat="server">
+                        <ItemTemplate>
+                
+                            <a href='<%# GetChapterUrl((string)Eval("Status")) %>' class="chapter-item" style='<%# GetChapterStyle((string)Eval("Status")) %>'>
                     
-                    <!-- Chapter 1: Completed -->
-                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item">
-                        <div class="ch-status completed">
-                            <!-- Checkmark SVG -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div class="ch-content">
-                            <div class="ch-title">Introduction to Python</div>
-                            <div class="ch-tags">
-                                <span class="c-tag theory">📄 Theory</span>
-                                <span class="c-tag video">▶️ Video</span>
-                            </div>
-                        </div>
-                        <div class="ch-meta">
-                            <span>45 min</span>
-                            <svg class="ch-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </a>
+                                <!-- Dynamic Status Icon (Checkmark, Play, Lock, or Number) -->
+                                <div class='ch-status <%# Eval("Status").ToString().ToLower() %>' style='<%# Eval("Status").ToString() == "Active" ? "background: rgba(124, 58, 237, 0.2); color: #c084fc;" : "" %>'>
+                                    <asp:Literal runat="server" Text='<%# GetStatusIcon((string)Eval("Status"), Container.ItemIndex + 1) %>'></asp:Literal>
+                                </div>
+                    
+                                <div class="ch-content">
+                                    <div class="ch-title"><%# Eval("Title") %></div>
+                                    <div class="ch-tags">
+                                        <!-- Nested Repeater for Tags -->
+                                        <asp:Repeater DataSource='<%# Eval("Tags") %>' runat="server">
+                                            <ItemTemplate>
+                                                <span class='c-tag <%# Eval("CssClass") %>' style='<%# Eval("CustomStyle") %>'><%# Eval("Icon") %> <%# Eval("Name") %></span>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </div>
+                    
+                                <div class="ch-meta">
+                                    <span><%# Eval("Duration") %></span>
+                                    <asp:Literal runat="server" Text='<%# GetActionIcon((string)Eval("Status")) %>'></asp:Literal>
+                                </div>
 
-                    <!-- Chapter 2: Completed -->
-                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item">
-                        <div class="ch-status completed">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div class="ch-content">
-                            <div class="ch-title">Variables & Data Types</div>
-                            <div class="ch-tags">
-                                <span class="c-tag theory">📄 Theory</span>
-                                <span class="c-tag quiz">⚡ Quiz</span>
-                            </div>
-                        </div>
-                        <div class="ch-meta">
-                            <span>60 min</span>
-                            <svg class="ch-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </a>
+                            </a>
 
-                    <!-- Chapter 3: Active / Next up -->
-                    <a href='<%= Session["UserType"].ToString() == "Guest" ? "javascript:showGuestModal();" : "CourseViewer.aspx?chapter=1" %>' class="chapter-item" style="border-color: rgba(124, 58, 237, 0.4);">
-                        <div class="ch-status completed" style="background: rgba(124, 58, 237, 0.2); color: #c084fc;">
-                            <!-- Play SVG indicating active chapter -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
-                            </svg>
-                        </div>
-                        <div class="ch-content">
-                            <div class="ch-title">Control Flow — if, elif, else & Loops</div>
-                            <div class="ch-tags">
-                                <span class="c-tag theory">📄 Theory</span>
-                                <span class="c-tag coding">💻 Coding</span>
-                            </div>
-                        </div>
-                        <div class="ch-meta">
-                            <span>75 min</span>
-                            <svg class="ch-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </a>
-
-                    <!-- Chapter 4: Locked (Unenrolled or Not Reached) -->
-                    <div class="chapter-item" style="opacity: 0.6; cursor: not-allowed;">
-                        <div class="ch-status locked">04</div>
-                        <div class="ch-content">
-                            <div class="ch-title">Functions & Modules</div>
-                            <div class="ch-tags">
-                                <span class="c-tag theory">📄 Theory</span>
-                                <span class="c-tag coding">💻 Coding</span>
-                            </div>
-                        </div>
-                        <div class="ch-meta">
-                            <span>90 min</span>
-                            <!-- Lock SVG -->
-                            <svg class="ch-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Final Exam: Locked -->
-                    <div class="chapter-item" style="opacity: 0.6; cursor: not-allowed;">
-                        <div class="ch-status locked">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h6.086a1.5 1.5 0 0 0 1.06-.44l4.915-4.914A1.5 1.5 0 0 0 15 8.586V2.5A1.5 1.5 0 0 0 13.5 1h-11zM2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5V8H9.5A1.5 1.5 0 0 0 8 9.5V14H2.5a.5.5 0 0 1-.5-.5v-11zm7 11.293V9.5a.5.5 0 0 1 .5-.5h4.293L9 13.793z"/>
-                            </svg>
-                        </div>
-                        <div class="ch-content">
-                            <div class="ch-title">Module Final Exam</div>
-                            <div class="ch-tags">
-                                <span class="c-tag quiz" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🎯 Assessment</span>
-                            </div>
-                        </div>
-                        <div class="ch-meta">
-                            <span>45 min</span>
-                            <svg class="ch-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                    </div>
-
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
             </main>
         </div>

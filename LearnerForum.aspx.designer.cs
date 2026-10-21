@@ -42,6 +42,51 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Button btnAddPost;
 
         /// <summary>
+        /// rptPosts control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptPosts;
+
+        /// <summary>
+        /// pnlComments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlComments;
+
+        /// <summary>
+        /// litActivePostTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litActivePostTitle;
+
+        /// <summary>
+        /// rptComments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptComments;
+
+        /// <summary>
+        /// hfReplyToId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfReplyToId;
+
+        /// <summary>
         /// txtComment control.
         /// </summary>
         /// <remarks>
