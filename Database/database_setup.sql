@@ -388,7 +388,7 @@ CREATE TABLE [dbo].[LearnerProgress] (
 
 -- Insert SuperAdmin Account
 INSERT INTO [dbo].[Admin] ([Name], [Email], [Password], [Role])
-VALUES ('Tang Chee Kin', 'tang1234@gmail.com', '$2a$12$L0eoOITSHTUuJNtBrjDnB.D8yZ.usDG7ZhmUhXh14lG6K6uff.7y2', 'SuperAdmin');
+VALUES ('Tang Chee Kin', 'tterry616@gmail.com', '$2a$12$L0eoOITSHTUuJNtBrjDnB.D8yZ.usDG7ZhmUhXh14lG6K6uff.7y2', 'SuperAdmin');
 
 -- Insert Learner Account
 INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])

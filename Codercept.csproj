@@ -262,6 +262,7 @@
     <Content Include="signIn.aspx" />
     <Content Include="signUp.aspx" />
     <Content Include="TeacherRegistration.aspx" />
+    <Content Include="VerifyOTP.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -390,6 +391,12 @@
     <Compile Include="ResetPassword.aspx.designer.cs">
       <DependentUpon>ResetPassword.aspx</DependentUpon>
     </Compile>
+    <Compile Include="secrets.config.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="secrets.config.designer.cs">
+      <DependentUpon>secrets.config.cs</DependentUpon>
+    </Compile>
     <Compile Include="signIn.aspx.cs">
       <DependentUpon>signIn.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -411,12 +418,20 @@
     <Compile Include="TeacherRegistration.aspx.designer.cs">
       <DependentUpon>TeacherRegistration.aspx</DependentUpon>
     </Compile>
+    <Compile Include="VerifyOTP.aspx.cs">
+      <DependentUpon>VerifyOTP.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="VerifyOTP.aspx.designer.cs">
+      <DependentUpon>VerifyOTP.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="secrets.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

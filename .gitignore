@@ -7,3 +7,6 @@ packages/
 # Ignore local database files
 App_Data/*.mdf
 App_Data/*.ldf
+
+# Custom Application Secrets
+secrets.config

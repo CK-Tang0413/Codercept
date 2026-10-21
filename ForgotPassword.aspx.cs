@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Net;
+using System.Net.Mail;
 
 namespace Codercept
 {
@@ -28,8 +30,7 @@ namespace Codercept
                     {
                         if (reader.Read())
                         {
-                            // Pass exactly what is in the database ("Admin" or "SuperAdmin")
-                            ProceedToReset(email, reader["Role"].ToString());
+                            SendOtpAndRedirect(email, reader["Role"].ToString());
                             return;
                         }
                     }
@@ -41,7 +42,7 @@ namespace Codercept
                     cmd.Parameters.AddWithValue("@Email", email);
                     if (cmd.ExecuteScalar() != null)
                     {
-                        ProceedToReset(email, "Learner");
+                        SendOtpAndRedirect(email, "Learner");
                         return;
                     }
                 }
@@ -52,7 +53,7 @@ namespace Codercept
                     cmd.Parameters.AddWithValue("@Email", email);
                     if (cmd.ExecuteScalar() != null)
                     {
-                        ProceedToReset(email, "Teacher");
+                        SendOtpAndRedirect(email, "Teacher");
                         return;
                     }
                 }
@@ -63,7 +64,7 @@ namespace Codercept
                     cmd.Parameters.AddWithValue("@Email", email);
                     if (cmd.ExecuteScalar() != null)
                     {
-                        ProceedToReset(email, "TA");
+                        SendOtpAndRedirect(email, "TA");
                         return;
                     }
                 }
@@ -73,14 +74,53 @@ namespace Codercept
             }
         }
 
-        private void ProceedToReset(string email, string role)
+        private void SendOtpAndRedirect(string email, string role)
         {
-            // Store the email temporarily so the reset page knows whose password to update
-            Session["ResetEmail"] = email;
-            Session["ResetRole"] = role;
+            try
+            {
+                // 1. Generate a 6-digit random OTP
+                Random rnd = new Random();
+                string otp = rnd.Next(100000, 999999).ToString();
 
-            // Redirect to the actual password change form
-            Response.Redirect("ResetPassword.aspx");
+                // 2. Retrieve credentials safely from secrets.config
+                string senderEmail = ConfigurationManager.AppSettings["SenderEmail"];
+                string senderAppPassword = ConfigurationManager.AppSettings["SenderAppPassword"];
+
+                // 3. Construct the email
+                MailMessage mail = new MailMessage();
+                mail.From = new MailAddress(senderEmail, "Codercept Team");
+                mail.To.Add(email);
+                mail.Subject = "Codercept Password Reset - OTP";
+                mail.Body = $@"
+                    <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                        <h2>Password Reset Request</h2>
+                        <p>We received a request to reset the password for your Codercept account.</p>
+                        <p>Your One-Time Password (OTP) is:</p>
+                        <h1 style='color: #7C3AED; letter-spacing: 5px;'>{otp}</h1>
+                        <p>This code will expire in a few minutes. If you did not request this reset, please ignore this email.</p>
+                    </div>";
+                mail.IsBodyHtml = true;
+
+                // 4. Send the email via Gmail's SMTP server
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587);
+                smtp.Credentials = new NetworkCredential(senderEmail, senderAppPassword);
+                smtp.EnableSsl = true;
+                smtp.Send(mail);
+
+                // 5. Store data in Session for the verification step
+                Session["ResetEmail"] = email;
+                Session["ResetRole"] = role;
+                Session["ResetOTP"] = otp;
+
+                // 6. Redirect to the OTP input page (Create this page next if you haven't)
+                Response.Redirect("VerifyOTP.aspx");
+            }
+            catch (Exception ex)
+            {
+                lblEmailError.Text = "Error: " + ex.Message;
+                //lblEmailError.Text = "There was an error sending the email. Please try again later.";
+                // Optionally log the exception: ex.Message
+            }
         }
     }
 }
