@@ -395,3 +395,7 @@ INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStat
 VALUES ('Kylan Shane Sedrick', 'kylan1234@gmail.com', '$2a$12$cNIkYdVSLG5nagfnR3fD4.zdnNIpAj7GHgY7a1qC2LmOPUt73mbs2', GETDATE(), 'Active', 21, 'Negeri Sembilan, Malaysia', 'Student');
 INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
 VALUES ('Wan Hon Kit', 'wan1234@gmail.com', '$2a$12$UtK5EgXtoXPquMKIIrcTuufwaCSlhcz6o6xpWX3zcWuDag3j5yJoO', GETDATE(), 'Active', 21, 'Penang, Malaysia', 'Student');
+
+-- Insert Teaching Assistant Account (password: Ta123456)
+INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Region], [TeachingLevel], [AccStatus])
+VALUES ('Jayvee Ong', 'ta1234@gmail.com', '$2a$12$J30n/rvXoP5nIN.cisq6e.ZYklfN8w5sZI3rtTsS6IZz.cxcxr6la', 'Kuala Lumpur, Malaysia', 'Beginner', 'Active');
