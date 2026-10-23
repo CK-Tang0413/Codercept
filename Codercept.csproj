@@ -519,6 +519,7 @@
     <Compile Include="TeacherExamEdit.aspx.designer.cs">
       <DependentUpon>TeacherExamEdit.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherDb.cs" />
     <Compile Include="TeacherExams.aspx.cs">
       <DependentUpon>TeacherExams.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

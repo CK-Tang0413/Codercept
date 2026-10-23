@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 namespace Codercept
@@ -36,20 +37,37 @@ namespace Codercept
             {
                 foreach (KeyValuePair<int, TeacherCourse> edit in edits)
                 {
-                    if (edit.Key >= 0 && edit.Key < list.Count) list[edit.Key] = edit.Value;
+                    int at = list.FindIndex(c => c.Id == edit.Key);
+                    if (at >= 0) list[at] = edit.Value;
                 }
             }
             return list;
         }
 
-        /// <summary>Keeps an edited course for this session only. TODO (backend): replace with an UPDATE on Course.</summary>
-        public static void SaveCourseEdit(int index, TeacherCourse edited)
+        /// <summary>
+        /// One entry per programming language (language name, thumbnail glyph and theme), independent of which courses
+        /// currently use it. TODO (backend): the Subject table (programming languages).
+        /// </summary>
+        public static List<TeacherCourse> GetLanguages()
         {
+            return BuildCourses().GroupBy(c => c.Language).Select(g => g.First()).ToList();
+        }
+
+        /// <summary>The course with this CourseId, or null. TODO (backend): SELECT ... FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId.</summary>
+        public static TeacherCourse GetCourse(int courseId)
+        {
+            return GetCourses().FirstOrDefault(c => c.Id == courseId);
+        }
+
+        /// <summary>Keeps an edited course for this session only. TODO (backend): replace with an UPDATE on Course.</summary>
+        public static void SaveCourseEdit(int courseId, TeacherCourse edited)
+        {
+            edited.Id = courseId;
             HttpContext ctx = HttpContext.Current;
             if (ctx == null || ctx.Session == null) return;
             Dictionary<int, TeacherCourse> edits = ctx.Session[EditsKey] as Dictionary<int, TeacherCourse>;
             if (edits == null) edits = new Dictionary<int, TeacherCourse>();
-            edits[index] = edited;
+            edits[courseId] = edited;
             ctx.Session[EditsKey] = edits;
         }
 
@@ -57,12 +75,12 @@ namespace Codercept
         {
             return new List<TeacherCourse>
             {
-                new TeacherCourse { Title = "Python Programming Fundamentals", Glyph = "py", Theme = "python", Date = "12 May 2024", Learners = "84 learners", Language = "Python", Difficulty = "Easy", Duration = 18, Updated = "24 May 2024", Description = "Build a strong foundation in Python through practical examples, clear explanations, and hands-on programming exercises." },
-                new TeacherCourse { Title = "Java Programming Masterclass", Glyph = "Java", Theme = "java", Date = "28 April 2024", Learners = "63 learners", Language = "Java", Difficulty = "Hard", Duration = 32, Updated = "18 May 2024", Description = "Master object-oriented Java, from core syntax and collections to robust application architecture and testing." },
-                new TeacherCourse { Title = "Web Development Fundamentals", Glyph = "</>", Theme = "web", Date = "16 April 2024", Learners = "112 learners", Language = "HTML/CSS", Difficulty = "Easy", Duration = 20, Updated = "20 May 2024", Description = "Learn to create accessible, responsive websites with semantic HTML and modern CSS layout techniques." },
-                new TeacherCourse { Title = "Modern JavaScript: From Syntax to Applications", Glyph = "JS", Theme = "javascript", Date = "4 April 2024", Learners = "48 learners", Language = "JavaScript", Difficulty = "Medium", Duration = 26, Updated = "15 May 2024", Description = "Explore modern JavaScript concepts and apply them to interactive, maintainable web applications." },
-                new TeacherCourse { Title = "C++ Algorithms & Data Structures", Glyph = "C++", Theme = "cpp", Date = "22 March 2024", Learners = "37 learners", Language = "C++", Difficulty = "Hard", Duration = 36, Updated = "2 May 2024", Description = "Develop efficient problem-solving skills with C++ algorithms, data structures, and complexity analysis." },
-                new TeacherCourse { Title = "TypeScript for JavaScript Developers", Glyph = "TS", Theme = "typescript", Date = "10 March 2024", Learners = "51 learners", Language = "TypeScript", Difficulty = "Medium", Duration = 16, Updated = "30 April 2024", Description = "Add type safety to JavaScript projects and build more reliable applications with modern TypeScript." }
+                new TeacherCourse { Id = 1, Title = "Python Programming Fundamentals", Glyph = "py", Theme = "python", Date = "12 May 2024", Learners = "84 learners", Language = "Python", Difficulty = "Easy", Duration = 18, Updated = "24 May 2024", Description = "Build a strong foundation in Python through practical examples, clear explanations, and hands-on programming exercises." },
+                new TeacherCourse { Id = 2, Title = "Java Programming Masterclass", Glyph = "Java", Theme = "java", Date = "28 April 2024", Learners = "63 learners", Language = "Java", Difficulty = "Hard", Duration = 32, Updated = "18 May 2024", Description = "Master object-oriented Java, from core syntax and collections to robust application architecture and testing." },
+                new TeacherCourse { Id = 3, Title = "Web Development Fundamentals", Glyph = "</>", Theme = "web", Date = "16 April 2024", Learners = "112 learners", Language = "HTML/CSS", Difficulty = "Easy", Duration = 20, Updated = "20 May 2024", Description = "Learn to create accessible, responsive websites with semantic HTML and modern CSS layout techniques." },
+                new TeacherCourse { Id = 4, Title = "Modern JavaScript: From Syntax to Applications", Glyph = "JS", Theme = "javascript", Date = "4 April 2024", Learners = "48 learners", Language = "JavaScript", Difficulty = "Medium", Duration = 26, Updated = "15 May 2024", Description = "Explore modern JavaScript concepts and apply them to interactive, maintainable web applications." },
+                new TeacherCourse { Id = 5, Title = "C++ Algorithms & Data Structures", Glyph = "C++", Theme = "cpp", Date = "22 March 2024", Learners = "37 learners", Language = "C++", Difficulty = "Hard", Duration = 36, Updated = "2 May 2024", Description = "Develop efficient problem-solving skills with C++ algorithms, data structures, and complexity analysis." },
+                new TeacherCourse { Id = 6, Title = "TypeScript for JavaScript Developers", Glyph = "TS", Theme = "typescript", Date = "10 March 2024", Learners = "51 learners", Language = "TypeScript", Difficulty = "Medium", Duration = 16, Updated = "30 April 2024", Description = "Add type safety to JavaScript projects and build more reliable applications with modern TypeScript." }
             };
         }
 
@@ -136,9 +154,9 @@ namespace Codercept
         }
 
         /// <summary>Prototype rule: every third course (starting with the second) has no exam yet. TODO (backend): Exam table.</summary>
-        public static bool HasExam(int courseIndex)
+        public static bool HasExam(int courseId)
         {
-            return courseIndex % 3 != 1;
+            return (courseId - 1) % 3 != 1;
         }
 
         /// <summary>Course used by the chapter pages' breadcrumb (prototype value). TODO (backend): selected course.</summary>
@@ -239,11 +257,11 @@ namespace Codercept
             };
         }
 
-        /// <summary>Pending submissions per course (prototype values, by course index). TODO (backend): count ungraded Attempt rows.</summary>
-        public static int PendingSubmissions(int courseIndex)
+        /// <summary>Pending submissions per course (prototype values, by CourseId). TODO (backend): count ungraded Attempt rows.</summary>
+        public static int PendingSubmissions(int courseId)
         {
             int[] pending = { 14, 8, 21, 6, 11, 4 };
-            return courseIndex >= 0 && courseIndex < pending.Length ? pending[courseIndex] : 0;
+            return courseId >= 1 && courseId <= pending.Length ? pending[courseId - 1] : 0;
         }
 
         /// <summary>TODO (backend): Exam and Quiz rows of the course with their ungraded submissions.</summary>
@@ -385,6 +403,7 @@ namespace Codercept
 
     public class TeacherCourse
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Glyph { get; set; }
         public string Theme { get; set; }

@@ -13,9 +13,10 @@ namespace Codercept
         protected void Page_Load(object sender, EventArgs e)
         {
             List<TeacherCourse> courses = TeacherSampleData.GetCourses();
-            int index;
-            if (!int.TryParse(Request.QueryString["course"], out index) || index < 0 || index >= courses.Count) index = 0;
-            Course = courses[index];
+            int courseId;
+            int.TryParse(Request.QueryString["course"], out courseId);
+            // TODO (backend): load the course WHERE CourseId = @CourseId AND TeacherId = @TeacherId; unknown or foreign id -> redirect
+            Course = courses.FirstOrDefault(c => c.Id == courseId) ?? courses[0];
 
             // TODO (backend): load the exam rules for this course (Exam table)
             Rules = TeacherSampleData.GetExamRules();

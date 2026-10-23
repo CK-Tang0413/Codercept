@@ -11,7 +11,7 @@ namespace Codercept
         protected void Page_Load(object sender, EventArgs e)
         {
             // TODO (backend): load the programming languages from the database
-            List<TeacherCourse> courses = TeacherSampleData.GetCourses();
+            List<TeacherCourse> courses = TeacherSampleData.GetLanguages();
             if (!IsPostBack)
             {
                 foreach (string language in courses.Select(c => c.Language).Distinct())
@@ -56,8 +56,8 @@ namespace Codercept
             // TODO (backend): UPDATE Course SET Title, Description, Language, Difficulty, Duration, DateUpdated WHERE CourseId = ...
             // Until then the edit is kept in the session only (see TeacherSampleData.SaveCourseEdit).
             TeacherCourse current = selTeacherCourse.SelectedCourse;
-            TeacherCourse language = TeacherSampleData.GetCourses().First(c => c.Language == ddlTeacherCourseLanguage.SelectedValue);
-            TeacherSampleData.SaveCourseEdit(selTeacherCourse.SelectedIndex, new TeacherCourse
+            TeacherCourse language = TeacherSampleData.GetLanguages().First(c => c.Language == ddlTeacherCourseLanguage.SelectedValue);
+            TeacherSampleData.SaveCourseEdit(selTeacherCourse.SelectedId, new TeacherCourse
             {
                 Title = txtTeacherCourseTitle.Text.Trim(),
                 Description = txtTeacherCourseDescription.Text,

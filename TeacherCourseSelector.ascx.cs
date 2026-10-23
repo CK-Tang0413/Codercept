@@ -22,19 +22,20 @@ namespace Codercept
             set { courses = value; }
         }
 
-        public int SelectedIndex
+        /// <summary>The CourseId of the chosen tile (the first course when nothing valid was chosen yet).</summary>
+        public int SelectedId
         {
-            get
-            {
-                int i;
-                if (int.TryParse(hfTeacherSelIndex.Value, out i) && i >= 0 && i < Courses.Count) return i;
-                return 0;
-            }
+            get { return SelectedCourse.Id; }
         }
 
         public TeacherCourse SelectedCourse
         {
-            get { return Courses[SelectedIndex]; }
+            get
+            {
+                int id;
+                int.TryParse(hfTeacherSelId.Value, out id);
+                return Courses.FirstOrDefault(c => c.Id == id) ?? Courses[0];
+            }
         }
 
         /// <summary>True when this request was caused by clicking a course tile.</summary>
@@ -50,7 +51,7 @@ namespace Codercept
             string picked = Request.Form[UniqueID + "$sel"];
             if (!string.IsNullOrEmpty(picked))
             {
-                hfTeacherSelIndex.Value = picked;
+                hfTeacherSelId.Value = picked;
                 SelectionChanged = true;
             }
         }

@@ -32,10 +32,11 @@ namespace Codercept
         protected void Page_Load(object sender, EventArgs e)
         {
             List<TeacherCourse> courses = TeacherSampleData.GetCourses();
-            int index;
-            if (!int.TryParse(Request.QueryString["course"], out index) || index < 0 || index >= courses.Count) index = 0;
-            Course = courses[index];
-            Pending = TeacherSampleData.PendingSubmissions(index);
+            int courseId;
+            int.TryParse(Request.QueryString["course"], out courseId);
+            // TODO (backend): load the course WHERE CourseId = @CourseId AND TeacherId = @TeacherId; unknown or foreign id -> redirect
+            Course = courses.FirstOrDefault(c => c.Id == courseId) ?? courses[0];
+            Pending = TeacherSampleData.PendingSubmissions(Course.Id);
 
             // TODO (backend): this course's exams/quizzes and the learners who submitted them
             Assessments = TeacherSampleData.GetAssessments();
