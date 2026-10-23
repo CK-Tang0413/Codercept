@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -47,18 +46,24 @@
     <Reference Include="BCrypt-Net-Next, Version=4.2.0.0, Culture=neutral, PublicKeyToken=1e11be04b6288443, processorArchitecture=MSIL">
       <HintPath>packages\BCrypt.Net-Next.4.2.0\lib\net472\BCrypt-Net-Next.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.13, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.10.0.13\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.Cryptography, Version=10.0.0.13, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.Cryptography.10.0.13\lib\net462\Microsoft.Bcl.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\lib\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.2, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.2\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=10.0.0.13, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.DependencyInjection.Abstractions.10.0.13\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.3, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.8.0.3\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=10.0.0.13, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.10.0.13\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PdfSharp-gdi, Version=6.5.0.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <HintPath>packages\PDFsharp-GDI.6.5.0\lib\net462\PdfSharp-gdi.dll</HintPath>
@@ -98,6 +103,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=10.0.0.13, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Diagnostics.DiagnosticSource.10.0.13\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Formats.Asn1, Version=10.0.0.13, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Formats.Asn1.10.0.13\lib\net462\System.Formats.Asn1.dll</HintPath>
+    </Reference>
     <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
     </Reference>
@@ -109,12 +120,13 @@
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Security.Cryptography.Pkcs, Version=8.0.0.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Security.Cryptography.Pkcs.8.0.1\lib\net462\System.Security.Cryptography.Pkcs.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.Pkcs, Version=10.0.0.13, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.Pkcs.10.0.13\lib\net462\System.Security.Cryptography.Pkcs.dll</HintPath>
     </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Threading.Tasks.Extensions.4.6.3\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.ValueTuple" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -138,9 +150,6 @@
     </Reference>
     <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
@@ -190,10 +199,12 @@
     <Content Include="CourseDetails.aspx" />
     <Content Include="CourseViewer.aspx" />
     <Content Include="css\global.css" />
+    <Content Include="css\teacher-portal.css" />
     <Content Include="Database\database_setup.sql" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="img\Codercept_Certificate.png" />
     <Content Include="img\Codercept_Icon.png" />
     <Content Include="img\Codercept_Title.png" />
     <Content Include="img\Codercept_Title_with_Slogan.png" />
@@ -210,33 +221,12 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="Scripts\bootstrap.min.js.map" />
-    <Content Include="Scripts\bootstrap.js.map" />
-    <Content Include="Scripts\bootstrap.esm.min.js.map" />
-    <Content Include="Scripts\bootstrap.esm.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.js.map" />
-    <Content Include="Content\bootstrap.rtl.min.css.map" />
-    <Content Include="Content\bootstrap.rtl.css.map" />
-    <Content Include="Content\bootstrap.min.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-utilities.rtl.css.map" />
-    <Content Include="Content\bootstrap-utilities.min.css.map" />
-    <Content Include="Content\bootstrap-utilities.css.map" />
-    <Content Include="Content\bootstrap-reboot.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-reboot.rtl.css.map" />
-    <Content Include="Content\bootstrap-reboot.min.css.map" />
-    <Content Include="Content\bootstrap-reboot.css.map" />
-    <Content Include="Content\bootstrap-grid.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-grid.rtl.css.map" />
-    <Content Include="Content\bootstrap-grid.min.css.map" />
-    <Content Include="Content\bootstrap-grid.css.map" />
-    <None Include="Scripts\jquery-3.7.0.intellisense.js" />
-    <Content Include="Scripts\jquery-3.7.0.js" />
-    <Content Include="Scripts\jquery-3.7.0.min.js" />
-    <Content Include="Scripts\jquery-3.7.0.slim.js" />
-    <Content Include="Scripts\jquery-3.7.0.slim.min.js" />
+    <Content Include="README.md" />
+    <None Include="Scripts\jquery-3.7.1.intellisense.js" />
+    <Content Include="Scripts\jquery-3.7.1.js" />
+    <Content Include="Scripts\jquery-3.7.1.min.js" />
+    <Content Include="Scripts\jquery-3.7.1.slim.js" />
+    <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\WebForms\DetailsView.js" />
     <Content Include="Scripts\WebForms\Focus.js" />
@@ -261,7 +251,34 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="signIn.aspx" />
     <Content Include="signUp.aspx" />
+    <Content Include="TeacherAccount.aspx" />
+    <Content Include="TeacherBreadcrumb.ascx" />
+    <Content Include="TeacherChapterAdd.aspx" />
+    <Content Include="TeacherChapterContent.aspx" />
+    <Content Include="TeacherChapters.aspx" />
+    <Content Include="TeacherConfirmModal.ascx" />
+    <Content Include="TeacherCourseCard.ascx" />
+    <Content Include="TeacherCourseCreate.aspx" />
+    <Content Include="TeacherCourses.aspx" />
+    <Content Include="TeacherCourseSelector.ascx" />
+    <Content Include="TeacherCourseStats.aspx" />
+    <Content Include="TeacherDashboard.aspx" />
+    <Content Include="TeacherExamEdit.aspx" />
+    <Content Include="TeacherExams.aspx" />
+    <Content Include="TeacherForum.aspx" />
+    <Content Include="TeacherForumAdd.aspx" />
+    <Content Include="TeacherGradeAssessments.aspx" />
+    <Content Include="TeacherGrading.aspx" />
+    <Content Include="TeacherLearnerReport.aspx" />
+    <Content Include="TeacherLearners.aspx" />
+    <Content Include="TeacherMediaDropzone.ascx" />
+    <Content Include="TeacherPortal.js" />
+    <Content Include="TeacherQuestionCard.ascx" />
     <Content Include="TeacherRegistration.aspx" />
+    <Content Include="TeacherRichEditor.ascx" />
+    <Content Include="TeacherSideBar.ascx" />
+    <Content Include="TeacherStatCard.ascx" />
+    <Content Include="TeacherStepHeading.ascx" />
     <Content Include="VerifyOTP.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -391,12 +408,12 @@
     <Compile Include="ResetPassword.aspx.designer.cs">
       <DependentUpon>ResetPassword.aspx</DependentUpon>
     </Compile>
-    <Compile Include="secrets.config.cs">
+    <!--<Compile Include="secrets.config.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="secrets.config.designer.cs">
       <DependentUpon>secrets.config.cs</DependentUpon>
-    </Compile>
+    </Compile>-->
     <Compile Include="signIn.aspx.cs">
       <DependentUpon>signIn.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -411,12 +428,206 @@
     <Compile Include="signUp.aspx.designer.cs">
       <DependentUpon>signUp.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherAccount.aspx.cs">
+      <DependentUpon>TeacherAccount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherAccount.aspx.designer.cs">
+      <DependentUpon>TeacherAccount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherBreadcrumb.ascx.cs">
+      <DependentUpon>TeacherBreadcrumb.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherBreadcrumb.ascx.designer.cs">
+      <DependentUpon>TeacherBreadcrumb.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherChapterAdd.aspx.cs">
+      <DependentUpon>TeacherChapterAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherChapterAdd.aspx.designer.cs">
+      <DependentUpon>TeacherChapterAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherChapterContent.aspx.cs">
+      <DependentUpon>TeacherChapterContent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherChapterContent.aspx.designer.cs">
+      <DependentUpon>TeacherChapterContent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherChapters.aspx.cs">
+      <DependentUpon>TeacherChapters.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherChapters.aspx.designer.cs">
+      <DependentUpon>TeacherChapters.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherConfirmModal.ascx.cs">
+      <DependentUpon>TeacherConfirmModal.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherConfirmModal.ascx.designer.cs">
+      <DependentUpon>TeacherConfirmModal.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherCourseCard.ascx.cs">
+      <DependentUpon>TeacherCourseCard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherCourseCard.ascx.designer.cs">
+      <DependentUpon>TeacherCourseCard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherCourseCreate.aspx.cs">
+      <DependentUpon>TeacherCourseCreate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherCourseCreate.aspx.designer.cs">
+      <DependentUpon>TeacherCourseCreate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherCourses.aspx.cs">
+      <DependentUpon>TeacherCourses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherCourses.aspx.designer.cs">
+      <DependentUpon>TeacherCourses.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherCourseSelector.ascx.cs">
+      <DependentUpon>TeacherCourseSelector.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherCourseSelector.ascx.designer.cs">
+      <DependentUpon>TeacherCourseSelector.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherCourseStats.aspx.cs">
+      <DependentUpon>TeacherCourseStats.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherCourseStats.aspx.designer.cs">
+      <DependentUpon>TeacherCourseStats.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherDashboard.aspx.cs">
+      <DependentUpon>TeacherDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherDashboard.aspx.designer.cs">
+      <DependentUpon>TeacherDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherExamEdit.aspx.cs">
+      <DependentUpon>TeacherExamEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherExamEdit.aspx.designer.cs">
+      <DependentUpon>TeacherExamEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherExams.aspx.cs">
+      <DependentUpon>TeacherExams.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherExams.aspx.designer.cs">
+      <DependentUpon>TeacherExams.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherForum.aspx.cs">
+      <DependentUpon>TeacherForum.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherForum.aspx.designer.cs">
+      <DependentUpon>TeacherForum.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherForumAdd.aspx.cs">
+      <DependentUpon>TeacherForumAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherForumAdd.aspx.designer.cs">
+      <DependentUpon>TeacherForumAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherGradeAssessments.aspx.cs">
+      <DependentUpon>TeacherGradeAssessments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherGradeAssessments.aspx.designer.cs">
+      <DependentUpon>TeacherGradeAssessments.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherGrading.aspx.cs">
+      <DependentUpon>TeacherGrading.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherGrading.aspx.designer.cs">
+      <DependentUpon>TeacherGrading.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherIcons.cs" />
+    <Compile Include="TeacherLearnerReport.aspx.cs">
+      <DependentUpon>TeacherLearnerReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherLearnerReport.aspx.designer.cs">
+      <DependentUpon>TeacherLearnerReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherLearnerReportPdf.ashx.cs">
+      <DependentUpon>TeacherLearnerReportPdf.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherLearners.aspx.cs">
+      <DependentUpon>TeacherLearners.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherLearners.aspx.designer.cs">
+      <DependentUpon>TeacherLearners.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherMediaDropzone.ascx.cs">
+      <DependentUpon>TeacherMediaDropzone.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherMediaDropzone.ascx.designer.cs">
+      <DependentUpon>TeacherMediaDropzone.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherQuestionCard.ascx.cs">
+      <DependentUpon>TeacherQuestionCard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherQuestionCard.ascx.designer.cs">
+      <DependentUpon>TeacherQuestionCard.ascx</DependentUpon>
+    </Compile>
     <Compile Include="TeacherRegistration.aspx.cs">
       <DependentUpon>TeacherRegistration.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="TeacherRegistration.aspx.designer.cs">
       <DependentUpon>TeacherRegistration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherRichEditor.ascx.cs">
+      <DependentUpon>TeacherRichEditor.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherRichEditor.ascx.designer.cs">
+      <DependentUpon>TeacherRichEditor.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherSampleData.cs" />
+    <Compile Include="TeacherSideBar.ascx.cs">
+      <DependentUpon>TeacherSideBar.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherSideBar.ascx.designer.cs">
+      <DependentUpon>TeacherSideBar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherSite.master.cs">
+      <DependentUpon>TeacherSite.master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherSite.master.designer.cs">
+      <DependentUpon>TeacherSite.master</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherStatCard.ascx.cs">
+      <DependentUpon>TeacherStatCard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherStatCard.ascx.designer.cs">
+      <DependentUpon>TeacherStatCard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherStepHeading.ascx.cs">
+      <DependentUpon>TeacherStepHeading.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherStepHeading.ascx.designer.cs">
+      <DependentUpon>TeacherStepHeading.ascx</DependentUpon>
     </Compile>
     <Compile Include="VerifyOTP.aspx.cs">
       <DependentUpon>VerifyOTP.aspx</DependentUpon>
@@ -428,10 +639,34 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="Content\bootstrap.rtl.min.css.map" />
+    <Content Include="Content\bootstrap.rtl.css.map" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.css.map" />
+    <Content Include="Content\bootstrap-utilities.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.css.map" />
+    <Content Include="Content\bootstrap-reboot.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.css.map" />
+    <Content Include="Content\bootstrap-grid.min.css.map" />
+    <Content Include="Content\bootstrap-grid.css.map" />
     <None Include="packages.config" />
-    <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
-    <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Scripts\bootstrap.min.js.map" />
+    <Content Include="Scripts\bootstrap.js.map" />
+    <Content Include="Scripts\bootstrap.esm.min.js.map" />
+    <Content Include="Scripts\bootstrap.esm.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.js.map" />
+    <Content Include="Scripts\jquery-3.7.1.slim.min.map" />
+    <Content Include="Scripts\jquery-3.7.1.min.map" />
+    <Content Include="TeacherSite.master" />
     <Content Include="secrets.config" />
+    <Content Include="TeacherLearnerReportPdf.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -471,10 +706,13 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
+    <Error Condition="!Exists('packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets'))" />
   </Target>
+  <Import Project="packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets" Condition="Exists('packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets')" />
 </Project>
