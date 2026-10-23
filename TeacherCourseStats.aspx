@@ -21,7 +21,7 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" Compact="true" />
     </section>
 
-    <section class="flow-section">
+    <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherResults" runat="server" Step="2" Title="View / Download statistics" />
         <div class="statistics-layout">
             <article class="detail-card statistics-card">

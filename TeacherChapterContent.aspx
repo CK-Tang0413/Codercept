@@ -23,8 +23,8 @@
     <div class="subcontent-layout">
         <aside class="content-list-panel">
             <div class="chapter-list-actions">
-                <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=subchapter&amp;chapter=<%= ChapterNumber %>"><%= TeacherIcons.Svg("plus", 17) %><span>Add subchapter</span></a>
-                <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=quiz&amp;chapter=<%= ChapterNumber %>"><%= TeacherIcons.Svg("question", 17) %><span>Add quiz</span></a>
+                <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=subchapter&amp;chapter=<%= ChapterId %>&amp;n=<%= ChapterNumber %>"><%= TeacherIcons.Svg("plus", 17) %><span>Add subchapter</span></a>
+                <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=quiz&amp;chapter=<%= ChapterId %>&amp;n=<%= ChapterNumber %>"><%= TeacherIcons.Svg("question", 17) %><span>Add quiz</span></a>
             </div>
             <div class="chapter-list-heading">
                 <span>CHAPTER CONTENT</span>
@@ -33,7 +33,7 @@
             <input type="hidden" id="hfTeacherContentOrder" runat="server" value="" data-tp-content-order />
             <div class="content-reorder-items" data-tp-content-list data-tp-sortable="[data-tp-content-item]">
                 <% int sub = 0, quiz = 0; for (int i = 0; i < Contents.Count; i++) { TeacherContentItem item = Contents[i]; %>
-                <button type="button" class="content-reorder-item<%= i == 0 ? " is-active" : "" %>" data-tp-content-item data-id="<%= i %>" data-type="<%= item.Type %>">
+                <button type="button" class="content-reorder-item<%= i == 0 ? " is-active" : "" %>" data-tp-content-item data-id="<%= item.Id %>" data-type="<%= item.Type %>">
                     <span class="drag-handle"><%= TeacherIcons.Svg("grip", 17) %></span>
                     <span class="content-type-icon content-type-icon--<%= item.Type %>"><%= TeacherIcons.Svg(item.Type == "quiz" ? "question" : "book", 16) %></span>
                     <span>

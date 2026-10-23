@@ -15,7 +15,7 @@
             <div class="report-toolbar">
                 <asp:LinkButton ID="btnTeacherSaveReportPdf" runat="server" CssClass="button button--primary" OnClick="btnTeacherSaveReportPdf_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 3v12m-5-5 5 5 5-5M5 21h14' /></svg><span>Save as PDF</span></asp:LinkButton>
                 <button type="button" class="button button--secondary" data-tp-print><%= TeacherIcons.Svg("print", 17) %><span>Print report</span></button>
-                <a class="button button--ghost" href="TeacherLearnerReportPdf.ashx?learner=<%= LearnerIndex %>" target="_blank" rel="noopener"><%= TeacherIcons.Svg("external", 17) %><span>Open in new window</span></a>
+                <a class="button button--ghost" href="TeacherLearnerReportPdf.ashx?learner=<%= LearnerId %>" target="_blank" rel="noopener"><%= TeacherIcons.Svg("external", 17) %><span>Open in new window</span></a>
                 <a class="button button--ghost" href="TeacherLearners.aspx"><span>Go back</span></a>
             </div>
         </div>

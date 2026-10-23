@@ -21,9 +21,9 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" />
     </section>
 
-    <section class="flow-section">
+    <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherLearners" runat="server" Step="2" Title="Manage enrolled learners" />
-        <input type="hidden" id="hfTeacherLearnerIndex" runat="server" value="0" />
+        <input type="hidden" id="hfTeacherLearnerId" runat="server" value="" />
         <div class="learner-master-detail">
             <aside class="learner-list-panel">
                 <div class="learner-list-top">
@@ -42,7 +42,7 @@
                 </div>
                 <div class="learner-items">
                     <% for (int i = 0; i < Learners.Count; i++) { TeacherLearner l = Learners[i]; %>
-                    <button type="submit" name="tpLearnerPick" value="<%= i %>" class="learner-item<%= i == SelectedLearnerIndex ? " is-selected" : "" %>"
+                    <button type="submit" data-tp-partial name="tpLearnerPick" value="<%= l.Id %>" class="learner-item<%= l.Id == Learner.Id ? " is-selected" : "" %>"
                         data-tp-learner-item data-search="<%: (l.Name + " " + l.Email).ToLower() %>">
                         <span class="avatar avatar--<%= l.Tone %> avatar--sm" aria-hidden="true"><%: l.Initials %></span>
                         <span>
@@ -127,7 +127,7 @@
                     <span>ACTIONS</span>
                     <%-- TODO (backend): pass course and learner ids to the grading page --%>
                     <a class="button button--primary" href="TeacherGradeAssessments.aspx"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
-                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= SelectedLearnerIndex %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
+                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= Learner.Id %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
                     <div></div>
                     <button type="button" class="button button--danger" data-tp-open-modal="tpRemoveLearnerModal"><%= TeacherIcons.Svg("trash", 17) %><span>Remove learner</span></button>
                 </aside>

@@ -20,10 +20,10 @@ namespace Codercept
                     List<int> order = new List<int>();
                     foreach (string part in hfTeacherChapterOrder.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        int n;
-                        if (int.TryParse(part, out n)) order.Add(n);
+                        int id;
+                        if (int.TryParse(part, out id)) order.Add(id);
                     }
-                    chapters = all.OrderBy(c => order.IndexOf(c.Number) < 0 ? int.MaxValue : order.IndexOf(c.Number)).ToList();
+                    chapters = all.OrderBy(c => order.IndexOf(c.Id) < 0 ? int.MaxValue : order.IndexOf(c.Id)).ToList();
                 }
                 return chapters;
             }
@@ -33,10 +33,16 @@ namespace Codercept
         {
             get
             {
-                int n;
-                int.TryParse(hfTeacherChapterNumber.Value, out n);
-                return Chapters.FirstOrDefault(c => c.Number == n) ?? Chapters[0];
+                int id;
+                int.TryParse(hfTeacherChapterId.Value, out id);
+                return Chapters.FirstOrDefault(c => c.Id == id) ?? Chapters[0];
             }
+        }
+
+        /// <summary>The label shown for the active chapter: its position in the list as arranged (1, 2, 3 ...).</summary>
+        protected int ActiveNumber
+        {
+            get { return Chapters.IndexOf(Active) + 1; }
         }
 
         /// <summary>TODO (backend): SubChapter + Quiz rows of the active chapter.</summary>
@@ -50,15 +56,14 @@ namespace Codercept
             // A different course means start again from its first chapter
             if (selTeacherChapterCourse.SelectionChanged)
             {
-                hfTeacherChapterNumber.Value = "1";
+                hfTeacherChapterId.Value = "";
                 hfTeacherChapterOrder.Value = "";
                 chapters = null;
             }
 
-            string key = hfTeacherChapterNumber.Value;
-            bool chapterChanged = !IsPostBack || ViewState["tpChapter"] as string != key || selTeacherChapterCourse.SelectionChanged;
-            ViewState["tpChapter"] = key;
-            if (chapterChanged)
+            // Picking a chapter is done in the browser (no postback), so the text boxes already hold what the teacher
+            // typed on a postback; they are loaded from the chapter only on the first load or after a different course.
+            if (!IsPostBack || selTeacherChapterCourse.SelectionChanged)
             {
                 txtTeacherChapterTitle.Text = Active.Title;
                 txtTeacherChapterDescription.Text = Active.Description;
@@ -66,7 +71,7 @@ namespace Codercept
             }
 
             shTeacherChapters.Subtitle = "Arrange and update content for " + selTeacherChapterCourse.SelectedCourse.Title + ".";
-            mdlTeacherDeleteChapter.BodyHtml = "This will permanently delete <strong>Chapter " + Active.Number + " - " + Server.HtmlEncode(Active.Title)
+            mdlTeacherDeleteChapter.BodyHtml = "This will permanently delete <strong data-tp-ch-delete-name>Chapter " + ActiveNumber + " - " + Server.HtmlEncode(Active.Title)
                 + "</strong>, including its subchapters and quizzes. This action cannot be undone.";
         }
 
@@ -82,11 +87,12 @@ namespace Codercept
             if (titleError || durationError) return;
 
             // TODO (backend): UPDATE Chapter SET Title, Description, Duration, DateUpdated WHERE ...;
-            //   also persist the new chapter order from hfTeacherChapterOrder (comma-separated chapter numbers).
+            //   also persist the new chapter order from hfTeacherChapterOrder (comma-separated ChapterIds).
             // Until then the edit is kept in the session only (see TeacherSampleData.SaveChapterEdit).
             TeacherChapter current = Active;
             TeacherSampleData.SaveChapterEdit(new TeacherChapter
             {
+                Id = current.Id,
                 Number = current.Number,
                 Title = txtTeacherChapterTitle.Text.Trim(),
                 Description = txtTeacherChapterDescription.Text,
@@ -108,7 +114,7 @@ namespace Codercept
         protected void mdlTeacherDeleteChapter_Confirmed(object sender, EventArgs e)
         {
             // TODO (backend): delete the active chapter (and its subchapters and quizzes)
-            Master.ShowToast("Chapter " + Active.Number + " deleted");
+            Master.ShowToast("Chapter " + ActiveNumber + " deleted");
         }
     }
 }

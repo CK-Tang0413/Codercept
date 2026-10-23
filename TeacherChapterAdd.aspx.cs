@@ -20,7 +20,8 @@ namespace Codercept
             {
                 int n;
                 string chapter = int.TryParse(Request.QueryString["chapter"], out n) && n > 0 ? n.ToString() : "1";
-                return (kind == "subchapter" || kind == "quiz") ? "TeacherChapterContent.aspx?chapter=" + chapter : "TeacherChapters.aspx";
+                string shown = int.TryParse(Request.QueryString["n"], out n) && n > 0 ? "&n=" + n : "";
+                return (kind == "subchapter" || kind == "quiz") ? "TeacherChapterContent.aspx?chapter=" + chapter + shown : "TeacherChapters.aspx";
             }
         }
 
@@ -38,8 +39,14 @@ namespace Codercept
             }
 
             // TODO (backend): real course/chapter titles
+            // ?chapter=<ChapterId>: the chapter this subchapter / quiz / assessment is added to (the first chapter when absent)
+            int chapterId;
+            int.TryParse(Request.QueryString["chapter"], out chapterId);
+            TeacherChapter chapter = TeacherSampleData.GetChapter(chapterId) ?? TeacherSampleData.GetChapters()[0];
             bcTeacherChapter.CourseTitle = TeacherSampleData.ChapterCourseTitle;
-            bcTeacherChapter.ChapterTitle = "Chapter 1 - " + TeacherSampleData.GetChapters()[0].Title;
+            int shownNumber;
+            if (!int.TryParse(Request.QueryString["n"], out shownNumber) || shownNumber <= 0) shownNumber = chapter.Number;
+            bcTeacherChapter.ChapterTitle = "Chapter " + shownNumber + " - " + chapter.Title;
 
             shTeacherDetails.Subtitle = "Add the essential information for this " + Labels.Noun + ".";
             txtTeacherContentTitle.Attributes["placeholder"] = "Enter " + Labels.Noun + " title";

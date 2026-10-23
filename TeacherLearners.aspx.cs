@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 namespace Codercept
@@ -18,25 +19,22 @@ namespace Codercept
             }
         }
 
-        protected int SelectedLearnerIndex
+        /// <summary>The learner picked in the list (hfTeacherLearnerId holds the LearnerId); the first learner until one is picked.</summary>
+        protected TeacherLearner Learner
         {
             get
             {
-                int i;
-                if (int.TryParse(hfTeacherLearnerIndex.Value, out i) && i >= 0 && i < Learners.Count) return i;
-                return 0;
+                int id;
+                int.TryParse(hfTeacherLearnerId.Value, out id);
+                // TODO (backend): only learners enrolled in a course of the signed-in teacher
+                return Learners.FirstOrDefault(l => l.Id == id) ?? Learners[0];
             }
-        }
-
-        protected TeacherLearner Learner
-        {
-            get { return Learners[SelectedLearnerIndex]; }
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             string picked = Request.Form["tpLearnerPick"];
-            if (!string.IsNullOrEmpty(picked)) hfTeacherLearnerIndex.Value = picked;
+            if (!string.IsNullOrEmpty(picked)) hfTeacherLearnerId.Value = picked;
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
@@ -66,7 +64,7 @@ namespace Codercept
 
         protected void mdlTeacherRemoveLearner_Confirmed(object sender, EventArgs e)
         {
-            // TODO (backend): remove Learner (SelectedLearnerIndex) from the selected course
+            // TODO (backend): remove Learner.Id from the selected course (DELETE FROM LearnerProgress WHERE LearnerId = @LearnerId AND CourseId = @CourseId, with the course owned by the teacher)
             Master.ShowToast(Learner.Name + " removed from the course");
         }
     }

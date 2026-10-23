@@ -1,7 +1,9 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="TeacherQuestionCard.ascx.cs" Inherits="Codercept.TeacherQuestionCard" %>
 <%-- One editable question. Behaviour lives in TeacherPortal.js (data-tp-q-*); field names are (re)assigned there
-     as tpq{n}_text / _marks / _type / _a{m} / _correct / _accepted / _model / _guide so the backend can read Request.Form. --%>
+     as tpq{n}_id / _text / _marks / _type / _a{m} / _correct / _accepted / _model / _guide so the backend can read Request.Form.
+     tpq{n}_id is the QuestionId (0 = a new question), so a saved question is recognised even after it was moved. --%>
 <article class="question-card" data-tp-question>
+    <input type="hidden" data-tp-f="id" value="<%= Question.Id %>" />
     <div class="question-card-header">
         <div>
             <span class="question-number" data-tp-q-number>Q<%= Number %></span>
@@ -11,16 +13,14 @@
             </div>
         </div>
         <div class="question-controls">
-            <% if (IsExam) { %>
             <div class="question-reorder">
                 <button type="button" aria-label="Move question up" data-tp-q-up><%= TeacherIcons.Svg("up", 14) %></button>
                 <button type="button" aria-label="Move question down" data-tp-q-down><%= TeacherIcons.Svg("down", 14) %></button>
             </div>
-            <% } %>
             <div class="marks-stepper" data-tp-stepper data-min="1">
                 <span>Marks</span>
                 <button type="button" aria-label="Decrease marks" data-tp-step="-1">&minus;</button>
-                <strong data-tp-step-value><%= Question.Marks %></strong>
+                <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Marks"><%= Question.Marks %></strong>
                 <button type="button" aria-label="Increase marks" data-tp-step="1">+</button>
                 <input type="hidden" data-tp-f="marks" data-tp-step-input value="<%= Question.Marks %>" />
             </div>

@@ -6,6 +6,9 @@ namespace Codercept
 {
     public partial class TeacherChapterContent : System.Web.UI.Page
     {
+        protected int ChapterId = 1;
+
+        /// <summary>The number the chapter shows (its position in the list as arranged), passed as ?n=; its stored number when absent.</summary>
         protected int ChapterNumber = 1;
 
         /// <summary>TODO (backend): SubChapter + Quiz rows of the chapter, in display order.</summary>
@@ -13,13 +16,15 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            int n;
-            if (int.TryParse(Request.QueryString["chapter"], out n) && n > 0) ChapterNumber = n;
-
-            // TODO (backend): load the real chapter title
-            TeacherChapter chapter = TeacherSampleData.GetChapters().FirstOrDefault(c => c.Number == ChapterNumber) ?? TeacherSampleData.GetChapters()[0];
+            // TODO (backend): load the chapter WHERE ChapterId = @ChapterId AND its course belongs to the signed-in teacher
+            int id;
+            if (int.TryParse(Request.QueryString["chapter"], out id) && id > 0) ChapterId = id;
+            TeacherChapter chapter = TeacherSampleData.GetChapter(ChapterId) ?? TeacherSampleData.GetChapters()[0];
+            ChapterId = chapter.Id;
+            int shown;
+            ChapterNumber = int.TryParse(Request.QueryString["n"], out shown) && shown > 0 ? shown : chapter.Number;
             bcTeacherChapter.CourseTitle = TeacherSampleData.ChapterCourseTitle;
-            bcTeacherChapter.ChapterTitle = "Chapter " + chapter.Number + " - " + chapter.Title;
+            bcTeacherChapter.ChapterTitle = "Chapter " + ChapterNumber + " - " + chapter.Title;
 
             if (!IsPostBack)
             {

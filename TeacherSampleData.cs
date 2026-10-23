@@ -127,6 +127,12 @@ namespace Codercept
             };
         }
 
+        /// <summary>The learner with this LearnerId, or null. TODO (backend): SELECT ... FROM Learner JOIN LearnerProgress JOIN Course WHERE LearnerId = @LearnerId AND Course.TeacherId = @TeacherId.</summary>
+        public static TeacherLearner GetLearner(int learnerId)
+        {
+            return GetLearners().FirstOrDefault(l => l.Id == learnerId);
+        }
+
         public static List<TeacherGrade> GetGradeDistribution()
         {
             return new List<TeacherGrade>
@@ -145,11 +151,11 @@ namespace Codercept
         {
             return new List<TeacherLearner>
             {
-                new TeacherLearner { Initials = "TC", Name = "Tang Chee Kin", Email = "tang.cheekin@student.edu.my", Tone = "indigo", Age = "21", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 8 of 12", Progress = 67, Quizzes = "18 of 24", ExamDate = "24 May 2024", Enrolled = "12 February 2024", Accessed = "28 May 2024", Completed = "-", Score = "86%", Grade = "A", Average = "81%" },
-                new TeacherLearner { Initials = "AL", Name = "Amanda Lee", Email = "amanda.lee@student.edu.my", Tone = "teal", Age = "20", Gender = "Female", Level = "Beginner", Chapter = "Chapter 10 of 12", Progress = 83, Quizzes = "21 of 24", ExamDate = "-", Enrolled = "18 February 2024", Accessed = "29 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "88%" },
-                new TeacherLearner { Initials = "MK", Name = "Muhammad Khairul", Email = "khairul@student.edu.my", Tone = "blue", Age = "22", Gender = "Male", Level = "Advanced", Chapter = "Chapter 12 of 12", Progress = 100, Quizzes = "24 of 24", ExamDate = "18 May 2024", Enrolled = "4 January 2024", Accessed = "26 May 2024", Completed = "18 May 2024", Score = "92%", Grade = "A", Average = "90%" },
-                new TeacherLearner { Initials = "JT", Name = "Jessica Tan", Email = "jessica.tan@student.edu.my", Tone = "amber", Age = "19", Gender = "Female", Level = "Beginner", Chapter = "Chapter 5 of 12", Progress = 42, Quizzes = "10 of 24", ExamDate = "-", Enrolled = "2 March 2024", Accessed = "27 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "74%" },
-                new TeacherLearner { Initials = "RK", Name = "Ravi Kumar", Email = "ravi.kumar@student.edu.my", Tone = "rose", Age = "23", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 7 of 12", Progress = 58, Quizzes = "15 of 24", ExamDate = "-", Enrolled = "22 February 2024", Accessed = "25 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "79%" }
+                new TeacherLearner { Id = 1, Initials = "TC", Name = "Tang Chee Kin", Email = "tang.cheekin@student.edu.my", Tone = "indigo", Age = "21", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 8 of 12", Progress = 67, Quizzes = "18 of 24", ExamDate = "24 May 2024", Enrolled = "12 February 2024", Accessed = "28 May 2024", Completed = "-", Score = "86%", Grade = "A", Average = "81%" },
+                new TeacherLearner { Id = 2, Initials = "AL", Name = "Amanda Lee", Email = "amanda.lee@student.edu.my", Tone = "teal", Age = "20", Gender = "Female", Level = "Beginner", Chapter = "Chapter 10 of 12", Progress = 83, Quizzes = "21 of 24", ExamDate = "-", Enrolled = "18 February 2024", Accessed = "29 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "88%" },
+                new TeacherLearner { Id = 3, Initials = "MK", Name = "Muhammad Khairul", Email = "khairul@student.edu.my", Tone = "blue", Age = "22", Gender = "Male", Level = "Advanced", Chapter = "Chapter 12 of 12", Progress = 100, Quizzes = "24 of 24", ExamDate = "18 May 2024", Enrolled = "4 January 2024", Accessed = "26 May 2024", Completed = "18 May 2024", Score = "92%", Grade = "A", Average = "90%" },
+                new TeacherLearner { Id = 4, Initials = "JT", Name = "Jessica Tan", Email = "jessica.tan@student.edu.my", Tone = "amber", Age = "19", Gender = "Female", Level = "Beginner", Chapter = "Chapter 5 of 12", Progress = 42, Quizzes = "10 of 24", ExamDate = "-", Enrolled = "2 March 2024", Accessed = "27 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "74%" },
+                new TeacherLearner { Id = 5, Initials = "RK", Name = "Ravi Kumar", Email = "ravi.kumar@student.edu.my", Tone = "rose", Age = "23", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 7 of 12", Progress = 58, Quizzes = "15 of 24", ExamDate = "-", Enrolled = "22 February 2024", Accessed = "25 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "79%" }
             };
         }
 
@@ -179,7 +185,7 @@ namespace Codercept
                 for (int i = 0; i < list.Count; i++)
                 {
                     TeacherChapter edited;
-                    if (edits.TryGetValue(list[i].Number, out edited)) list[i] = edited;
+                    if (edits.TryGetValue(list[i].Id, out edited)) list[i] = edited;
                 }
             }
             return list;
@@ -192,11 +198,17 @@ namespace Codercept
             if (ctx == null || ctx.Session == null) return;
             Dictionary<int, TeacherChapter> edits = ctx.Session[ChapterEditsKey] as Dictionary<int, TeacherChapter>;
             if (edits == null) edits = new Dictionary<int, TeacherChapter>();
-            edits[edited.Number] = edited;
+            edits[edited.Id] = edited;
             ctx.Session[ChapterEditsKey] = edits;
         }
 
-        /// <summary>"2.5 hours" -> "2.5" (for the duration text box).</summary>
+        /// <summary>The chapter with this ChapterId, or null. TODO (backend): SELECT ... FROM Chapter c JOIN Course ... WHERE ChapterId = @ChapterId AND c.TeacherId = @TeacherId.</summary>
+        public static TeacherChapter GetChapter(int chapterId)
+        {
+            return GetChapters().FirstOrDefault(c => c.Id == chapterId);
+        }
+
+        /// <summary>"2.5 hours" -> "2.5" (for the duration text box).
         public static string HoursOf(string duration)
         {
             return (duration ?? "").Replace("hours", "").Replace("hour", "").Trim();
@@ -213,11 +225,11 @@ namespace Codercept
         {
             return new List<TeacherChapter>
             {
-                new TeacherChapter { Number = 1, Title = "Introduction to C", Description = "Get familiar with the C programming language, its history, development environment, and the structure of a first program.", Duration = "2 hours", Created = "12 May 2024", Updated = "18 May 2024" },
-                new TeacherChapter { Number = 2, Title = "Variables and Data Types", Description = "Understand variables, constants, primitive data types, and common type conversions in C.", Duration = "3 hours", Created = "14 May 2024", Updated = "20 May 2024" },
-                new TeacherChapter { Number = 3, Title = "Operators and Expressions", Description = "Use arithmetic, logical, relational, and assignment operators to build useful expressions.", Duration = "2.5 hours", Created = "16 May 2024", Updated = "22 May 2024" },
-                new TeacherChapter { Number = 4, Title = "Control Flow", Description = "Control program execution with conditional statements, switch cases, loops, and branching.", Duration = "4 hours", Created = "18 May 2024", Updated = "24 May 2024" },
-                new TeacherChapter { Number = 5, Title = "Functions and Scope", Description = "Break programs into reusable functions and understand parameters, return values, and scope.", Duration = "3.5 hours", Created = "20 May 2024", Updated = "26 May 2024" }
+                new TeacherChapter { Id = 1, Number = 1, Title = "Introduction to C", Description = "Get familiar with the C programming language, its history, development environment, and the structure of a first program.", Duration = "2 hours", Created = "12 May 2024", Updated = "18 May 2024" },
+                new TeacherChapter { Id = 2, Number = 2, Title = "Variables and Data Types", Description = "Understand variables, constants, primitive data types, and common type conversions in C.", Duration = "3 hours", Created = "14 May 2024", Updated = "20 May 2024" },
+                new TeacherChapter { Id = 3, Number = 3, Title = "Operators and Expressions", Description = "Use arithmetic, logical, relational, and assignment operators to build useful expressions.", Duration = "2.5 hours", Created = "16 May 2024", Updated = "22 May 2024" },
+                new TeacherChapter { Id = 4, Number = 4, Title = "Control Flow", Description = "Control program execution with conditional statements, switch cases, loops, and branching.", Duration = "4 hours", Created = "18 May 2024", Updated = "24 May 2024" },
+                new TeacherChapter { Id = 5, Number = 5, Title = "Functions and Scope", Description = "Break programs into reusable functions and understand parameters, return values, and scope.", Duration = "3.5 hours", Created = "20 May 2024", Updated = "26 May 2024" }
             };
         }
 
@@ -226,11 +238,11 @@ namespace Codercept
         {
             return new List<TeacherContentItem>
             {
-                new TeacherContentItem { Type = "subchapter", Title = "What is C Programming?" },
-                new TeacherContentItem { Type = "subchapter", Title = "Setting Up Your Environment" },
-                new TeacherContentItem { Type = "quiz", Title = "Getting Started Checkpoint" },
-                new TeacherContentItem { Type = "subchapter", Title = "Your First C Program" },
-                new TeacherContentItem { Type = "quiz", Title = "Chapter 1 Knowledge Check" }
+                new TeacherContentItem { Id = 1, Type = "subchapter", Title = "What is C Programming?" },
+                new TeacherContentItem { Id = 2, Type = "subchapter", Title = "Setting Up Your Environment" },
+                new TeacherContentItem { Id = 3, Type = "quiz", Title = "Getting Started Checkpoint" },
+                new TeacherContentItem { Id = 4, Type = "subchapter", Title = "Your First C Program" },
+                new TeacherContentItem { Id = 5, Type = "quiz", Title = "Chapter 1 Knowledge Check" }
             };
         }
 
@@ -242,6 +254,7 @@ namespace Codercept
             {
                 new TeacherQuestion
                 {
+Id = 1,
                     Text = "Who developed the C programming language?",
                     Marks = 2,
                     Type = "MCQ",
@@ -269,10 +282,10 @@ namespace Codercept
         {
             return new List<TeacherAssessment>
             {
-                new TeacherAssessment { Type = "Exam", Title = "Final Course Examination", Pending = 8, Questions = 20 },
-                new TeacherAssessment { Type = "Quiz", Title = "Chapter 2 · Variables Quiz", Pending = 3, Questions = 10 },
-                new TeacherAssessment { Type = "Quiz", Title = "Chapter 5 · Functions Quiz", Pending = 4, Questions = 8 },
-                new TeacherAssessment { Type = "Quiz", Title = "Chapter 8 · Pointers Quiz", Pending = 6, Questions = 12 }
+                new TeacherAssessment { Id = 1, Type = "Exam", Title = "Final Course Examination", Pending = 8, Questions = 20 },
+                new TeacherAssessment { Id = 2, Type = "Quiz", Title = "Chapter 2 · Variables Quiz", Pending = 3, Questions = 10 },
+                new TeacherAssessment { Id = 3, Type = "Quiz", Title = "Chapter 5 · Functions Quiz", Pending = 4, Questions = 8 },
+                new TeacherAssessment { Id = 4, Type = "Quiz", Title = "Chapter 8 · Pointers Quiz", Pending = 6, Questions = 12 }
             };
         }
 
@@ -281,9 +294,9 @@ namespace Codercept
         {
             return new List<TeacherSubmission>
             {
-                new TeacherSubmission { Initials = "TC", Name = "Tang Chee Kin", Email = "tang.cheekin@student.edu.my", Tone = "indigo", Status = "Not graded", Submitted = "28 May 2024, 10:24 AM" },
-                new TeacherSubmission { Initials = "AL", Name = "Amanda Lee", Email = "amanda.lee@student.edu.my", Tone = "teal", Status = "In progress", Submitted = "28 May 2024, 9:46 AM" },
-                new TeacherSubmission { Initials = "MK", Name = "Muhammad Khairul", Email = "khairul@student.edu.my", Tone = "blue", Status = "Graded", Submitted = "27 May 2024, 4:18 PM" }
+                new TeacherSubmission { Id = 1, Initials = "TC", Name = "Tang Chee Kin", Email = "tang.cheekin@student.edu.my", Tone = "indigo", Status = "Not graded", Submitted = "28 May 2024, 10:24 AM" },
+                new TeacherSubmission { Id = 2, Initials = "AL", Name = "Amanda Lee", Email = "amanda.lee@student.edu.my", Tone = "teal", Status = "In progress", Submitted = "28 May 2024, 9:46 AM" },
+                new TeacherSubmission { Id = 3, Initials = "MK", Name = "Muhammad Khairul", Email = "khairul@student.edu.my", Tone = "blue", Status = "Graded", Submitted = "27 May 2024, 4:18 PM" }
             };
         }
 
@@ -331,19 +344,47 @@ namespace Codercept
         {
             return new List<TeacherExamRule>
             {
-                new TeacherExamRule { Title = "Strict syntax, indentation and format checking", Description = "Answers must follow exact language syntax and formatting conventions.", Icon = "code", On = true },
-                new TeacherExamRule { Title = "Use of libraries and modules", Description = "Allow learners to import standard libraries and approved modules.", Icon = "code", On = true },
-                new TeacherExamRule { Title = "Rule 3", Description = "Apply the third exam restriction to all submitted answers.", Icon = "info", On = false },
-                new TeacherExamRule { Title = "Rule 4", Description = "Apply the fourth exam restriction to all submitted answers.", Icon = "info", On = false }
+                new TeacherExamRule { Id = 1, Title = "Strict syntax, indentation and format checking", Description = "Answers must follow exact language syntax and formatting conventions.", Icon = "code", On = true },
+                new TeacherExamRule { Id = 2, Title = "Use of libraries and modules", Description = "Allow learners to import standard libraries and approved modules.", Icon = "code", On = true },
+                new TeacherExamRule { Id = 3, Title = "Rule 3", Description = "Apply the third exam restriction to all submitted answers.", Icon = "info", On = false },
+                new TeacherExamRule { Id = 4, Title = "Rule 4", Description = "Apply the fourth exam restriction to all submitted answers.", Icon = "info", On = false }
             };
         }
 
         /// <summary>TODO (backend): Question + MCQ_Option rows of the course exam.</summary>
-        public static List<TeacherQuestion> GetExamQuestions()
+        private const string ExamQuestionsKey = "TeacherExamQuestions";
+
+        /// <summary>
+        /// The questions of a course's exam: the ones saved this session, otherwise the sample questions.
+        /// TODO (backend): remove the session store and read Question + MCQ_Option instead.
+        /// </summary>
+        public static List<TeacherQuestion> GetExamQuestions(int courseId)
+        {
+            HttpContext ctx = HttpContext.Current;
+            Dictionary<int, List<TeacherQuestion>> saved = (ctx != null && ctx.Session != null)
+                ? ctx.Session[ExamQuestionsKey] as Dictionary<int, List<TeacherQuestion>> : null;
+            List<TeacherQuestion> questions;
+            if (saved != null && saved.TryGetValue(courseId, out questions)) return questions;
+            return BuildExamQuestions();
+        }
+
+        /// <summary>Keeps the questions (in the order the teacher arranged them) for this session only. TODO (backend): INSERT / UPDATE / DELETE on Question and MCQ_Option.</summary>
+        public static void SaveExamQuestions(int courseId, List<TeacherQuestion> questions)
+        {
+            HttpContext ctx = HttpContext.Current;
+            if (ctx == null || ctx.Session == null) return;
+            Dictionary<int, List<TeacherQuestion>> saved = ctx.Session[ExamQuestionsKey] as Dictionary<int, List<TeacherQuestion>>;
+            if (saved == null) saved = new Dictionary<int, List<TeacherQuestion>>();
+            saved[courseId] = questions;
+            ctx.Session[ExamQuestionsKey] = saved;
+        }
+
+        private static List<TeacherQuestion> BuildExamQuestions()
         {
             List<TeacherQuestion> list = new List<TeacherQuestion>();
             list.Add(new TeacherQuestion
             {
+Id = 2,
                 Text = "Who developed the C programming language?",
                 Marks = 10,
                 Type = "MCQ",
@@ -360,6 +401,7 @@ namespace Codercept
             });
             list.Add(new TeacherQuestion
             {
+Id = 3,
                 Text = "Which keyword makes a variable read-only in C?",
                 Marks = 10,
                 Type = "MCQ",
@@ -432,6 +474,7 @@ namespace Codercept
 
     public class TeacherLearner
     {
+        public int Id { get; set; }
         public string Initials { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
@@ -453,6 +496,8 @@ namespace Codercept
 
     public class TeacherChapter
     {
+        public int Id { get; set; }
+        /// <summary>The chapter's position/label in the course (Chapter.ChapterNum). Not an identifier: use Id for that.</summary>
         public int Number { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
@@ -463,6 +508,7 @@ namespace Codercept
 
     public class TeacherContentItem
     {
+        public int Id { get; set; }
         /// <summary>subchapter | quiz</summary>
         public string Type { get; set; }
         public string Title { get; set; }
@@ -470,6 +516,12 @@ namespace Codercept
 
     public class TeacherAssessment
     {
+        /// <summary>
+        /// Exam and Quiz are separate tables, so their ids can overlap (Exam 1 and Quiz 1). Pages therefore identify an
+        /// assessment by Key ("exam:1", "quiz:3"), never by Id alone. TODO (backend): ExamId or QuizId.
+        /// </summary>
+        public int Id { get; set; }
+        public string Key { get { return (Type ?? "").ToLowerInvariant() + ":" + Id; } }
         /// <summary>Exam | Quiz</summary>
         public string Type { get; set; }
         public string Title { get; set; }
@@ -479,6 +531,8 @@ namespace Codercept
 
     public class TeacherSubmission
     {
+        /// <summary>One learner's submission of the assessment. TODO (backend): AttemptId.</summary>
+        public int Id { get; set; }
         public string Initials { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
@@ -490,6 +544,8 @@ namespace Codercept
 
     public class TeacherExamRule
     {
+        /// <summary>Stable id of the rule; the page posts its toggle as tpRule&lt;Id&gt;. TODO (backend): the exam rule column / row it maps to.</summary>
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Icon { get; set; }
@@ -504,6 +560,8 @@ namespace Codercept
 
     public class TeacherQuestion
     {
+        /// <summary>QuestionId; 0 for a question that has not been saved yet (what "Add question" creates).</summary>
+        public int Id { get; set; }
         public string Text { get; set; }
         public int Marks { get; set; }
         /// <summary>MCQ | Fill-in-the-blank | Subjective</summary>

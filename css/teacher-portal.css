@@ -7276,3 +7276,56 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* The two add-buttons share a narrow panel: let their label wrap inside the button instead of overflowing it */
+.tp-app .chapter-list-actions .button {
+  gap: 6px;
+  padding: 8px 9px;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
+.tp-app .chapter-list-actions .button .icon {
+  flex: 0 0 auto;
+}
+
+/* Steppers: the number can be typed over, the arrows can be held down */
+.tp-app .large-stepper {
+  grid-template-columns: 34px minmax(35px, 1fr) auto 34px;
+}
+
+.tp-app .large-stepper > span {
+  padding-right: 8px;
+}
+
+.tp-app .marks-stepper strong {
+  width: 32px;
+}
+
+.tp-app [data-tp-step] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tp-app [data-tp-step-value] {
+  min-width: 1ch;
+  border-radius: 4px;
+  outline: none;
+  cursor: text;
+}
+
+.tp-app [data-tp-step-value]:focus {
+  background: var(--indigo-tint);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.tp-app .large-stepper [data-tp-step-value] {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
+  border-radius: 0;
+}

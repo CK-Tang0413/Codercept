@@ -21,17 +21,18 @@
         <uc:CourseSelector ID="selTeacherChapterCourse" runat="server" />
     </section>
 
-    <section class="flow-section">
+    <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherChapters" runat="server" Step="2" Title="Manage chapters" />
-        <%-- selected chapter number + display order of the chapters (changed by TeacherPortal.js) --%>
-        <input type="hidden" id="hfTeacherChapterNumber" runat="server" value="1" data-tp-chapter-input />
+        <%-- Picking a chapter does not reload the page: TeacherPortal.js copies the chapter's data-* values into the details panel,
+         sets hfTeacherChapterId, and the Update / Delete buttons post that id. selected ChapterId + display order of the chapters, as a comma-separated list of ChapterIds (changed by TeacherPortal.js) --%>
+        <input type="hidden" id="hfTeacherChapterId" runat="server" value="1" data-tp-chapter-input />
         <input type="hidden" id="hfTeacherChapterOrder" runat="server" value="" data-tp-chapter-order />
 
         <div class="chapter-master-detail">
             <aside class="chapter-list-panel">
                 <div class="chapter-list-actions">
                     <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=chapter"><%= TeacherIcons.Svg("plus", 17) %><span>Add chapter</span></a>
-                    <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=assessment"><%= TeacherIcons.Svg("grade", 17) %><span>Add assessment</span></a>
+                    <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=assessment&amp;chapter=<%= Active.Id %>&amp;n=<%= ActiveNumber %>" data-tp-ch-link="TeacherChapterAdd.aspx?kind=assessment&amp;chapter="><%= TeacherIcons.Svg("grade", 17) %><span>Add assessment</span></a>
                 </div>
                 <div class="chapter-list-heading">
                     <span>COURSE CONTENT</span>
@@ -39,9 +40,10 @@
                 </div>
                 <div class="chapter-items" data-tp-chapter-list data-tp-sortable="[data-tp-chapter-pick]">
                     <% for (int i = 0; i < Chapters.Count; i++) { TeacherChapter c = Chapters[i]; %>
-                    <div class="chapter-item<%= c.Number == Active.Number ? " is-active" : "" %>" role="button" tabindex="0" data-tp-chapter-pick="<%= c.Number %>">
+                    <div class="chapter-item<%= c.Id == Active.Id ? " is-active" : "" %>" role="button" tabindex="0" data-tp-chapter-pick="<%= c.Id %>"
+                        data-number="<%= i + 1 %>" data-title="<%: c.Title %>" data-description="<%: c.Description %>" data-duration="<%: TeacherSampleData.HoursOf(c.Duration) %>" data-created="<%: c.Created %>" data-updated="<%: c.Updated %>">
                         <span class="drag-handle" title="Drag to reorder"><%= TeacherIcons.Svg("grip", 17) %></span>
-                        <span class="chapter-number"><%= c.Number %></span>
+                        <span class="chapter-number"><%= i + 1 %></span>
                         <span class="chapter-item-title"><%: c.Title %></span>
                         <span class="reorder-buttons">
                             <button type="button" aria-label="Move <%: c.Title %> up"<%= i == 0 ? " disabled" : "" %> data-tp-ch-up><%= TeacherIcons.Svg("up", 13) %></button>
@@ -55,18 +57,18 @@
             <div class="chapter-detail-column">
                 <article class="chapter-detail-card">
                     <div class="chapter-detail-title">
-                        <span class="large-number-badge"><%= Active.Number %></span>
+                        <span class="large-number-badge" data-tp-ch-number><%= ActiveNumber %></span>
                         <div>
-                            <span>CHAPTER <%= Active.Number %></span>
+                            <span>CHAPTER <span data-tp-ch-number><%= ActiveNumber %></span></span>
                             <div id="fldTeacherChapterTitle" runat="server" class="tp-inline-field">
-                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title"></asp:TextBox>
+                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title" data-tp-ch-title></asp:TextBox>
                                 <small id="hintTeacherChapterTitle" runat="server" data-err="Enter a title with at least 4 characters."></small>
                             </div>
                         </div>
                     </div>
                     <label class="form-field">
                         <span>Description</span>
-                        <asp:TextBox ID="txtTeacherChapterDescription" runat="server" TextMode="MultiLine" Rows="5" autocomplete="off"></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherChapterDescription" runat="server" TextMode="MultiLine" Rows="5" autocomplete="off" data-tp-ch-description></asp:TextBox>
                         <small>Summarise this chapter's learning goals and key concepts.</small>
                     </label>
                     <div class="chapter-meta-grid">
@@ -74,17 +76,17 @@
                             <span class="detail-item-icon"><%= TeacherIcons.Svg("clock", 17) %></span>
                             <div id="fldTeacherChapterDuration" runat="server" class="tp-inline-field">
                                 <span>Duration (hours)</span>
-                                <asp:TextBox ID="txtTeacherChapterDuration" runat="server" TextMode="Number" min="0.5" step="0.5" autocomplete="off" aria-label="Duration in hours"></asp:TextBox>
+                                <asp:TextBox ID="txtTeacherChapterDuration" runat="server" TextMode="Number" min="0.5" step="0.5" autocomplete="off" aria-label="Duration in hours" data-tp-ch-duration></asp:TextBox>
                                 <small id="hintTeacherChapterDuration" runat="server" data-err="Enter a duration greater than 0."></small>
                             </div>
                         </div>
                         <div class="detail-item">
                             <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
-                            <div><span>Date Created</span><strong><%: Active.Created %></strong></div>
+                            <div><span>Date Created</span><strong data-tp-ch-created><%: Active.Created %></strong></div>
                         </div>
                         <div class="detail-item">
                             <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
-                            <div><span>Date Updated</span><strong><%: Active.Updated %></strong></div>
+                            <div><span>Date Updated</span><strong data-tp-ch-updated><%: Active.Updated %></strong></div>
                         </div>
                     </div>
                     <div class="chapter-detail-actions">
@@ -121,7 +123,7 @@
                             <% } %>
                         </div>
                     </div>
-                    <a class="button button--secondary" href="TeacherChapterContent.aspx?chapter=<%= Active.Number %>"><%= TeacherIcons.Svg("layers", 17) %><span>Manage subchapters/quizzes</span></a>
+                    <a class="button button--secondary" href="TeacherChapterContent.aspx?chapter=<%= Active.Id %>&amp;n=<%= ActiveNumber %>" data-tp-ch-link="TeacherChapterContent.aspx?chapter="><%= TeacherIcons.Svg("layers", 17) %><span>Manage subchapters/quizzes</span></a>
                 </article>
             </div>
         </div>

@@ -37,7 +37,7 @@ namespace Codercept
                 if (body.Length == 0) return;
 
                 // TODO (backend): INSERT INTO Post_Reply (PostId = SelectedPost.Id, UserId = Session["UserId"], Body = body,
-                //   ParentReplyId from hfTeacherReplyingTo)
+                //   and the comment it answers: hfTeacherReplyingTo = a Post_Reply ThreadId of this post, or empty)
                 SelectedPost.Comments.Add(new TeacherForumComment
                 {
                     Id = Posts.SelectMany(p => p.Comments).Max(c => c.Id) + 1,

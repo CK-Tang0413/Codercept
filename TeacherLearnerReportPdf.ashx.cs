@@ -10,7 +10,7 @@ namespace Codercept
 {
     /// <summary>
     /// Serves the learner's course progress report as a real PDF.
-    ///   TeacherLearnerReportPdf.ashx?learner=2            -> opens in the browser's PDF viewer (inline)
+    ///   TeacherLearnerReportPdf.ashx?learner=2            -> (LearnerId) opens in the browser's PDF viewer (inline)
     ///   TeacherLearnerReportPdf.ashx?learner=2&amp;download=1 -> downloads the file
     /// TODO (backend): pass the course id too and load the learner's real results.
     /// </summary>
@@ -29,9 +29,10 @@ namespace Codercept
             }
 
             List<TeacherLearner> learners = TeacherSampleData.GetLearners();
-            int index;
-            if (!int.TryParse(context.Request.QueryString["learner"], out index) || index < 0 || index >= learners.Count) index = 0;
-            TeacherLearner learner = learners[index];
+            int id;
+            int.TryParse(context.Request.QueryString["learner"], out id);
+            // TODO (backend): unknown learner, or one not enrolled in this teacher's courses -> 404
+            TeacherLearner learner = learners.Find(l => l.Id == id) ?? learners[0];
 
             string instructor = context.Session != null && context.Session["UserName"] != null
                 ? context.Session["UserName"].ToString() : TeacherSampleData.FallbackName;

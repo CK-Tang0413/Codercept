@@ -15,7 +15,7 @@ namespace Codercept
         {
             get
             {
-                return Assessments.FirstOrDefault(a => a.Title == hfTeacherGradeAssessment.Value) ?? Assessments[0];
+                return Assessments.FirstOrDefault(a => a.Key == hfTeacherGradeAssessment.Value) ?? Assessments[0];
             }
         }
 
@@ -23,9 +23,10 @@ namespace Codercept
         {
             get
             {
-                int i;
-                if (int.TryParse(hfTeacherGradeLearner.Value, out i) && i >= 0 && i < Submissions.Count) return Submissions[i];
-                return Submissions[0];
+                int id;
+                int.TryParse(hfTeacherGradeLearner.Value, out id);
+                // TODO (backend): only attempts for an assessment of this teacher's course
+                return Submissions.FirstOrDefault(s => s.Id == id) ?? Submissions[0];
             }
         }
 
@@ -49,7 +50,7 @@ namespace Codercept
             mdlTeacherConfirmGrade.BodyHtml = "You are about to confirm a total of <strong data-tp-confirm-total>0 / 100</strong> for "
                 + "<strong data-tp-confirm-learner>" + Server.HtmlEncode(SelectedSubmission.Name) + "</strong>. "
                 + "The learner will be able to see the grade and your feedback.";
-            if (!IsPostBack) hfTeacherGradeAssessment.Value = SelectedAssessment.Title;
+            if (!IsPostBack) hfTeacherGradeAssessment.Value = SelectedAssessment.Key;
         }
 
         protected string StatusClass(string status)
@@ -61,8 +62,8 @@ namespace Codercept
 
         protected void btnTeacherSaveGrading_Click(object sender, EventArgs e)
         {
-            // TODO (backend): save the grading progress (GradingProgress) for hfTeacherGradeAssessment / learner index
-            //   hfTeacherGradeLearner, marks hfTeacherMarksQ2 and comment txtTeacherCommentQ2
+            // TODO (backend): save the grading progress (GradingProgress) for the assessment Key in hfTeacherGradeAssessment and the
+            //   AttemptId in hfTeacherGradeLearner, marks hfTeacherMarksQ2 and comment txtTeacherCommentQ2
             Master.ShowToast("Grading progress saved");
         }
 

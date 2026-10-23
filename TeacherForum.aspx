@@ -10,6 +10,7 @@
     <div class="forum-screen<%= MobileDiscussion ? " show-discussion" : "" %>" data-tp-forum>
         <input type="hidden" id="hfTeacherForumPost" runat="server" data-tp-forum-selected />
         <input type="hidden" id="hfTeacherForumMobile" runat="server" value="0" data-tp-forum-mobile />
+        <%-- the Id of the comment being replied to (empty = a reply to the post itself) --%>
         <input type="hidden" id="hfTeacherReplyingTo" runat="server" data-tp-forum-replying />
 
         <div class="forum-heading">
@@ -49,7 +50,7 @@
                                 </div>
                                 <p><% if (c.Pinned) { %><span class="pin-mark" aria-label="Pinned"></span><% } %><%: c.Body %></p>
                                 <div class="comment-actions">
-                                    <button type="button" data-tp-forum-reply="<%: c.Name %>">Reply</button>
+                                    <button type="button" data-tp-forum-reply="<%= c.Id %>" data-name="<%: c.Name %>">Reply</button>
                                     <button type="submit" name="tpForumAction" value="pin:<%= post.Id %>:<%= c.Id %>"><%= c.Pinned ? "Unpin" : "Pin" %></button>
                                     <button type="button" data-tp-forum-flag>Flag</button>
                                 </div>

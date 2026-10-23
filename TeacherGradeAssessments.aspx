@@ -9,10 +9,11 @@
 
 <asp:Content ID="ContentMain" ContentPlaceHolderID="cphMain" runat="server">
     <%-- Choosing an assessment / learner and the live total run client-side (data-tp-grade-*);
-         the choices are posted in hfTeacherGradeAssessment / hfTeacherGradeLearner. --%>
+         the choices are posted in hfTeacherGradeAssessment (the assessment's Key, e.g. "quiz:3") and
+         hfTeacherGradeLearner (the submission's Id). --%>
     <div data-tp-grading>
         <input type="hidden" id="hfTeacherGradeAssessment" runat="server" data-tp-grade-assessment />
-        <input type="hidden" id="hfTeacherGradeLearner" runat="server" value="0" data-tp-grade-learner />
+        <input type="hidden" id="hfTeacherGradeLearner" runat="server" value="" data-tp-grade-learner />
 
         <div class="exam-course-banner course-thumbnail--<%= Course.Theme %>">
             <span class="exam-banner-glyph"><%: Course.Glyph %></span>
@@ -40,9 +41,9 @@
                             </div>
                         </div>
                         <div class="assessment-tiles">
-                            <% foreach (TeacherAssessment a in Assessments.Where(x => x.Type == type)) { bool sel = a.Title == SelectedAssessment.Title; %>
+                            <% foreach (TeacherAssessment a in Assessments.Where(x => x.Type == type)) { bool sel = a.Key == SelectedAssessment.Key; %>
                             <button type="button" class="assessment-tile<%= sel ? " is-selected" : "" %>" data-tp-assessment
-                                data-title="<%: a.Title %>" data-pending="<%= a.Pending %>" data-questions="<%= a.Questions %>">
+                                data-key="<%= a.Key %>" data-title="<%: a.Title %>" data-pending="<%= a.Pending %>" data-questions="<%= a.Questions %>">
                                 <span class="assessment-type-icon <%= type == "Exam" ? "is-exam" : "is-quiz" %>"><%= TeacherIcons.Svg(type == "Exam" ? "exams" : "question", 18) %></span>
                                 <span>
                                     <strong><%: a.Title %></strong>
@@ -72,8 +73,8 @@
                 <button type="button" class="submission-select-trigger" aria-expanded="false" data-tp-submission-trigger></button>
                 <span hidden data-tp-down-icon><%= TeacherIcons.Svg("down", 16) %></span>
                 <div class="submission-menu" data-tp-submission-menu hidden>
-                    <% for (int i = 0; i < Submissions.Count; i++) { TeacherSubmission s = Submissions[i]; %>
-                    <button type="button" class="<%= i == 0 ? "is-selected" : "" %>" data-tp-submission="<%= i %>"
+                    <% for (int i = 0; i < Submissions.Count; i++) { TeacherSubmission s = Submissions[i]; bool first = s.Id == SelectedSubmission.Id; %>
+                    <button type="button" class="<%= first ? "is-selected" : "" %>" data-tp-submission="<%= s.Id %>"
                         data-initials="<%: s.Initials %>" data-tone="<%= s.Tone %>" data-name="<%: s.Name %>" data-email="<%: s.Email %>"
                         data-status="<%: s.Status %>" data-submitted="<%: s.Submitted %>">
                         <span class="avatar avatar--<%= s.Tone %> avatar--sm" aria-hidden="true"><%: s.Initials %></span>
@@ -82,7 +83,7 @@
                             <small><%: s.Email %></small>
                         </span>
                         <span class="submission-status <%= StatusClass(s.Status) %>"><%: s.Status %></span>
-                        <span data-tp-submission-check<%= i == 0 ? "" : " hidden" %>><%= TeacherIcons.Svg("check", 15) %></span>
+                        <span data-tp-submission-check<%= first ? "" : " hidden" %>><%= TeacherIcons.Svg("check", 15) %></span>
                     </button>
                     <% } %>
                 </div>
@@ -146,7 +147,7 @@
                                 <span>Marks given</span>
                                 <div class="large-stepper" data-tp-stepper data-min="0" data-max="5">
                                     <button type="button" aria-label="Decrease marks" data-tp-step="-1">&minus;</button>
-                                    <strong data-tp-step-value>0</strong>
+                                    <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Marks given">0</strong>
                                     <span>/5</span>
                                     <button type="button" aria-label="Increase marks" data-tp-step="1">+</button>
                                     <input type="hidden" id="hfTeacherMarksQ2" runat="server" value="0" data-tp-step-input data-tp-grade-marks />

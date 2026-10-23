@@ -30,7 +30,7 @@
                     </div>
                     <div class="large-stepper" data-tp-stepper data-min="1" data-max="100">
                         <button type="button" aria-label="Decrease minimum marks" data-tp-step="-1">&minus;</button>
-                        <strong data-tp-step-value>50</strong>
+                        <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Minimum marks to pass">50</strong>
                         <span>%</span>
                         <button type="button" aria-label="Increase minimum marks" data-tp-step="1">+</button>
                         <input type="hidden" id="hfTeacherMinMarks" runat="server" value="50" data-tp-step-input />
@@ -57,7 +57,7 @@
                         <p><%: r.Description %></p>
                     </div>
                     <button type="button" class="toggle-switch<%= r.On ? " is-on" : "" %>" aria-label="Toggle <%: r.Title %>" aria-pressed="<%= r.On ? "true" : "false" %>" data-tp-toggle><span></span></button>
-                    <input type="hidden" name="tpRule<%= i %>" value="<%= r.On ? "1" : "0" %>" data-tp-toggle-input />
+                    <input type="hidden" name="tpRule<%= r.Id %>" value="<%= r.On ? "1" : "0" %>" data-tp-toggle-input />
                 </div>
                 <% } %>
             </div>

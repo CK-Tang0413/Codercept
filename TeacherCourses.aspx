@@ -22,7 +22,7 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" />
     </section>
 
-    <section class="flow-section" aria-labelledby="edit-course-heading">
+    <section class="flow-section" aria-labelledby="edit-course-heading" data-tp-region="details">
         <uc:StepHeading runat="server" Step="2" Title="View / Edit course details" Subtitle="Review course information, learning progress, and quick actions." />
         <div class="course-detail-layout">
             <article class="detail-card course-edit-card">
