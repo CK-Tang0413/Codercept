@@ -5,10 +5,9 @@ namespace Codercept
 {
     public partial class TeacherSite : System.Web.UI.MasterPage
     {
-        // TODO (backend): set to false once Teacher login redirects to TeacherDashboard.aspx
-        // (signIn.aspx.cs, "Response.Redirect("TeacherDashboard.aspx")" is still commented out).
-        // While true, the portal renders sample data without requiring a Teacher session.
-        public static readonly bool PreviewWithoutLogin = true;
+        // When true, the portal opens without a Teacher session (design preview only).
+        // Keep false: Page_Init below sends everyone who is not a signed-in Teacher to signIn.aspx.
+        public static readonly bool PreviewWithoutLogin = false;
 
         public string UserName
         {

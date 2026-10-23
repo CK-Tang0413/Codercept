@@ -20,7 +20,14 @@ namespace Codercept
 
         public void ProcessRequest(HttpContext context)
         {
-            // TODO (backend): enforce Session["UserType"] == "Teacher" once the teacher login redirect is enabled
+            // Same rule as TeacherSite.master.cs: only a signed-in Teacher may download a report
+            if (context.Session == null || context.Session["UserType"] == null || context.Session["UserType"].ToString() != "Teacher")
+            {
+                context.Response.Redirect("~/signIn.aspx", false);
+                context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             List<TeacherLearner> learners = TeacherSampleData.GetLearners();
             int index;
             if (!int.TryParse(context.Request.QueryString["learner"], out index) || index < 0 || index >= learners.Count) index = 0;
