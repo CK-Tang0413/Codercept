@@ -179,7 +179,7 @@
   background: linear-gradient(145deg, #6366f1, #4338ca);
   box-shadow: 0 7px 20px rgba(79, 70, 229, 0.3);
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -211,19 +211,19 @@
 .tp-app .avatar--sm {
   width: 36px;
   height: 36px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .avatar--md {
   width: 40px;
   height: 40px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .avatar--lg {
   width: 48px;
   height: 48px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .avatar--indigo {
@@ -260,7 +260,7 @@
   padding: 0 15px;
   border: 1px solid transparent;
   border-radius: var(--radius-control);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1;
   white-space: nowrap;
@@ -356,7 +356,7 @@
   display: block;
   margin-bottom: 5px;
   color: var(--indigo);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.14em;
 }
@@ -416,7 +416,7 @@
   outline: 0;
   color: var(--heading);
   background: transparent;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tp-app .input-wrap input::placeholder {
@@ -477,7 +477,7 @@
 .tp-app .welcome-copy p {
   max-width: 550px;
   color: #e0e7ff;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
 }
 
@@ -537,7 +537,7 @@
   padding: 0 9px;
   border: 1px solid transparent;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
 }
@@ -633,7 +633,7 @@
 
 .tp-app .stat-label {
   color: var(--body);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -642,7 +642,7 @@
   right: 12px;
   top: 10px;
   padding: 0 6px;
-  font-size: 8px;
+  font-size: 12px;
   transform: translateY(-50%);
 }
 
@@ -662,7 +662,7 @@
   align-items: center;
   gap: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .stat-hint.is-positive {
@@ -688,7 +688,7 @@
 .tp-app .section-heading p {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .text-link {
@@ -697,7 +697,7 @@
   gap: 6px;
   padding: 8px 0;
   color: var(--indigo);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -741,7 +741,7 @@
 
 .tp-app .activity-time {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -785,7 +785,7 @@
 
 .tp-app .activity-copy p {
   color: var(--body);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -799,7 +799,7 @@
   margin-top: 2px;
   overflow: hidden;
   color: var(--indigo);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -926,7 +926,7 @@
   align-items: center;
   gap: 5px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .course-actions {
@@ -941,7 +941,7 @@
 .tp-app .course-actions .button {
   min-width: 0;
   padding: 0 9px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .icon-button {
@@ -970,7 +970,7 @@
 .tp-app .create-heading p {
   margin-top: 7px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tp-app .flow-section + .flow-section {
@@ -995,7 +995,7 @@
   background: var(--indigo);
   box-shadow: 0 5px 12px rgba(79, 70, 229, 0.2);
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -1006,7 +1006,7 @@
 .tp-app .step-heading p {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .course-selector {
@@ -1072,12 +1072,12 @@
 
 .tp-app .filter-popover-heading strong {
   color: var(--heading);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tp-app .clear-filter {
   color: var(--indigo);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -1088,7 +1088,7 @@
 
 .tp-app .filter-popover label > span {
   color: var(--body);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -1101,7 +1101,7 @@
   border-radius: 8px;
   color: var(--heading);
   background: var(--white);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .view-toggle {
@@ -1233,7 +1233,7 @@
   gap: 5px;
   margin-top: 8px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .select-course-footer {
@@ -1247,7 +1247,7 @@
 .tp-app .select-course-footer > span {
   gap: 5px;
   color: var(--body);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -1282,7 +1282,7 @@
 
 .tp-app .selector-pagination span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .selector-pagination strong {
@@ -1304,7 +1304,7 @@
 .tp-app .empty-state p {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .empty-icon {
@@ -1356,7 +1356,7 @@
 .tp-app .card-heading > div > span,
 .tp-app .preview-heading > div > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -1376,7 +1376,7 @@
   height: 44px;
   flex: 0 0 auto;
   border-radius: 11px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .mini-language--python,
@@ -1424,7 +1424,7 @@
   display: grid;
   gap: 7px;
   color: var(--body);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 650;
 }
 
@@ -1440,7 +1440,7 @@
   border-radius: var(--radius-control);
   color: var(--heading);
   background: var(--white);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   transition:
   border-color 160ms ease,
@@ -1470,7 +1470,7 @@
 
 .tp-app .form-field small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.4;
 }
@@ -1514,13 +1514,13 @@
 
 .tp-app .detail-item > div > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .detail-item > div > strong {
   overflow: hidden;
   color: var(--heading);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1546,13 +1546,13 @@
 
 .tp-app .compact-stat-list .detail-item > div > span,
 .tp-app .statistics-row-list .detail-item > div > span {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .compact-stat-list .detail-item > div > strong,
 .tp-app .statistics-row-list .detail-item > div > strong {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .completion-block {
@@ -1567,7 +1567,7 @@
   align-items: center;
   justify-content: space-between;
   color: var(--teal-dark);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -1596,7 +1596,7 @@
 .tp-app .completion-block p {
   margin-top: 8px;
   color: #5e938c;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .stacked-actions {
@@ -1663,7 +1663,7 @@
 .tp-app .modal p {
   margin-top: 10px;
   color: var(--body);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.65;
 }
 
@@ -1684,7 +1684,7 @@
   gap: 7px;
   margin-bottom: 17px;
   color: var(--indigo);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1713,7 +1713,7 @@
 
 .tp-app .form-card-heading p {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .form-fields {
@@ -1757,7 +1757,7 @@
 
 .tp-app .field-footer > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -1778,7 +1778,7 @@
   height: 28px;
   flex: 0 0 auto;
   border-radius: 7px;
-  font-size: 7px;
+  font-size: 10px;
 }
 
 .tp-app .language-select select {
@@ -1805,7 +1805,7 @@
   gap: 7px;
   border-radius: 7px;
   color: var(--body);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -1853,7 +1853,7 @@
   border-radius: 0 9px 9px 0;
   color: var(--body);
   background: #f8fafc;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -1892,7 +1892,7 @@
   align-items: center;
   gap: 6px;
   color: var(--success);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -1916,7 +1916,7 @@
   gap: 7px;
   margin-top: 14px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -1969,7 +1969,7 @@
   display: block;
   overflow: hidden;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1988,13 +1988,13 @@
 }
 
 .tp-app .chart-heading h3 {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tp-app .chart-heading p {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .grade-chart {
@@ -2025,13 +2025,13 @@
 
 .tp-app .grade-column > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .grade-column > strong {
   align-self: center;
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .bar-track {
@@ -2093,12 +2093,12 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .grade-legend strong {
   color: var(--heading);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .legend-dot {
@@ -2131,7 +2131,7 @@
   color: var(--heading);
   background: var(--white);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   opacity: 0;
   pointer-events: none;
@@ -2229,7 +2229,7 @@
   border-radius: 10px;
   color: var(--white);
   font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -2242,7 +2242,7 @@
 .tp-app .chapter-course-copy strong {
   overflow: hidden;
   color: var(--heading);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2253,7 +2253,7 @@
   align-items: center;
   gap: 5px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .vertical-pagination {
@@ -2287,14 +2287,14 @@
   display: grid;
   gap: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
   text-align: center;
 }
 
 .tp-app .vertical-pagination strong {
   color: var(--heading);
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .chapter-master-detail {
@@ -2332,7 +2332,7 @@
 .tp-app .chapter-list-actions .button {
   min-width: 0;
   padding: 0 9px;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .chapter-list-heading {
@@ -2345,14 +2345,14 @@
 
 .tp-app .chapter-list-heading span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
 
 .tp-app .chapter-list-heading strong {
   color: var(--body);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -2409,7 +2409,7 @@
   color: var(--body);
   background: #f1f5f9;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -2421,7 +2421,7 @@
 .tp-app .chapter-item-title {
   overflow: hidden;
   color: var(--heading);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2495,7 +2495,7 @@
 .tp-app .chapter-card-header > div > span,
 .tp-app .quiz-editor-heading > div > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
@@ -2551,7 +2551,7 @@
   gap: 6px;
   margin-bottom: 9px;
   color: var(--body);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -2597,13 +2597,13 @@
 
 .tp-app .summary-item small {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .summary-item strong {
   overflow: hidden;
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2637,7 +2637,7 @@
   min-width: 0;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .breadcrumb-banner > div > span {
@@ -2697,7 +2697,7 @@
 
 .tp-app .content-reorder-item small {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -2705,7 +2705,7 @@
 .tp-app .content-reorder-item strong {
   overflow: hidden;
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2761,12 +2761,12 @@
 
 .tp-app .media-dropzone strong {
   color: var(--indigo);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .media-dropzone small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -2861,7 +2861,7 @@
   color: var(--white);
   background: var(--indigo);
   font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -2872,14 +2872,14 @@
 
 .tp-app .question-card-header small {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 .tp-app .question-card-header strong {
   color: var(--heading);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .question-controls {
@@ -2891,7 +2891,7 @@
 .tp-app .question-controls .button {
   min-height: 34px;
   padding: 0 10px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .marks-stepper {
@@ -2907,7 +2907,7 @@
 .tp-app .marks-stepper > span {
   padding: 0 8px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .marks-stepper button {
@@ -2927,7 +2927,7 @@
 .tp-app .marks-stepper strong {
   width: 27px;
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -2944,7 +2944,7 @@
 .tp-app .answer-list-label {
   margin-bottom: 2px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
 }
@@ -2975,7 +2975,7 @@
   color: var(--body);
   background: #f1f5f9;
   font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -2990,7 +2990,7 @@
   outline: 0;
   color: var(--heading);
   background: transparent;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .correct-label,
@@ -2998,7 +2998,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -3039,7 +3039,7 @@
   border-radius: 9px;
   color: var(--indigo);
   background: #fbfdff;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -3123,7 +3123,7 @@
 .tp-app .exam-select-heading p {
   margin-top: 9px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -3234,7 +3234,7 @@
   gap: 6px;
   padding: 0 9px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -3275,7 +3275,7 @@
   padding: 0 9px;
   border-radius: 7px;
   color: var(--body);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 550;
   text-align: left;
 }
@@ -3347,7 +3347,7 @@
 
 .tp-app .exam-course-banner > div > span {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
@@ -3359,7 +3359,7 @@
 
 .tp-app .exam-course-banner p {
   color: rgba(255, 255, 255, 0.76);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .exam-course-banner > .badge {
@@ -3409,7 +3409,7 @@
 
 .tp-app .exam-stepper-field > div:first-child,
 .tp-app .exam-language-field {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -3418,7 +3418,7 @@
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -3455,13 +3455,13 @@
 .tp-app .large-stepper strong {
   color: var(--heading);
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   text-align: right;
 }
 
 .tp-app .large-stepper > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .exam-language-field {
@@ -3527,14 +3527,14 @@
 
 .tp-app .rule-title strong {
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
 .tp-app .rule-option p {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -3625,7 +3625,7 @@
 
 .tp-app .question-type-control > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
 }
@@ -3665,7 +3665,7 @@
 
 .tp-app .exam-marks-total > span {
   color: var(--body);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -3679,7 +3679,7 @@
 .tp-app .exam-marks-total > small {
   grid-column: 1 / -1;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .exam-sticky-bar > div:last-child {
@@ -3721,20 +3721,20 @@
 .tp-app .learner-list-top > div > span,
 .tp-app .learner-actions > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
 }
 
 .tp-app .learner-list-top > div > strong {
   color: var(--heading);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .learner-list-top .button {
   min-height: 34px;
   padding: 0 10px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .learner-search {
@@ -3788,7 +3788,7 @@
 .tp-app .learner-item strong {
   overflow: hidden;
   color: var(--heading);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3797,7 +3797,7 @@
 .tp-app .learner-item small {
   overflow: hidden;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3840,7 +3840,7 @@
 
 .tp-app .learner-profile-heading > div > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
 }
@@ -3851,7 +3851,7 @@
 
 .tp-app .learner-profile-heading p {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .profile-section {
@@ -3871,7 +3871,7 @@
 }
 
 .tp-app .profile-section-title h3 {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .profile-section-icon {
@@ -3918,12 +3918,12 @@
 
 .tp-app .demographic-grid span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .demographic-grid strong {
   color: var(--heading);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .learner-progress-block {
@@ -3978,17 +3978,17 @@
 
 .tp-app .learner-info-row > span:nth-child(2) {
   color: var(--body);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .learner-info-row > strong {
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .not-available {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-style: italic;
 }
 
@@ -4013,7 +4013,7 @@
 .tp-app .learner-actions .button {
   width: 100%;
   padding: 0 10px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tp-app .learner-actions > div {
@@ -4037,7 +4037,7 @@
 .tp-app .report-page-heading p {
   margin-top: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tp-app .report-toolbar {
@@ -4049,7 +4049,7 @@
 
 .tp-app .report-toolbar .button {
   padding: 0 11px;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .report-preview-canvas {
@@ -4107,7 +4107,7 @@
 
 .tp-app .zoom-control strong {
   color: var(--heading);
-  font-size: 9px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -4508,7 +4508,7 @@
   box-shadow: none !important;
   backdrop-filter: blur(6px);
   font-family: "Inter", sans-serif !important;
-  font-size: 8px !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
 }
 
@@ -4596,12 +4596,12 @@
 }
 
 .tp-app .assessment-group-heading h3 {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .assessment-group-heading > div > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .assessment-tiles {
@@ -4642,22 +4642,22 @@
 }
 
 .tp-app .assessment-tile > span:nth-child(2) strong {
-  overflow: hidden;
+  display: block;
   color: var(--heading);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  white-space: normal;
 }
 
 .tp-app .assessment-tile > span:nth-child(2) small {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 12px;
 }
 
 .tp-app .assessment-tile > .badge {
   padding-inline: 6px;
-  font-size: 7px;
+  font-size: 12px;
 }
 
 .tp-app .assessment-tile > .selected-check {
@@ -4677,7 +4677,7 @@
 
 .tp-app .selected-assessment-summary > span:first-child {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
 }
@@ -4694,13 +4694,13 @@
 }
 
 .tp-app .selected-assessment-summary h3 {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tp-app .selected-assessment-summary p {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .selected-assessment-summary .badge {
@@ -4742,7 +4742,7 @@
 .tp-app .submission-select-trigger strong,
 .tp-app .submission-menu button strong {
   color: var(--heading);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -4750,7 +4750,7 @@
 .tp-app .submission-menu button small {
   overflow: hidden;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4761,7 +4761,7 @@
   align-items: center;
   padding: 0 8px;
   border-radius: 999px;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -4843,13 +4843,13 @@
 
 .tp-app .marking-panel-header strong {
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .marking-panel-header small,
 .tp-app .marking-panel-header > span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .marking-questions-scroll {
@@ -4884,13 +4884,13 @@
 
 .tp-app .marking-question-heading > div > span {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 .tp-app .marking-question-heading h3 {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .grading-options {
@@ -4919,13 +4919,13 @@
   color: var(--body);
   background: #f1f5f9;
   font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .tp-app .grading-option > strong {
   color: var(--heading);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 550;
 }
 
@@ -4953,7 +4953,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -4973,7 +4973,7 @@
   border-top: 1px solid var(--border);
   color: var(--muted);
   background: #f8fafc;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .tp-app .learner-answer-block {
@@ -4986,7 +4986,7 @@
 
 .tp-app .learner-answer-block > span {
   color: var(--indigo);
-  font-size: 7px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.09em;
 }
@@ -4994,7 +4994,7 @@
 .tp-app .learner-answer-block blockquote {
   margin-top: 7px;
   color: var(--body);
-  font-size: 10px;
+  font-size: 13px;
   font-style: italic;
   line-height: 1.65;
 }
@@ -5011,7 +5011,7 @@
   align-content: start;
   gap: 8px;
   color: var(--body);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -5049,7 +5049,7 @@
 
 .tp-app .grading-total span {
   color: var(--body);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -5456,7 +5456,7 @@
     align-self: start;
     justify-self: end;
     margin-top: 1px;
-    font-size: 9px;
+    font-size: 12px;
   }
 
     .tp-app .timeline-dot {
@@ -5814,7 +5814,7 @@
 
     .tp-app .segmented-control button {
     gap: 4px;
-    font-size: 10px;
+    font-size: 13px;
   }
 
     .tp-app .duration-field {
@@ -5857,7 +5857,7 @@
   }
 
     .tp-app .answer-row input {
-    font-size: 10px;
+    font-size: 13px;
   }
 
     .tp-app .media-dropzone {
@@ -6155,7 +6155,7 @@
   min-height: 46px;
   padding-inline: 23px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .forum-layout {
@@ -6227,7 +6227,7 @@
 
 .tp-app .tag-chip {
   color: #7c3aed;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 650;
 }
 
@@ -6235,7 +6235,7 @@
   padding: 6px 10px;
   border-radius: 999px;
   background: #f3e8ff;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .comment-count {
@@ -6246,7 +6246,7 @@
   border-radius: 999px;
   color: #6b7280;
   background: #f3f4f6;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -6322,7 +6322,7 @@
 
 .tp-app .comment-card-heading strong {
   color: #111827;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .role-badge {
@@ -6331,7 +6331,7 @@
   align-items: center;
   padding: 0 8px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -6348,7 +6348,7 @@
 .tp-app .comment-card > p {
   margin-top: 14px;
   color: #4b5563;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.65;
 }
 
@@ -6391,7 +6391,7 @@
 .tp-app .comment-actions button {
   min-height: 24px;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .comment-actions button:hover {
@@ -6413,13 +6413,13 @@
 
 .tp-app .flag-popover strong {
   color: #111827;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .flag-popover p {
   margin-top: 3px;
   color: #6b7280;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tp-app .flag-popover > div {
@@ -6431,7 +6431,7 @@
 
 .tp-app .flag-popover button {
   color: #6b7280;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -6449,7 +6449,7 @@
   display: block;
   margin: 0 0 7px 12px;
   color: #7c3aed;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -6469,7 +6469,7 @@
   background: #fff;
   outline: 0;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.09);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .tp-app .reply-composer > button {
@@ -6540,7 +6540,7 @@
   display: grid;
   gap: 9px;
   color: #111827;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -6551,7 +6551,7 @@
   border-radius: 12px;
   color: #111827;
   background: #fff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
@@ -6583,7 +6583,7 @@
 
 .tp-app .portal-form-field small {
   color: #9ca3af;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
 }
 
@@ -6793,7 +6793,7 @@
   }
 
     .tp-app .discussion-header h2 {
-    font-size: 14px;
+    font-size: 15px;
   }
 
     .tp-app .comment-scroll {
@@ -6830,7 +6830,7 @@
 
     .tp-app .forum-subpage-heading p,
   .tp-app .account-heading p {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.55;
   }
 
@@ -6983,7 +6983,7 @@
   display: block;
   padding: 0 12px 10px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
@@ -7041,7 +7041,7 @@
     color: #fff;
     background: #111827;
     content: attr(aria-label);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
   }
 
@@ -7131,7 +7131,7 @@
 
 .tp-app .tp-inline-field > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .tp-inline-field input,
@@ -7143,7 +7143,7 @@
   border-radius: 8px;
   color: var(--heading);
   background: var(--white);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -7157,7 +7157,7 @@
 .tp-app .tp-inline-field small {
   display: none;
   color: var(--danger);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tp-app .tp-inline-field.has-error input {
