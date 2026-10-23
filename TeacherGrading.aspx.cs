@@ -12,7 +12,7 @@ namespace Codercept
         {
             get
             {
-                if (courses == null) courses = TeacherSampleData.GetCourses();
+                if (courses == null) courses = TeacherCourseData.GetCourses();
                 return courses;
             }
         }

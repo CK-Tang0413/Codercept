@@ -12,11 +12,11 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            List<TeacherCourse> courses = TeacherSampleData.GetCourses();
-            int courseId;
-            int.TryParse(Request.QueryString["course"], out courseId);
-            // TODO (backend): load the course WHERE CourseId = @CourseId AND TeacherId = @TeacherId; unknown or foreign id -> redirect
-            Course = courses.FirstOrDefault(c => c.Id == courseId) ?? courses[0];
+            List<TeacherCourse> courses = TeacherCourseData.GetCourses();
+            // No ?course= means the first course; an id that is not this teacher's course goes back to the exam list
+            Course = TeacherCourseData.Pick(courses, Request.QueryString["course"]);
+            if (Course == null) Response.Redirect("~/TeacherExams.aspx");
+            List<TeacherCourse> languages = TeacherCourseData.GetLanguages();
 
             // TODO (backend): load the exam rules for this course (Exam table)
             Rules = TeacherSampleData.GetExamRules();
@@ -31,10 +31,11 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                foreach (string language in courses.Select(c => c.Language).Distinct())
+                foreach (string language in languages.Select(c => c.Language))
                 {
                     ddlTeacherExamLanguage.Items.Add(language);
                 }
+                if (ddlTeacherExamLanguage.Items.FindByValue(Course.Language) == null) ddlTeacherExamLanguage.Items.Insert(0, Course.Language);
                 ddlTeacherExamLanguage.SelectedValue = Course.Language;
             }
 
@@ -43,7 +44,7 @@ namespace Codercept
             BindQuestions();
 
             // Lets TeacherPortal.js update the language dot when the dropdown changes
-            var map = courses.GroupBy(c => c.Language).ToDictionary(g => g.Key, g => new { theme = g.First().Theme, glyph = g.First().Glyph });
+            var map = languages.ToDictionary(c => c.Language, c => new { theme = c.Theme, glyph = c.Glyph });
             ddlTeacherExamLanguage.Attributes["data-tp-lang-map"] = new JavaScriptSerializer().Serialize(map);
         }
 

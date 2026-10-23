@@ -11,12 +11,12 @@ namespace Codercept
         /// <summary>Compact layout (used on the statistics page).</summary>
         public bool Compact { get; set; }
 
-        /// <summary>TODO (backend): load the logged-in teacher's courses from the Course table.</summary>
+        /// <summary>The signed-in teacher's courses (Course WHERE TeacherId = @TeacherId).</summary>
         public List<TeacherCourse> Courses
         {
             get
             {
-                if (courses == null) courses = TeacherSampleData.GetCourses();
+                if (courses == null) courses = TeacherCourseData.GetCourses();
                 return courses;
             }
             set { courses = value; }
@@ -38,6 +38,20 @@ namespace Codercept
             }
         }
 
+        /// <summary>
+        /// False when the posted course id is not one of this teacher's courses (a forged or stale id). Showing falls back
+        /// to the first course, but anything that changes data must stop instead of acting on a different course.
+        /// </summary>
+        public bool SelectionIsValid
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(hfTeacherSelId.Value)) return true; // nothing picked yet: the first course
+                int id;
+                return int.TryParse(hfTeacherSelId.Value, out id) && Courses.Any(c => c.Id == id);
+            }
+        }
+
         /// <summary>True when this request was caused by clicking a course tile.</summary>
         public bool SelectionChanged { get; private set; }
 
@@ -48,6 +62,10 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // A teacher with no courses has nothing to select: send them to create one
+            if (Courses.Count == 0) Response.Redirect("~/TeacherCourseCreate.aspx");
+
+            // A posted id that is not one of this teacher's courses is simply not found, so the first course is shown
             string picked = Request.Form[UniqueID + "$sel"];
             if (!string.IsNullOrEmpty(picked))
             {

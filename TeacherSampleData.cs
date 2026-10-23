@@ -21,69 +21,6 @@ namespace Codercept
         // TODO (backend): the report course comes from the selected course
         public const string ReportCourseTitle = "C Programming Essentials";
 
-        private const string EditsKey = "TeacherCourseEdits";
-
-        /// <summary>
-        /// Sample courses, with any edits made this session applied on top.
-        /// TODO (backend): remove the session overlay and read from the Course table instead.
-        /// </summary>
-        public static List<TeacherCourse> GetCourses()
-        {
-            List<TeacherCourse> list = BuildCourses();
-            HttpContext ctx = HttpContext.Current;
-            Dictionary<int, TeacherCourse> edits = (ctx != null && ctx.Session != null)
-                ? ctx.Session[EditsKey] as Dictionary<int, TeacherCourse> : null;
-            if (edits != null)
-            {
-                foreach (KeyValuePair<int, TeacherCourse> edit in edits)
-                {
-                    int at = list.FindIndex(c => c.Id == edit.Key);
-                    if (at >= 0) list[at] = edit.Value;
-                }
-            }
-            return list;
-        }
-
-        /// <summary>
-        /// One entry per programming language (language name, thumbnail glyph and theme), independent of which courses
-        /// currently use it. TODO (backend): the Subject table (programming languages).
-        /// </summary>
-        public static List<TeacherCourse> GetLanguages()
-        {
-            return BuildCourses().GroupBy(c => c.Language).Select(g => g.First()).ToList();
-        }
-
-        /// <summary>The course with this CourseId, or null. TODO (backend): SELECT ... FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId.</summary>
-        public static TeacherCourse GetCourse(int courseId)
-        {
-            return GetCourses().FirstOrDefault(c => c.Id == courseId);
-        }
-
-        /// <summary>Keeps an edited course for this session only. TODO (backend): replace with an UPDATE on Course.</summary>
-        public static void SaveCourseEdit(int courseId, TeacherCourse edited)
-        {
-            edited.Id = courseId;
-            HttpContext ctx = HttpContext.Current;
-            if (ctx == null || ctx.Session == null) return;
-            Dictionary<int, TeacherCourse> edits = ctx.Session[EditsKey] as Dictionary<int, TeacherCourse>;
-            if (edits == null) edits = new Dictionary<int, TeacherCourse>();
-            edits[courseId] = edited;
-            ctx.Session[EditsKey] = edits;
-        }
-
-        private static List<TeacherCourse> BuildCourses()
-        {
-            return new List<TeacherCourse>
-            {
-                new TeacherCourse { Id = 1, Title = "Python Programming Fundamentals", Glyph = "py", Theme = "python", Date = "12 May 2024", Learners = "84 learners", Language = "Python", Difficulty = "Easy", Duration = 18, Updated = "24 May 2024", Description = "Build a strong foundation in Python through practical examples, clear explanations, and hands-on programming exercises." },
-                new TeacherCourse { Id = 2, Title = "Java Programming Masterclass", Glyph = "Java", Theme = "java", Date = "28 April 2024", Learners = "63 learners", Language = "Java", Difficulty = "Hard", Duration = 32, Updated = "18 May 2024", Description = "Master object-oriented Java, from core syntax and collections to robust application architecture and testing." },
-                new TeacherCourse { Id = 3, Title = "Web Development Fundamentals", Glyph = "</>", Theme = "web", Date = "16 April 2024", Learners = "112 learners", Language = "HTML/CSS", Difficulty = "Easy", Duration = 20, Updated = "20 May 2024", Description = "Learn to create accessible, responsive websites with semantic HTML and modern CSS layout techniques." },
-                new TeacherCourse { Id = 4, Title = "Modern JavaScript: From Syntax to Applications", Glyph = "JS", Theme = "javascript", Date = "4 April 2024", Learners = "48 learners", Language = "JavaScript", Difficulty = "Medium", Duration = 26, Updated = "15 May 2024", Description = "Explore modern JavaScript concepts and apply them to interactive, maintainable web applications." },
-                new TeacherCourse { Id = 5, Title = "C++ Algorithms & Data Structures", Glyph = "C++", Theme = "cpp", Date = "22 March 2024", Learners = "37 learners", Language = "C++", Difficulty = "Hard", Duration = 36, Updated = "2 May 2024", Description = "Develop efficient problem-solving skills with C++ algorithms, data structures, and complexity analysis." },
-                new TeacherCourse { Id = 6, Title = "TypeScript for JavaScript Developers", Glyph = "TS", Theme = "typescript", Date = "10 March 2024", Learners = "51 learners", Language = "TypeScript", Difficulty = "Medium", Duration = 16, Updated = "30 April 2024", Description = "Add type safety to JavaScript projects and build more reliable applications with modern TypeScript." }
-            };
-        }
-
         public static List<TeacherStat> GetDashboardStats()
         {
             return new List<TeacherStat>
@@ -456,6 +393,7 @@ Id = 3,
         public int Duration { get; set; }
         public string Updated { get; set; }
         public string Description { get; set; }
+        public List<string> Domains { get; set; } = new List<string>();
     }
 
     public class TeacherDetailItem

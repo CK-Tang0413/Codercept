@@ -18,7 +18,7 @@ namespace Codercept
             rptTeacherActivities.DataSource = TeacherSampleData.GetRecentActivities();
             rptTeacherActivities.DataBind();
 
-            rptTeacherRecentCourses.DataSource = TeacherSampleData.GetCourses().Take(3).ToList();
+            rptTeacherRecentCourses.DataSource = TeacherCourseData.GetCourses().Take(3).ToList();
             rptTeacherRecentCourses.DataBind();
         }
     }

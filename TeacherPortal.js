@@ -945,6 +945,74 @@
         });
     }
 
+    /* ------------------------------------------------------------------ [domains] tag input (TeacherDomainInput.ascx)
+       Domains are shown as tags. Type a name and press Enter (or comma, or leave the box) to add it; pick an existing one
+       from the suggestions; click x (or Backspace in the empty box) to remove one. The list travels to the server as a
+       JSON array in a hidden field, and the server checks it again. */
+    function initDomainInputs(root) {
+        qsa("[data-tp-domains]", root).forEach(function (field) {
+            var store = qs("[data-tp-domains-value]", field);
+            var tagBox = qs("[data-tp-domains-tags]", field);
+            var text = qs("[data-tp-domains-text]", field);
+            var box = qs("[data-tp-domains-box]", field);
+            var hint = qs("small", field);
+            var max = parseInt(field.getAttribute("data-max"), 10) || 5;
+            var allowed = /^[A-Za-z0-9][A-Za-z0-9 &+#.\/-]{0,49}$/;
+            var list = [];
+            try { list = JSON.parse(store.value || "[]"); } catch (err) { list = []; }
+
+            function error(message) {
+                field.classList.toggle("has-error", !!message);
+                if (hint) hint.textContent = message || "";
+            }
+
+            function render() {
+                store.value = JSON.stringify(list);
+                tagBox.textContent = "";
+                list.forEach(function (name, i) {
+                    var tag = document.createElement("span");
+                    tag.className = "tp-domain-tag";
+                    tag.appendChild(document.createTextNode(name));
+                    var remove = document.createElement("button");
+                    remove.type = "button";
+                    remove.setAttribute("aria-label", "Remove " + name);
+                    remove.textContent = "\u00d7";
+                    remove.addEventListener("click", function () { list.splice(i, 1); error(""); render(); text.focus(); });
+                    tag.appendChild(remove);
+                    tagBox.appendChild(tag);
+                });
+            }
+
+            // true when the typed text was added (or was empty / already there)
+            function commit() {
+                var name = text.value.replace(/\s+/g, " ").trim();
+                if (!name) return true;
+                if (!allowed.test(name)) { error("Use letters, numbers and & + # . / - only (up to 50 characters)."); return false; }
+                var exists = list.some(function (d) { return d.toLowerCase() === name.toLowerCase(); });
+                if (!exists) {
+                    if (list.length >= max) { error("You can add up to " + max + " domains."); return false; }
+                    list.push(name);
+                }
+                text.value = "";
+                error("");
+                render();
+                return true;
+            }
+
+            text.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
+                else if (e.key === "Backspace" && !text.value && list.length) { list.pop(); error(""); render(); }
+            });
+            // choosing a suggestion from the list fills the box without typing
+            text.addEventListener("input", function (e) {
+                if (e.inputType === "insertReplacementText" || (!e.inputType && text.value)) commit();
+            });
+            text.addEventListener("blur", commit);
+            box.addEventListener("click", function (e) { if (e.target === box) text.focus(); });
+            render();
+        });
+    }
+
     /* ------------------------------------------------------------------ [learners] search filter */
     function initLearnerSearch(root) {
         qsa("[data-tp-learner-search]", root).forEach(function (input) {
@@ -1151,6 +1219,7 @@
         root = root || document;
         initEditFields(root);
         initLearnerSearch(root);
+        initDomainInputs(root);
         qsa("[data-tp-cardlist]", root).forEach(initCardList);
         qsa("[data-tp-questions]", root).forEach(initQuestions);
         qsa("[data-tp-chapter-list]", root).forEach(initChapterList);

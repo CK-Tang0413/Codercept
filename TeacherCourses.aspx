@@ -3,6 +3,7 @@
 <%@ Register Src="~/TeacherCourseSelector.ascx" TagPrefix="uc" TagName="CourseSelector" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
 <%@ Register Src="~/TeacherConfirmModal.ascx" TagPrefix="uc" TagName="ConfirmModal" %>
+<%@ Register Src="~/TeacherDomainInput.ascx" TagPrefix="uc" TagName="DomainInput" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
 </asp:Content>
@@ -44,9 +45,10 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("code", 17) %></span>
-                        <div class="tp-inline-field">
+                        <div id="fldTeacherEditLanguage" runat="server" class="tp-inline-field">
                             <span>Language</span>
                             <asp:DropDownList ID="ddlTeacherCourseLanguage" runat="server" aria-label="Programming language" autocomplete="off"></asp:DropDownList>
+                            <small id="hintTeacherEditLanguage" runat="server" data-ok="" data-err="Select the programming language taught in this course."></small>
                         </div>
                     </div>
                     <div class="detail-item">
@@ -59,6 +61,10 @@
                                 <asp:ListItem>Hard</asp:ListItem>
                             </asp:DropDownList>
                         </div>
+                    </div>
+                    <div class="detail-item detail-item--wide">
+                        <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
+                        <uc:DomainInput ID="ctlTeacherDomains" runat="server" />
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("clock", 17) %></span>

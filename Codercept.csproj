@@ -257,6 +257,7 @@
     <Content Include="TeacherChapterContent.aspx" />
     <Content Include="TeacherChapters.aspx" />
     <Content Include="TeacherConfirmModal.ascx" />
+    <Content Include="TeacherDomainInput.ascx" />
     <Content Include="TeacherCourseCard.ascx" />
     <Content Include="TeacherCourseCreate.aspx" />
     <Content Include="TeacherCourses.aspx" />
@@ -470,6 +471,13 @@
     <Compile Include="TeacherConfirmModal.ascx.designer.cs">
       <DependentUpon>TeacherConfirmModal.ascx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherDomainInput.ascx.cs">
+      <DependentUpon>TeacherDomainInput.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherDomainInput.ascx.designer.cs">
+      <DependentUpon>TeacherDomainInput.ascx</DependentUpon>
+    </Compile>
     <Compile Include="TeacherCourseCard.ascx.cs">
       <DependentUpon>TeacherCourseCard.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -519,6 +527,7 @@
     <Compile Include="TeacherExamEdit.aspx.designer.cs">
       <DependentUpon>TeacherExamEdit.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherCourseData.cs" />
     <Compile Include="TeacherDb.cs" />
     <Compile Include="TeacherExams.aspx.cs">
       <DependentUpon>TeacherExams.aspx</DependentUpon>

@@ -885,6 +885,14 @@
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
+.tp-app .course-thumbnail--c {
+  background: linear-gradient(135deg, #0ea5e9, #1e40af);
+}
+
+.tp-app .course-thumbnail--other {
+  background: linear-gradient(135deg, #64748b, #334155);
+}
+
 .tp-app .code-symbol {
   position: absolute;
   color: rgba(255, 255, 255, 0.17);
@@ -1407,6 +1415,16 @@
 .tp-app .mini-language--typescript,
 .tp-app .language-dot--typescript {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.tp-app .mini-language--c,
+.tp-app .language-dot--c {
+  background: linear-gradient(135deg, #0ea5e9, #1e40af);
+}
+
+.tp-app .mini-language--other,
+.tp-app .language-dot--other {
+  background: linear-gradient(135deg, #64748b, #334155);
 }
 
 .tp-app .card-heading-icon,
@@ -7328,4 +7346,80 @@
   align-items: center;
   justify-content: flex-end;
   border-radius: 0;
+}
+
+/* Domain tag input (Manage Courses) */
+.tp-app .detail-item--wide {
+  grid-column: 1 / -1;
+}
+
+.tp-app .tp-domain-box {
+  display: flex;
+  min-height: 36px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  cursor: text;
+}
+
+.tp-app .tp-domain-box:focus-within {
+  border-color: var(--indigo);
+  outline: 3px solid rgba(124, 58, 237, 0.14);
+}
+
+.tp-app .tp-inline-field.has-error .tp-domain-box {
+  border-color: var(--danger);
+}
+
+.tp-app .tp-domain-tags {
+  display: contents;
+}
+
+.tp-app .tp-domain-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  color: #5b21b6;
+  background: #ede9fe;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tp-app .tp-domain-tag button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tp-app .tp-domain-tag button:hover {
+  background: rgba(91, 33, 182, 0.16);
+}
+
+.tp-app .tp-domain-box input {
+  width: auto;
+  min-width: 140px;
+  min-height: 28px;
+  flex: 1 1 140px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 15px;
+}
+
+.tp-app .tp-domain-box input:focus {
+  outline: 0;
 }

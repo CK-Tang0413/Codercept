@@ -7,12 +7,12 @@ namespace Codercept
     {
         private List<TeacherCourse> courses;
 
-        /// <summary>TODO (backend): the logged-in teacher's courses, with whether each has an exam.</summary>
+        /// <summary>The logged-in teacher's courses. TODO (step 2.5): whether each has an exam.</summary>
         protected List<TeacherCourse> Courses
         {
             get
             {
-                if (courses == null) courses = TeacherSampleData.GetCourses();
+                if (courses == null) courses = TeacherCourseData.GetCourses();
                 return courses;
             }
         }

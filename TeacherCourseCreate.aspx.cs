@@ -9,8 +9,7 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // TODO (backend): load the programming languages from the database
-            List<TeacherCourse> courses = TeacherSampleData.GetLanguages();
+            List<TeacherCourse> courses = TeacherCourseData.GetLanguages();
             if (!IsPostBack)
             {
                 foreach (string language in courses.Select(c => c.Language).Distinct())

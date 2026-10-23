@@ -69,7 +69,10 @@ CREATE TABLE [dbo].[Application] (
 CREATE TABLE [dbo].[Subject] (
     [SubjectId]   INT           IDENTITY (1, 1) NOT NULL,
     [SubjectName] NVARCHAR (50) NOT NULL,
-    PRIMARY KEY CLUSTERED ([SubjectId] ASC)
+    [SubjectType] NVARCHAR (20) NOT NULL DEFAULT 'Domain',
+    PRIMARY KEY CLUSTERED ([SubjectId] ASC),
+    UNIQUE NONCLUSTERED ([SubjectName] ASC),
+    CONSTRAINT [CK_Subject_SubjectType] CHECK ([SubjectType] IN ('Language', 'Domain'))
 );
 
 CREATE TABLE [dbo].[Learner] (
@@ -407,16 +410,19 @@ INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [Teac
 VALUES ('Bryan Yeong', 'bryanyeong@edu.com.my', '$2a$12$CKfrdV0bSGGst.bMr8A4G.RmmIaI93SA9kx3hrkvmk.V/PulB/SwK', 32, 'Kuala Lumpur, Malaysia', 'Advanced', 'Active', NULL);
 INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [ApplicationId])
 VALUES ('Sarah Lim', 'sarahlim@edu.com.my', '$2a$12$ctWavkUvhh0JdPtUx8H1A.s/tF.pNnBRb8qDhxQDSMnrjrZSw6taW', 29, 'Penang, Malaysia', 'Intermediate', 'Active', NULL);
+-- Newly registered teacher with no courses yet (for testing empty states). Password: Newbie1234!
+INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [ApplicationId])
+VALUES ('Nina Tan', 'ninatan@edu.com.my', '$2a$12$.Jve0o18RkIO0nDUO2dgN.Q5o7WUW8GLGlq5s/i2fobHTY1RNZpTu', 26, 'Johor Bahru, Malaysia', 'Beginner', 'Active', NULL);
 
 -- Subjects: the four programming languages taught on the platform, plus learning domains
-INSERT INTO [dbo].[Subject] ([SubjectName])
+INSERT INTO [dbo].[Subject] ([SubjectName], [SubjectType])
 VALUES
-    ('Python'),
-    ('Java'),
-    ('C++'),
-    ('C'),
-    ('Machine Learning'),
-    ('Data Analysis');
+    ('Python', 'Language'),
+    ('Java', 'Language'),
+    ('C++', 'Language'),
+    ('C', 'Language'),
+    ('Machine Learning', 'Domain'),
+    ('Data Analysis', 'Domain');
 
 DECLARE @BryanId INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'bryanyeong@edu.com.my');
 DECLARE @SarahId INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'sarahlim@edu.com.my');
