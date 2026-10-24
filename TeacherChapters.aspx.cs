@@ -15,8 +15,7 @@ namespace Codercept
             {
                 if (chapters == null)
                 {
-                    // TODO (backend): chapters of selTeacherChapterCourse.SelectedCourse, ordered by their stored position
-                    List<TeacherChapter> all = TeacherSampleData.GetChapters();
+                    List<TeacherChapter> all = TeacherChapterData.GetChapters(selTeacherChapterCourse.SelectedId);
                     List<int> order = new List<int>();
                     foreach (string part in hfTeacherChapterOrder.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -35,7 +34,7 @@ namespace Codercept
             {
                 int id;
                 int.TryParse(hfTeacherChapterId.Value, out id);
-                return Chapters.FirstOrDefault(c => c.Id == id) ?? Chapters[0];
+                return Chapters.FirstOrDefault(c => c.Id == id) ?? Chapters.FirstOrDefault();
             }
         }
 
@@ -43,12 +42,6 @@ namespace Codercept
         protected int ActiveNumber
         {
             get { return Chapters.IndexOf(Active) + 1; }
-        }
-
-        /// <summary>TODO (backend): SubChapter rows of each chapter (the sample list is the same for every chapter).</summary>
-        protected List<TeacherContentItem> Contents
-        {
-            get { return TeacherSampleData.GetChapterContents(); }
         }
 
         /// <summary>"1 question", "3 questions".</summary>
@@ -61,11 +54,24 @@ namespace Codercept
         {
             if (!IsPostBack && Request.QueryString["testdeleted"] == "1") Master.ShowToast("Quiz or assessment deleted");
 
-            // Arriving with ?chapter=<id> (for example back from a quiz or subchapter page) selects that chapter
-            int linked;
-            if (!IsPostBack && int.TryParse(Request.QueryString["chapter"], out linked) && Chapters.Any(c => c.Id == linked))
+            // The course and chapter are chosen here, before the course selector loads, so the chapter list is read for the right course.
+            // ?course=<id> chooses the course; ?chapter=<id> (for example back from a quiz or subchapter page) chooses that
+            // chapter, and its course when ?course= is missing. Ids that are not this teacher's are ignored.
+            if (!IsPostBack)
             {
-                hfTeacherChapterId.Value = linked.ToString();
+                int linkedCourse;
+                if (int.TryParse(Request.QueryString["course"], out linkedCourse)) selTeacherChapterCourse.Select(linkedCourse);
+
+                int linked;
+                if (int.TryParse(Request.QueryString["chapter"], out linked))
+                {
+                    if (string.IsNullOrEmpty(Request.QueryString["course"]))
+                    {
+                        int courseOfChapter = TeacherChapterData.GetCourseIdOfChapter(linked);
+                        if (courseOfChapter > 0) selTeacherChapterCourse.Select(courseOfChapter);
+                    }
+                    if (Chapters.Any(c => c.Id == linked)) hfTeacherChapterId.Value = linked.ToString();
+                }
             }
         }
 
@@ -79,6 +85,10 @@ namespace Codercept
                 chapters = null;
             }
 
+            // A course without chapters shows a short message and the Add chapter button instead of the chapter list (see the page)
+            shTeacherChapters.Subtitle = "Arrange and update content for " + selTeacherChapterCourse.SelectedCourse.Title + ".";
+            if (Chapters.Count == 0) return;
+
             // Picking a chapter is done in the browser (no postback), so the text boxes already hold what the teacher
             // typed on a postback; they are loaded from the chapter only on the first load or after a different course.
             if (!IsPostBack || selTeacherChapterCourse.SelectionChanged)
@@ -88,7 +98,6 @@ namespace Codercept
                 txtTeacherChapterDuration.Text = TeacherSampleData.HoursOf(Active.Duration);
             }
 
-            shTeacherChapters.Subtitle = "Arrange and update content for " + selTeacherChapterCourse.SelectedCourse.Title + ".";
             mdlTeacherDeleteChapter.BodyHtml = "This will permanently delete <strong data-tp-ch-delete-name>Chapter " + ActiveNumber + " - " + Server.HtmlEncode(Active.Title)
                 + "</strong>, including its subchapters and its quiz or assessment. This action cannot be undone.";
         }
@@ -104,24 +113,9 @@ namespace Codercept
             MarkError(fldTeacherChapterDuration, hintTeacherChapterDuration, durationError);
             if (titleError || durationError) return;
 
-            // TODO (backend): UPDATE Chapter SET Title, Description, Duration, DateUpdated WHERE ...;
-            //   also persist the new chapter order from hfTeacherChapterOrder (comma-separated ChapterIds).
-            // Until then the edit is kept in the session only (see TeacherSampleData.SaveChapterEdit).
-            TeacherChapter current = Active;
-            TeacherSampleData.SaveChapterEdit(new TeacherChapter
-            {
-                Id = current.Id,
-                Number = current.Number,
-                Title = txtTeacherChapterTitle.Text.Trim(),
-                Description = txtTeacherChapterDescription.Text,
-                Duration = TeacherSampleData.FormatHours(hours),
-                Created = current.Created,
-                Updated = DateTime.Today.ToString("d MMMM yyyy"),
-                Test = current.Test
-            });
-            chapters = null; // reload so the list and the details show the edit
-
-            Master.ShowToast("Chapter details updated");
+            // TODO (step 3.2): UPDATE Chapter SET Title, Description, Duration, DateUpdate WHERE ChapterId = @ChapterId AND its course is
+            //   the signed-in teacher's; also persist the new chapter order from hfTeacherChapterOrder (comma-separated ChapterIds).
+            Master.ShowToast("Saving chapter changes is added in the next step, so nothing was saved.");
         }
 
         private static void MarkError(System.Web.UI.HtmlControls.HtmlGenericControl field, System.Web.UI.HtmlControls.HtmlGenericControl hint, bool error)
@@ -132,8 +126,8 @@ namespace Codercept
 
         protected void mdlTeacherDeleteChapter_Confirmed(object sender, EventArgs e)
         {
-            // TODO (backend): delete the active chapter (and its subchapters and its quiz or assessment)
-            Master.ShowToast("Chapter " + ActiveNumber + " deleted");
+            // TODO (step 3.2): delete the active chapter (and its subchapters and its quiz or assessment), checking ownership in SQL
+            Master.ShowToast("Deleting chapters is added in the next step, so nothing was deleted.");
         }
     }
 }

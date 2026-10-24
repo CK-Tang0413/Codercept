@@ -155,9 +155,11 @@ CREATE TABLE [dbo].[SubChapter] (
     [SubChapterTitle]     NVARCHAR (50)  NOT NULL,
     [SubChapterContent]   NVARCHAR (MAX) NOT NULL,
     [SubChapterMediaLink] NVARCHAR (MAX) NULL,
+    [SubChapterDuration]  INT            NOT NULL, -- minutes
     [ChapterId]           INT            NOT NULL,
     [TeacherId]           INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([SubChapterId] ASC),
+    CONSTRAINT [CK_SubChapter_Duration] CHECK ([SubChapterDuration] > 0),
     CONSTRAINT [FK_SubChapter_Chapter] FOREIGN KEY ([ChapterId]) REFERENCES [dbo].[Chapter] ([ChapterId]),
     CONSTRAINT [FK_SubChapter_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
@@ -171,6 +173,7 @@ CREATE TABLE [dbo].[Assessment] (
     [ChapterId]             INT            NOT NULL,
     [TeacherId]             INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([AssessmentId] ASC),
+    UNIQUE NONCLUSTERED ([ChapterId] ASC), -- at most one assessment per chapter (and not together with a quiz: checked in the teacher pages)
     CONSTRAINT [FK_Assessment_Chapter] FOREIGN KEY ([ChapterId]) REFERENCES [dbo].[Chapter] ([ChapterId]),
     CONSTRAINT [FK_Assessment_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
@@ -181,9 +184,15 @@ CREATE TABLE [dbo].[Exam] (
     [DateUpdate]      DATETIME       NULL,
     [ExamTitle]       NVARCHAR (50)  NOT NULL,
     [ExamDescription] NVARCHAR (MAX) NOT NULL,
+    [PassMark]        INT            NOT NULL,
+    [TimeLimitMinutes] INT           NOT NULL,
+    [StrictSyntax]    BIT            NOT NULL, -- rule: the learner's code must follow the language syntax strictly
+    [AllowLibraries]  BIT            NOT NULL, -- rule: the learner may use libraries
     [CourseId]        INT            NOT NULL,
     [TeacherId]       INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([ExamId] ASC),
+    CONSTRAINT [CK_Exam_PassMark] CHECK ([PassMark] BETWEEN 0 AND 100),
+    CONSTRAINT [CK_Exam_TimeLimit] CHECK ([TimeLimitMinutes] BETWEEN 5 AND 300),
     UNIQUE NONCLUSTERED ([CourseId] ASC), -- one final exam per course; learners take it to earn the certificate
     CONSTRAINT [FK_Exam_Course] FOREIGN KEY ([CourseId]) REFERENCES [dbo].[Course] ([CourseId]),
     CONSTRAINT [FK_Exam_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
@@ -195,10 +204,11 @@ CREATE TABLE [dbo].[Quiz] (
     [DateUpdate]      DATETIME       NOT NULL,
     [QuizTitle]       NVARCHAR (50)  NOT NULL,
     [QuizDescription] NVARCHAR (MAX) NOT NULL,
-    [SubChapterId]    INT            NOT NULL,
+    [ChapterId]       INT            NOT NULL,
     [TeacherId]       INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([QuizId] ASC),
-    CONSTRAINT [FK_Quiz_SubChapter] FOREIGN KEY ([SubChapterId]) REFERENCES [dbo].[SubChapter] ([SubChapterId]),
+    UNIQUE NONCLUSTERED ([ChapterId] ASC), -- at most one quiz per chapter (and not together with an assessment: checked in the teacher pages)
+    CONSTRAINT [FK_Quiz_Chapter] FOREIGN KEY ([ChapterId]) REFERENCES [dbo].[Chapter] ([ChapterId]),
     CONSTRAINT [FK_Quiz_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
 
@@ -207,11 +217,18 @@ CREATE TABLE [dbo].[Question] (
     [QuestionContent] NVARCHAR (MAX) NOT NULL,
     [QuestionType]    NVARCHAR (50)  NOT NULL,
     [QuestionScore]   FLOAT (53)     NOT NULL,
+    [QuestionOrder]   INT            NOT NULL,
+    [AcceptedAnswers] NVARCHAR (MAX) NULL, -- fill-in-the-blank: the accepted answers, comma-separated
+    [ModelAnswer]     NVARCHAR (MAX) NULL, -- coding: the teacher's model answer
+    [MarkingGuide]    NVARCHAR (MAX) NULL, -- coding: how the marks are given
     [TeacherId]       INT            NOT NULL,
     [QuizId]          INT            NULL,
     [AssessmentId]    INT            NULL,
     [ExamId]          INT            NULL,
     PRIMARY KEY CLUSTERED ([QuestionId] ASC),
+    CONSTRAINT [CK_Question_Type] CHECK ([QuestionType] IN ('MCQ', 'FillBlank', 'Coding')),
+    CONSTRAINT [CK_Question_OneOwner] CHECK ((CASE WHEN [QuizId] IS NULL THEN 0 ELSE 1 END)
+        + (CASE WHEN [AssessmentId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [ExamId] IS NULL THEN 0 ELSE 1 END) = 1),
     CONSTRAINT [FK_Question_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
     CONSTRAINT [FK_Question_Quiz] FOREIGN KEY ([QuizId]) REFERENCES [dbo].[Quiz] ([QuizId]),
     CONSTRAINT [FK_Question_Assessment] FOREIGN KEY ([AssessmentId]) REFERENCES [dbo].[Assessment] ([AssessmentId]),
@@ -221,6 +238,8 @@ CREATE TABLE [dbo].[Question] (
 CREATE TABLE [dbo].[MCQ_Option] (
     [MCQ_OptionId]  INT            IDENTITY (1, 1) NOT NULL,
     [OptionContent] NVARCHAR (MAX) NOT NULL,
+    [IsCorrect]     BIT            NOT NULL,
+    [OptionOrder]   INT            NOT NULL,
     [QuestionId]    INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([MCQ_OptionId] ASC),
     CONSTRAINT [FK_MCQOption_Question] FOREIGN KEY ([QuestionId]) REFERENCES [dbo].[Question] ([QuestionId])
@@ -528,45 +547,62 @@ DECLARE @JavaCourse INT = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTi
 DECLARE @CCourse INT = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = 'C Programming Essentials');
 DECLARE @PyChapter1 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = @PythonCourse AND [ChapterNum] = 1);
 DECLARE @PyChapter2 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = @PythonCourse AND [ChapterNum] = 2);
-DECLARE @SubChapterId INT, @QuizId INT, @AssessmentId INT, @PyExamId INT, @CExamId INT, @QuestionId INT, @AttemptId INT;
+DECLARE @QuizId INT, @AssessmentId INT, @PyExamId INT, @CExamId INT, @QuestionId INT, @AttemptId INT;
 
 INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum])
 VALUES (@KylanId, @PythonCourse, 2), (@KylanId, @JavaCourse, 1), (@WanId, @PythonCourse, 1), (@WanId, @CCourse, 1);
 
--- Python: a subchapter with a quiz, an assessment at the end of chapter 1, and the final exam
-INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [ChapterId], [TeacherId])
-VALUES (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 1, 'Numbers and Strings', 'How Python stores whole numbers, decimals and text.', NULL, @PyChapter2, @BryanId);
-SET @SubChapterId = SCOPE_IDENTITY();
+-- Python: subchapters, a quiz at the end of chapter 2, an assessment at the end of chapter 1 (a chapter has a quiz OR an assessment, never both), and the final exam
+INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [SubChapterDuration], [ChapterId], [TeacherId])
+VALUES
+    (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -35, GETDATE()), 1, 'What is Python?', 'A short history of Python and where it is used today.', NULL, 10, @PyChapter1, @BryanId),
+    (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -35, GETDATE()), 2, 'Installing Python', 'Download Python, install it and check that it runs.', NULL, 15, @PyChapter1, @BryanId),
+    (DATEADD(DAY, -39, GETDATE()), DATEADD(DAY, -35, GETDATE()), 3, 'Your First Program', 'Write and run a program that prints a message.', NULL, 20, @PyChapter1, @BryanId),
+    (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 1, 'Numbers and Strings', 'How Python stores whole numbers, decimals and text.', NULL, 25, @PyChapter2, @BryanId);
 
-INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [SubChapterId], [TeacherId])
-VALUES (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 'Variables Quiz', 'Check your understanding of variables and data types.', @SubChapterId, @BryanId);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId])
+VALUES (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 'Variables Quiz', 'Check your understanding of variables and data types.', @PyChapter2, @BryanId);
 SET @QuizId = SCOPE_IDENTITY();
 
 INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId])
 VALUES (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -35, GETDATE()), 'Chapter 1 Assessment', 'Explain how a Python program is run and structured.', @PyChapter1, @BryanId);
 SET @AssessmentId = SCOPE_IDENTITY();
 
-INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [CourseId], [TeacherId])
-VALUES (DATEADD(DAY, -30, GETDATE()), NULL, 'Final Course Examination', 'Final exam for Python Programming Fundamentals.', @PythonCourse, @BryanId);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId])
+VALUES (DATEADD(DAY, -30, GETDATE()), NULL, 'Final Course Examination', 'Final exam for Python Programming Fundamentals.', 50, 90, 0, 1, @PythonCourse, @BryanId);
 SET @PyExamId = SCOPE_IDENTITY();
 
-INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [QuizId])
-VALUES ('Which type does the value 3.5 have in Python?', 'MCQ', 2, @BryanId, @QuizId);
+-- Quiz: multiple choice only
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId])
+VALUES ('Which type does the value 3.5 have in Python?', 'MCQ', 2, 1, @BryanId, @QuizId);
 SET @QuestionId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [QuestionId]) VALUES ('int', @QuestionId), ('float', @QuestionId), ('str', @QuestionId);
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES ('int', 0, 1, @QuestionId), ('float', 1, 2, @QuestionId), ('str', 0, 3, @QuestionId);
 
-INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [AssessmentId])
-VALUES ('Describe what happens when you run a Python file.', 'Essay', 10, @BryanId, @AssessmentId);
-
-INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [ExamId])
-VALUES ('Which keyword defines a function in Python?', 'MCQ', 5, @BryanId, @PyExamId);
+-- Assessment: multiple choice, fill-in-the-blank and coding (the last two are marked by the teacher)
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [AssessmentId])
+VALUES ('Which command runs a Python file called app.py?', 'MCQ', 2, 1, @BryanId, @AssessmentId);
 SET @QuestionId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [QuestionId]) VALUES ('def', @QuestionId), ('func', @QuestionId), ('lambda', @QuestionId);
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES ('python app.py', 1, 1, @QuestionId), ('run app.py', 0, 2, @QuestionId), ('start python app.py', 0, 3, @QuestionId);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [AssessmentId])
+VALUES ('The ____ function shows text on the screen.', 'FillBlank', 3, 2, 'print, print()', @BryanId, @AssessmentId);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [ModelAnswer], [MarkingGuide], [TeacherId], [AssessmentId])
+VALUES ('Write a program that prints Hello, World!', 'Coding', 5, 3, 'print("Hello, World!")', '3 marks for calling print, 2 marks for the exact text.', @BryanId, @AssessmentId);
+
+-- Exam
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId])
+VALUES ('Which keyword defines a function in Python?', 'MCQ', 5, 1, @BryanId, @PyExamId);
+SET @QuestionId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES ('def', 1, 1, @QuestionId), ('func', 0, 2, @QuestionId), ('lambda', 0, 3, @QuestionId);
 
 -- C: a final exam
-INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [CourseId], [TeacherId])
-VALUES (DATEADD(DAY, -10, GETDATE()), NULL, 'Final Course Examination', 'Final exam for C Programming Essentials.', @CCourse, @SarahId);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId])
+VALUES (DATEADD(DAY, -10, GETDATE()), NULL, 'Final Course Examination', 'Final exam for C Programming Essentials.', 60, 60, 1, 0, @CCourse, @SarahId);
 SET @CExamId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId])
+VALUES ('Who developed the C programming language?', 'MCQ', 5, 1, @SarahId, @CExamId);
+SET @QuestionId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES ('James Gosling', 0, 1, @QuestionId), ('Dennis Ritchie', 1, 2, @QuestionId), ('Guido van Rossum', 0, 3, @QuestionId);
 
 -- Attempts (Python): two waiting to be graded, one graded, one in progress, one incomplete
 INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(HOUR, -3, GETDATE()), 'completed', @KylanId, @QuizId);

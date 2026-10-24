@@ -238,8 +238,7 @@ namespace Codercept
 
         // Parts of a course, found from the course down (all use @CourseId)
         private const string CourseChapters = "(SELECT ChapterId FROM Chapter WHERE CourseId = @CourseId)";
-        private const string CourseSubChapters = "(SELECT SubChapterId FROM SubChapter WHERE ChapterId IN " + CourseChapters + ")";
-        private const string CourseQuizzes = "(SELECT QuizId FROM Quiz WHERE SubChapterId IN " + CourseSubChapters + ")";
+        private const string CourseQuizzes = "(SELECT QuizId FROM Quiz WHERE ChapterId IN " + CourseChapters + ")";
         private const string CourseAssessments = "(SELECT AssessmentId FROM Assessment WHERE ChapterId IN " + CourseChapters + ")";
         private const string CourseExams = "(SELECT ExamId FROM Exam WHERE CourseId = @CourseId)";
         private const string CourseQuestionTest =
@@ -285,7 +284,7 @@ namespace Codercept
 
                     Run(con, tx, "DELETE FROM MCQ_Option WHERE QuestionId IN (SELECT QuestionId FROM Question WHERE " + CourseQuestionTest + ")", id());
                     Run(con, tx, "DELETE FROM Question WHERE " + CourseQuestionTest, id());
-                    Run(con, tx, "DELETE FROM Quiz WHERE SubChapterId IN " + CourseSubChapters, id());
+                    Run(con, tx, "DELETE FROM Quiz WHERE ChapterId IN " + CourseChapters, id());
                     Run(con, tx, "DELETE FROM Assessment WHERE ChapterId IN " + CourseChapters, id());
                     Run(con, tx, "DELETE FROM Exam WHERE CourseId = @CourseId", id());
                     Run(con, tx, "DELETE FROM SubChapter WHERE ChapterId IN " + CourseChapters, id());
@@ -300,13 +299,13 @@ namespace Codercept
 
         /// <summary>
         /// Every attempt on a quiz, assessment or exam of a course, as one list (a WITH clause to put in front of a SELECT):
-        /// quiz -> subchapter -> chapter -> course, assessment -> chapter -> course, exam -> course.
+        /// quiz -> chapter -> course, assessment -> chapter -> course, exam -> course.
         /// </summary>
         internal const string CourseAttemptsCte =
             "WITH CourseAttempt AS ( " +
             "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, a.AttemptStatus, qz.QuizTitle AS Title " +
             "FROM Attempt a INNER JOIN Quiz qz ON qz.QuizId = a.QuizId " +
-            "INNER JOIN SubChapter sc ON sc.SubChapterId = qz.SubChapterId INNER JOIN Chapter ch ON ch.ChapterId = sc.ChapterId " +
+            "INNER JOIN Chapter ch ON ch.ChapterId = qz.ChapterId " +
             "UNION ALL " +
             "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, a.AttemptStatus, asm.AssessmentTitle " +
             "FROM Attempt a INNER JOIN Assessment asm ON asm.AssessmentId = a.AssessmentId " +

@@ -52,6 +52,12 @@ namespace Codercept
             }
         }
 
+        /// <summary>Chooses a course by id before the page is built; an id that is not one of this teacher's courses is ignored.</summary>
+        public void Select(int courseId)
+        {
+            if (Courses.Any(c => c.Id == courseId)) hfTeacherSelId.Value = courseId.ToString();
+        }
+
         /// <summary>True when this request was caused by clicking a course tile.</summary>
         public bool SelectionChanged { get; private set; }
 

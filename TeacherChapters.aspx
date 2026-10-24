@@ -28,6 +28,15 @@
         <input type="hidden" id="hfTeacherChapterId" runat="server" value="1" data-tp-chapter-input />
         <input type="hidden" id="hfTeacherChapterOrder" runat="server" value="" data-tp-chapter-order />
 
+        <% if (Chapters.Count == 0) { %>
+        <div class="chapter-detail-card">
+            <p class="summary-empty">This course has no chapters yet. Add the first chapter to start building it.</p>
+            <div class="chapter-detail-actions">
+                <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=chapter&amp;course=<%= selTeacherChapterCourse.SelectedId %>"><%= TeacherIcons.Svg("plus", 17) %><span>Add chapter</span></a>
+            </div>
+        </div>
+
+        <% } else { %>
         <div class="chapter-master-detail">
             <aside class="chapter-list-panel">
                 <div class="chapter-list-actions">
@@ -104,17 +113,17 @@
                                 <span>CHAPTER CONTENT</span>
                                 <h3>Subchapters</h3>
                             </div>
-                            <span class="badge badge--indigo"><%= Plural(Contents.Count, "subchapter") %></span>
+                            <span class="badge badge--indigo"><%= Plural(c.Contents.Count, "subchapter") %></span>
                         </div>
                         <div class="content-summary-grid content-summary-grid--single">
                             <div>
-                                <% if (Contents.Count == 0) { %>
+                                <% if (c.Contents.Count == 0) { %>
                                 <p class="summary-empty">No subchapters yet.</p>
                                 <% } %>
-                                <% for (int s = 0; s < Contents.Count; s++) { %>
+                                <% for (int s = 0; s < c.Contents.Count; s++) { %>
                                 <div class="summary-item">
                                     <span class="summary-icon summary-icon--book"><%= TeacherIcons.Svg("book", 15) %></span>
-                                    <div><small>Subchapter <%= s + 1 %></small><strong><%: Contents[s].Title %></strong></div>
+                                    <div><small>Subchapter <%= s + 1 %></small><strong><%: c.Contents[s].Title %></strong></div>
                                 </div>
                                 <% } %>
                             </div>
@@ -145,7 +154,6 @@
                             </div>
                         </div>
                         <div class="chapter-detail-actions">
-                            <%-- TODO (F5): TeacherChapterTest.aspx is added in step F5 --%>
                             <a class="button button--secondary" href="TeacherChapterTest.aspx?chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterTest.aspx?chapter="><%= TeacherIcons.Svg("edit", 17) %><span>Edit <%= c.Test.Type %></span></a>
                         </div>
                         <% } else { %>
@@ -160,6 +168,7 @@
                 <% } %>
             </div>
         </div>
+        <% } %>
     </section>
 </asp:Content>
 

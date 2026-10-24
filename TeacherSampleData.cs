@@ -517,6 +517,8 @@ Id = 3,
         public string Updated { get; set; }
         /// <summary>The quiz or assessment at the end of the chapter (a chapter has either one, or none: null).</summary>
         public TeacherChapterTestInfo Test { get; set; }
+        /// <summary>The chapter's subchapters in order (filled by TeacherChapterData; the sample chapters leave it empty).</summary>
+        public List<TeacherContentItem> Contents { get; set; } = new List<TeacherContentItem>();
     }
 
     /// <summary>The single quiz or assessment of a chapter.</summary>
