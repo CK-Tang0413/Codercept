@@ -715,6 +715,10 @@
             });
             var deleteName = qs("[data-tp-ch-delete-name]");
             if (deleteName) deleteName.textContent = "Chapter " + number + " - " + active.getAttribute("data-title");
+            // each chapter has its own subchapters / quiz-or-assessment cards; only the active chapter's are shown
+            qsa("[data-tp-ch-extra]").forEach(function (block) {
+                block.hidden = block.getAttribute("data-tp-ch-extra") !== active.getAttribute("data-tp-chapter-pick");
+            });
         }
 
         function refresh() {
@@ -778,7 +782,7 @@
             var items = qsa("[data-tp-content-item]", list);
             items.forEach(function (item, i) {
                 var label = qs("small", item);
-                label.textContent = (item.getAttribute("data-type") === "quiz" ? "QUIZ " : "SUBCHAPTER ") + (i + 1);
+                label.textContent = "SUBCHAPTER " + (i + 1);
             });
             if (orderInput) orderInput.value = items.map(function (item) { return item.getAttribute("data-id"); }).join(",");
         }
@@ -874,6 +878,13 @@
                 t.classList.toggle("is-selected", on);
                 qs("[data-tp-tile-check]", t).hidden = !on;
             });
+            // the summary shows the same icon as the chosen tile (exam, quiz or assessment)
+            var sumIcon = qs("[data-tp-sum-icon]", root);
+            var tileIcon = qs(".assessment-type-icon", tile);
+            if (sumIcon && tileIcon) {
+                sumIcon.innerHTML = tileIcon.innerHTML;
+                qsa("svg", sumIcon).forEach(function (svg) { svg.setAttribute("width", "21"); svg.setAttribute("height", "21"); });
+            }
             qs("[data-tp-sum-title]", root).textContent = assessment.title;
             qs("[data-tp-sum-text]", root).innerHTML = assessment.questions + " questions &middot; 100 total marks";
             var badge = qs("[data-tp-sum-badge]", root);

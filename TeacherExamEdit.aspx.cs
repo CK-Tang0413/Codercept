@@ -10,15 +10,17 @@ namespace Codercept
         protected TeacherCourse Course;
         protected List<TeacherExamRule> Rules;
 
+        /// <summary>False when the course has no exam yet: the page then creates it.</summary>
+        protected bool ExamExists;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            List<TeacherCourse> courses = TeacherCourseData.GetCourses();
             // No ?course= means the first course; an id that is not this teacher's course goes back to the exam list
-            Course = TeacherCourseData.Pick(courses, Request.QueryString["course"]);
+            Course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
             if (Course == null) Response.Redirect("~/TeacherExams.aspx");
-            List<TeacherCourse> languages = TeacherCourseData.GetLanguages();
+            ExamExists = TeacherCourseData.GetCourseIdsWithExam().Contains(Course.Id);
 
-            // TODO (backend): load the exam rules for this course (Exam table)
+            // TODO (backend): load the exam's pass mark, time limit and rules for this course (Exam table)
             Rules = TeacherSampleData.GetExamRules();
             if (IsPostBack)
             {
@@ -29,78 +31,73 @@ namespace Codercept
                 }
             }
 
-            if (!IsPostBack)
-            {
-                foreach (string language in languages.Select(c => c.Language))
-                {
-                    ddlTeacherExamLanguage.Items.Add(language);
-                }
-                if (ddlTeacherExamLanguage.Items.FindByValue(Course.Language) == null) ddlTeacherExamLanguage.Items.Insert(0, Course.Language);
-                ddlTeacherExamLanguage.SelectedValue = Course.Language;
-            }
-
-            // The question cards are plain HTML fields (see TeacherQuestionCard.ascx), so they are rebuilt on every request.
-            // TODO (backend): load this exam's questions (Question + MCQ_Option). After a save the page reloads them from the DB.
-            BindQuestions();
-
-            // Lets TeacherPortal.js update the language dot when the dropdown changes
-            var map = languages.ToDictionary(c => c.Language, c => new { theme = c.Theme, glyph = c.Glyph });
-            ddlTeacherExamLanguage.Attributes["data-tp-lang-map"] = new JavaScriptSerializer().Serialize(map);
+            // The question cards are plain HTML fields (see TeacherQuestionCard.ascx), so they are rebuilt on every request:
+            // after a postback from what was posted (nothing the teacher arranged is lost), otherwise from the saved questions.
+            // A course without an exam starts with no questions.
+            // TODO (backend): load this exam's questions (Question + MCQ_Option)
+            BindQuestions(IsPostBack ? ReadPostedQuestions() : StoredQuestions());
         }
 
-        private void BindQuestions()
+        protected void Page_PreRender(object sender, EventArgs e)
         {
-            rptTeacherExamQuestions.DataSource = TeacherSampleData.GetExamQuestions(Course.Id);
+            btnTeacherSaveExam.Text = "<svg aria-hidden=\"true\" class=\"icon\" fill=\"none\" height=\"17\" viewBox=\"0 0 24 24\" width=\"17\"><path d='m5 12 4 4L19 6' /></svg><span>"
+                + (ExamExists ? "Save exam details" : "Create exam") + "</span>";
+        }
+
+        private List<TeacherQuestion> StoredQuestions()
+        {
+            return ExamExists ? TeacherSampleData.GetExamQuestions(Course.Id) : new List<TeacherQuestion>();
+        }
+
+        private void BindQuestions(List<TeacherQuestion> questions)
+        {
+            rptTeacherExamQuestions.DataSource = questions;
             rptTeacherExamQuestions.DataBind();
         }
 
-        /// <summary>Rebuilds the questions from the posted tpq{n}_* fields, in the order they were posted (page order).</summary>
+        /// <summary>The questions as posted (page order); new ones get ids after the highest saved id.</summary>
         private List<TeacherQuestion> ReadPostedQuestions()
         {
-            List<TeacherQuestion> existing = TeacherSampleData.GetExamQuestions(Course.Id);
-            int nextId = Math.Max(1, existing.Count == 0 ? 1 : existing.Max(q => q.Id) + 1);
-            List<TeacherQuestion> posted = new List<TeacherQuestion>();
-
-            for (int n = 1; Request.Form["tpq" + n + "_text"] != null; n++)
-            {
-                string prefix = "tpq" + n + "_";
-                int id, marks, correct;
-                int.TryParse(Request.Form[prefix + "id"], out id);
-                if (!int.TryParse(Request.Form[prefix + "marks"], out marks) || marks < 1) marks = 1;
-                if (!int.TryParse(Request.Form[prefix + "correct"], out correct)) correct = -1;
-
-                TeacherQuestion question = new TeacherQuestion
-                {
-                    Id = id > 0 ? id : nextId++,
-                    Text = Request.Form[prefix + "text"].Trim(),
-                    Marks = marks,
-                    Type = Request.Form[prefix + "type"] ?? "MCQ",
-                    AcceptedAnswers = Request.Form[prefix + "accepted"] ?? "",
-                    ModelAnswer = Request.Form[prefix + "model"] ?? "",
-                    MarkingGuide = Request.Form[prefix + "guide"] ?? "",
-                    Answers = new List<TeacherAnswer>()
-                };
-                for (int m = 0; Request.Form[prefix + "a" + m] != null; m++)
-                {
-                    question.Answers.Add(new TeacherAnswer { Text = Request.Form[prefix + "a" + m], Correct = m == correct });
-                }
-                posted.Add(question);
-            }
-            return posted;
+            List<TeacherQuestion> existing = StoredQuestions();
+            return TeacherQuestion.ReadPosted(Request.Unvalidated.Form, existing.Count == 0 ? 1 : existing.Max(q => q.Id) + 1);
         }
 
         protected void btnTeacherSaveExam_Click(object sender, EventArgs e)
         {
-            // Until the database exists the arranged questions are kept in the session (TeacherSampleData.SaveExamQuestions)
-            TeacherSampleData.SaveExamQuestions(Course.Id, ReadPostedQuestions());
-            BindQuestions(); // show the saved order and text straight away
-            // TODO (backend): save the exam. Posted fields:
-            //   for the exam of Course.Id (the ?course= value; check the course belongs to the signed-in teacher):
-            //   hfTeacherMinMarks, ddlTeacherExamLanguage, tpRule<RuleId> ("1"/"0"),
-            //   and per question n (1-based, in page order): tpq{n}_id (QuestionId, 0 = new), tpq{n}_text, tpq{n}_marks, tpq{n}_type,
-            //   tpq{n}_a{m} (answers, in order), tpq{n}_correct (index of the correct answer),
-            //   tpq{n}_accepted, tpq{n}_model, tpq{n}_guide
-            Master.ShowToast("Exam details saved");
+            List<TeacherQuestion> questions = ReadPostedQuestions();
+            if (questions.Count == 0)
+            {
+                Master.ShowToast("Add at least one question before saving the exam.");
+                return;
+            }
+            if (questions.Any(q => q.Text.Length == 0))
+            {
+                Master.ShowToast("Every question needs some text.");
+                return;
+            }
+
+            // The pass mark is a percentage, the time limit is in minutes (the page's steppers keep them in range)
+            int passMark, timeLimit;
+            if (!int.TryParse(hfTeacherMinMarks.Value, out passMark) || passMark < 1 || passMark > 100) passMark = 50;
+            if (!int.TryParse(hfTeacherTimeLimit.Value, out timeLimit) || timeLimit < 5 || timeLimit > 300) timeLimit = 60;
+            hfTeacherMinMarks.Value = passMark.ToString();
+            hfTeacherTimeLimit.Value = timeLimit.ToString();
+
+            // TODO (backend): INSERT the Exam row when the course has none, otherwise UPDATE it (check the course belongs to the
+            //   signed-in teacher). Posted fields: hfTeacherMinMarks (pass mark %), hfTeacherTimeLimit (minutes),
+            //   tpRule<RuleId> ("1"/"0": 1 = strict syntax checking, 2 = use of libraries), and per question n (1-based, page order):
+            //   tpq{n}_id (QuestionId, 0 = new), tpq{n}_text, tpq{n}_marks, tpq{n}_type, tpq{n}_a{m} (answers, in order),
+            //   tpq{n}_correct (index of the correct answer), tpq{n}_accepted, tpq{n}_model, tpq{n}_guide
+            // Until then the arranged questions are kept in the session (TeacherSampleData.SaveExamQuestions).
+            bool created = !ExamExists;
+            TeacherSampleData.SaveExamQuestions(Course.Id, questions);
+            if (created)
+            {
+                TeacherSampleData.MarkExamCreated(Course.Id);
+                ExamExists = true;
+            }
+            BindQuestions(questions); // show the saved order and text straight away
+            Master.ShowToast(created ? "Exam created" : "Exam details saved");
         }
     }
 }

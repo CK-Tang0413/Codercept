@@ -11,7 +11,7 @@ namespace Codercept
         /// <summary>The number the chapter shows (its position in the list as arranged), passed as ?n=; its stored number when absent.</summary>
         protected int ChapterNumber = 1;
 
-        /// <summary>TODO (backend): SubChapter + Quiz rows of the chapter, in display order.</summary>
+        /// <summary>TODO (backend): SubChapter rows of the chapter, in display order.</summary>
         protected List<TeacherContentItem> Contents = TeacherSampleData.GetChapterContents();
 
         protected void Page_Load(object sender, EventArgs e)
@@ -26,22 +26,16 @@ namespace Codercept
             bcTeacherChapter.CourseTitle = TeacherSampleData.ChapterCourseTitle;
             bcTeacherChapter.ChapterTitle = "Chapter " + ChapterNumber + " - " + chapter.Title;
 
-            if (!IsPostBack)
+            if (!IsPostBack && Contents.Count > 0)
             {
                 txtTeacherSubchapterTitle.Text = Contents[0].Title;
                 reTeacherSubchapterDescription.Text = TeacherSampleData.SampleSubchapterDescription;
             }
-
-            // The quiz question cards are plain HTML fields (see TeacherQuestionCard.ascx), rebuilt on every request.
-            // TODO (backend): load the quiz's questions from the database
-            rptTeacherQuizQuestions.DataSource = TeacherSampleData.GetQuizQuestions();
-            rptTeacherQuizQuestions.DataBind();
         }
 
         protected void btnTeacherUpdateSubchapter_Click(object sender, EventArgs e)
         {
             // TODO (backend): save the subchapter (title, media dzTeacherSubchapterMedia.PostedFile, description)
-            //   and, if edited, the quiz questions posted as tpq{n}_text / _marks / _a{m} / _correct
             Master.ShowToast("Subchapter details updated");
         }
 

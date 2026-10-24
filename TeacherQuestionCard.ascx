@@ -33,19 +33,19 @@
         <input type="text" data-tp-f="text" value="<%: Question.Text %>" placeholder="Enter your question" />
     </label>
 
-    <% if (IsExam) { %>
+    <% if (HasTypes) { %>
     <div class="question-type-control">
         <span>QUESTION TYPE</span>
         <input type="hidden" data-tp-f="type" data-tp-q-type-value value="<%: Question.Type %>" />
         <div class="segmented-control">
             <button type="button" class="<%= Question.Type == "MCQ" ? "is-active" : "" %>" data-tp-q-type="MCQ">MCQ</button>
             <button type="button" class="<%= Question.Type == "Fill-in-the-blank" ? "is-active" : "" %>" data-tp-q-type="Fill-in-the-blank">Fill-in-the-blank</button>
-            <button type="button" class="<%= Question.Type == "Subjective" ? "is-active" : "" %>" data-tp-q-type="Subjective">Subjective</button>
+            <button type="button" class="<%= Question.Type == "Coding" ? "is-active" : "" %>" data-tp-q-type="Coding">Coding</button>
         </div>
     </div>
     <% } %>
 
-    <div class="answer-list" data-tp-q-panel="MCQ"<%= (IsExam && Question.Type != "MCQ") ? " hidden" : "" %>>
+    <div class="answer-list" data-tp-q-panel="MCQ"<%= (HasTypes && Question.Type != "MCQ") ? " hidden" : "" %>>
         <span class="answer-list-label">ANSWERS</span>
         <input type="hidden" data-tp-f="correct" value="" />
         <div data-tp-answer-rows data-tp-sortable="[data-tp-answer]" style="display: contents">
@@ -55,7 +55,7 @@
         <template data-tp-answer-template><%= AnswerRow(0, "", false) %></template>
     </div>
 
-    <% if (IsExam) { %>
+    <% if (HasTypes) { %>
     <div class="exam-answer-fields" data-tp-q-panel="Fill-in-the-blank"<%= Question.Type != "Fill-in-the-blank" ? " hidden" : "" %>>
         <label class="form-field">
             <span>Accepted answers <b>*</b></span>
@@ -64,7 +64,7 @@
         </label>
     </div>
 
-    <div class="exam-answer-fields" data-tp-q-panel="Subjective"<%= Question.Type != "Subjective" ? " hidden" : "" %>>
+    <div class="exam-answer-fields" data-tp-q-panel="Coding"<%= Question.Type != "Coding" ? " hidden" : "" %>>
         <label class="form-field">
             <span>Model answer <b>*</b></span>
             <textarea data-tp-f="model" rows="4"><%: Question.ModelAnswer %></textarea>

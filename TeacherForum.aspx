@@ -71,7 +71,7 @@
                 <div class="reply-area">
                     <span class="replying-label" data-tp-forum-replying-label hidden></span>
                     <div class="reply-composer">
-                        <asp:TextBox ID="txtTeacherReply" runat="server" placeholder="Write a reply..." aria-label="Write a reply" autocomplete="off" data-tp-forum-reply-input></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherReply" runat="server" ValidateRequestMode="Disabled" placeholder="Write a reply..." aria-label="Write a reply" autocomplete="off" data-tp-forum-reply-input></asp:TextBox>
                         <button type="submit" name="tpForumAction" value="reply" aria-label="Send reply" data-tp-forum-send><%= TeacherIcons.Svg("send", 21) %></button>
                     </div>
                 </div>

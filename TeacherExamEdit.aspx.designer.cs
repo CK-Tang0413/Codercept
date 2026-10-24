@@ -24,13 +24,13 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherMinMarks;
 
         /// <summary>
-        /// ddlTeacherExamLanguage control.
+        /// hfTeacherTimeLimit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTeacherExamLanguage;
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherTimeLimit;
 
         /// <summary>
         /// rptTeacherExamQuestions control.

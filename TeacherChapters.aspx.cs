@@ -45,10 +45,28 @@ namespace Codercept
             get { return Chapters.IndexOf(Active) + 1; }
         }
 
-        /// <summary>TODO (backend): SubChapter + Quiz rows of the active chapter.</summary>
+        /// <summary>TODO (backend): SubChapter rows of each chapter (the sample list is the same for every chapter).</summary>
         protected List<TeacherContentItem> Contents
         {
             get { return TeacherSampleData.GetChapterContents(); }
+        }
+
+        /// <summary>"1 question", "3 questions".</summary>
+        protected static string Plural(int count, string noun)
+        {
+            return count + " " + noun + (count == 1 ? "" : "s");
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack && Request.QueryString["testdeleted"] == "1") Master.ShowToast("Quiz or assessment deleted");
+
+            // Arriving with ?chapter=<id> (for example back from a quiz or subchapter page) selects that chapter
+            int linked;
+            if (!IsPostBack && int.TryParse(Request.QueryString["chapter"], out linked) && Chapters.Any(c => c.Id == linked))
+            {
+                hfTeacherChapterId.Value = linked.ToString();
+            }
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
@@ -72,7 +90,7 @@ namespace Codercept
 
             shTeacherChapters.Subtitle = "Arrange and update content for " + selTeacherChapterCourse.SelectedCourse.Title + ".";
             mdlTeacherDeleteChapter.BodyHtml = "This will permanently delete <strong data-tp-ch-delete-name>Chapter " + ActiveNumber + " - " + Server.HtmlEncode(Active.Title)
-                + "</strong>, including its subchapters and quizzes. This action cannot be undone.";
+                + "</strong>, including its subchapters and its quiz or assessment. This action cannot be undone.";
         }
 
         protected void btnTeacherUpdateChapter_Click(object sender, EventArgs e)
@@ -98,7 +116,8 @@ namespace Codercept
                 Description = txtTeacherChapterDescription.Text,
                 Duration = TeacherSampleData.FormatHours(hours),
                 Created = current.Created,
-                Updated = DateTime.Today.ToString("d MMMM yyyy")
+                Updated = DateTime.Today.ToString("d MMMM yyyy"),
+                Test = current.Test
             });
             chapters = null; // reload so the list and the details show the edit
 
@@ -113,7 +132,7 @@ namespace Codercept
 
         protected void mdlTeacherDeleteChapter_Confirmed(object sender, EventArgs e)
         {
-            // TODO (backend): delete the active chapter (and its subchapters and quizzes)
+            // TODO (backend): delete the active chapter (and its subchapters and its quiz or assessment)
             Master.ShowToast("Chapter " + ActiveNumber + " deleted");
         }
     }

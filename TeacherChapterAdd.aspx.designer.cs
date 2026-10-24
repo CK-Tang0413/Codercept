@@ -15,6 +15,15 @@ namespace Codercept
     {
 
         /// <summary>
+        /// pnlTeacherExists control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTeacherExists;
+
+        /// <summary>
         /// bcTeacherChapter control.
         /// </summary>
         /// <remarks>
@@ -22,6 +31,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::Codercept.TeacherBreadcrumb bcTeacherChapter;
+
+        /// <summary>
+        /// pnlTeacherForm control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTeacherForm;
 
         /// <summary>
         /// shTeacherDetails control.

@@ -11,7 +11,7 @@
         <div>
             <span class="eyebrow">COURSE MANAGEMENT</span>
             <h1>Create a Course</h1>
-            <p>Build a clear course foundation before adding chapters and quizzes.</p>
+            <p>Build a clear course foundation before adding chapters, subchapters, and quizzes.</p>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
                 <label id="fldTeacherTitle" runat="server" class="form-field" data-tp-cf-field="title">
                     <span>Title <b>*</b></span>
                     <div class="validated-input">
-                        <asp:TextBox ID="txtTeacherCourseTitle" runat="server" maxlength="255" placeholder="e.g. Python Programming Fundamentals" data-tp-cf="title"></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherCourseTitle" runat="server" ValidateRequestMode="Disabled" maxlength="255" placeholder="e.g. Python Programming Fundamentals" data-tp-cf="title"></asp:TextBox>
                         <span data-tp-cf-check style="display: contents" hidden><%= TeacherIcons.Svg("check", 17) %></span>
                     </div>
                     <small id="hintTeacherTitle" runat="server" data-tp-cf-hint data-ok="Use a clear, descriptive course title." data-err="Enter a title with at least 4 characters.">Use a clear, descriptive course title.</small>
@@ -37,7 +37,7 @@
 
                 <label id="fldTeacherDescription" runat="server" class="form-field" data-tp-cf-field="description">
                     <span>Description <b>*</b></span>
-                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" TextMode="MultiLine" Rows="6" maxlength="300" placeholder="What will learners achieve in this course?" data-tp-cf="description"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="6" maxlength="300" placeholder="What will learners achieve in this course?" data-tp-cf="description"></asp:TextBox>
                     <div class="field-footer">
                         <small id="hintTeacherDescription" runat="server" data-tp-cf-hint data-ok="Include the main skills and expected outcomes." data-err="Write at least 20 characters.">Include the main skills and expected outcomes.</small>
                         <span data-tp-cf-counter>0/300</span>

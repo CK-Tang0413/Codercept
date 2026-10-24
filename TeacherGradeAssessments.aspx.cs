@@ -11,6 +11,19 @@ namespace Codercept
         protected List<TeacherAssessment> Assessments;
         protected List<TeacherSubmission> Submissions;
 
+        /// <summary>The kinds a teacher can grade, in the order they are listed.</summary>
+        protected static readonly string[] Types = { "Exam", "Quiz", "Assessment" };
+
+        protected static string TypeClass(string type)
+        {
+            return type == "Exam" ? "is-exam" : type == "Quiz" ? "is-quiz" : "is-assessment";
+        }
+
+        protected static string TypeIcon(string type)
+        {
+            return type == "Exam" ? "exams" : type == "Quiz" ? "question" : "grade";
+        }
+
         protected TeacherAssessment SelectedAssessment
         {
             get

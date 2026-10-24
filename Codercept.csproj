@@ -255,6 +255,7 @@
     <Content Include="TeacherBreadcrumb.ascx" />
     <Content Include="TeacherChapterAdd.aspx" />
     <Content Include="TeacherChapterContent.aspx" />
+    <Content Include="TeacherChapterTest.aspx" />
     <Content Include="TeacherChapters.aspx" />
     <Content Include="TeacherConfirmModal.ascx" />
     <Content Include="TeacherDomainInput.ascx" />
@@ -456,6 +457,13 @@
     </Compile>
     <Compile Include="TeacherChapterContent.aspx.designer.cs">
       <DependentUpon>TeacherChapterContent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherChapterTest.aspx.cs">
+      <DependentUpon>TeacherChapterTest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherChapterTest.aspx.designer.cs">
+      <DependentUpon>TeacherChapterTest.aspx</DependentUpon>
     </Compile>
     <Compile Include="TeacherChapters.aspx.cs">
       <DependentUpon>TeacherChapters.aspx</DependentUpon>

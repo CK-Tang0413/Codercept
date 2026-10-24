@@ -32,14 +32,14 @@
                     <div>
                         <span>Selected course</span>
                         <div id="fldTeacherEditTitle" runat="server" class="tp-inline-field">
-                            <asp:TextBox ID="txtTeacherCourseTitle" runat="server" CssClass="tp-heading-input" autocomplete="off" aria-label="Course title"></asp:TextBox>
+                            <asp:TextBox ID="txtTeacherCourseTitle" runat="server" ValidateRequestMode="Disabled" CssClass="tp-heading-input" autocomplete="off" aria-label="Course title"></asp:TextBox>
                             <small id="hintTeacherEditTitle" runat="server" data-ok="" data-err="Enter a title with at least 4 characters."></small>
                         </div>
                     </div>
                 </div>
                 <label class="form-field">
                     <span>Description</span>
-                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" TextMode="MultiLine" Rows="5" autocomplete="off"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="5" autocomplete="off"></asp:TextBox>
                     <small>Give learners a clear overview of what they will learn.</small>
                 </label>
                 <div class="details-grid">
@@ -102,7 +102,11 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("chapters", 17) %></span>
-                        <div><span>Subchapters/quizzes</span><strong>38</strong></div>
+                        <div><span>Subchapters</span><strong>26</strong></div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-item-icon"><%= TeacherIcons.Svg("question", 17) %></span>
+                        <div><span>Quizzes &amp; assessments</span><strong>12</strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("users", 17) %></span>

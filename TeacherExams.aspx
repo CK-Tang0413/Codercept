@@ -47,7 +47,7 @@
                     <span><%: c.Glyph %></span>
                     <i class="code-symbol code-symbol--one">{ }</i>
                     <div class="exam-card-overlay">
-                        <a class="button button--white" href="TeacherExamEdit.aspx?course=<%= c.Id %>"><%= TeacherIcons.Svg("edit", 17) %><span>Edit exam</span></a>
+                        <a class="button button--white" href="TeacherExamEdit.aspx?course=<%= c.Id %>"><%= TeacherIcons.Svg("edit", 17) %><span><%= configured ? "Edit exam" : "Create exam" %></span></a>
                     </div>
                 </div>
                 <div class="exam-course-content">

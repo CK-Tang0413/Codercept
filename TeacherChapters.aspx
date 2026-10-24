@@ -12,7 +12,7 @@
         <div>
             <span class="eyebrow">COURSE CONTENT</span>
             <h1>Manage Course Chapters</h1>
-            <p>Organise chapters, assessments, subchapters, and quizzes.</p>
+            <p>Organise chapters, subchapters, and each chapter's quiz or assessment.</p>
         </div>
     </div>
 
@@ -31,8 +31,7 @@
         <div class="chapter-master-detail">
             <aside class="chapter-list-panel">
                 <div class="chapter-list-actions">
-                    <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=chapter"><%= TeacherIcons.Svg("plus", 17) %><span>Add chapter</span></a>
-                    <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=assessment&amp;chapter=<%= Active.Id %>&amp;n=<%= ActiveNumber %>" data-tp-ch-link="TeacherChapterAdd.aspx?kind=assessment&amp;chapter="><%= TeacherIcons.Svg("grade", 17) %><span>Add assessment</span></a>
+                    <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=chapter&amp;course=<%= selTeacherChapterCourse.SelectedId %>"><%= TeacherIcons.Svg("plus", 17) %><span>Add chapter</span></a>
                 </div>
                 <div class="chapter-list-heading">
                     <span>COURSE CONTENT</span>
@@ -61,14 +60,14 @@
                         <div>
                             <span>CHAPTER <span data-tp-ch-number><%= ActiveNumber %></span></span>
                             <div id="fldTeacherChapterTitle" runat="server" class="tp-inline-field">
-                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title" data-tp-ch-title></asp:TextBox>
+                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" ValidateRequestMode="Disabled" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title" data-tp-ch-title></asp:TextBox>
                                 <small id="hintTeacherChapterTitle" runat="server" data-err="Enter a title with at least 4 characters."></small>
                             </div>
                         </div>
                     </div>
                     <label class="form-field">
                         <span>Description</span>
-                        <asp:TextBox ID="txtTeacherChapterDescription" runat="server" TextMode="MultiLine" Rows="5" autocomplete="off" data-tp-ch-description></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherChapterDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="5" autocomplete="off" data-tp-ch-description></asp:TextBox>
                         <small>Summarise this chapter's learning goals and key concepts.</small>
                     </label>
                     <div class="chapter-meta-grid">
@@ -95,36 +94,70 @@
                     </div>
                 </article>
 
-                <article class="chapter-detail-card content-summary-card">
-                    <div class="chapter-card-header">
-                        <div>
-                            <span>CHAPTER CONTENT</span>
-                            <h3>Subchapters and Quizzes</h3>
-                        </div>
-                        <span class="badge badge--indigo"><%= Contents.Count %> items</span>
-                    </div>
-                    <div class="content-summary-grid">
-                        <div>
-                            <span class="summary-column-title"><%= TeacherIcons.Svg("book", 15) %>Subchapters</span>
-                            <% int s = 0; foreach (TeacherContentItem item in Contents) { if (item.Type != "subchapter") continue; s++; %>
-                            <div class="summary-item">
-                                <span class="summary-icon summary-icon--book"><%= TeacherIcons.Svg("book", 15) %></span>
-                                <div><small>Subchapter <%= s %></small><strong><%: item.Title %></strong></div>
+                <%-- One block per chapter: TeacherPortal.js shows the active chapter's block when a chapter is picked (no reload).
+                     The links carry the chapter id and the number it shows; the script refreshes them when the list is reordered. --%>
+                <% for (int i = 0; i < Chapters.Count; i++) { TeacherChapter c = Chapters[i]; bool isActive = c.Id == Active.Id; %>
+                <div class="chapter-extra" data-tp-ch-extra="<%= c.Id %>"<%= isActive ? "" : " hidden" %>>
+                    <article class="chapter-detail-card content-summary-card">
+                        <div class="chapter-card-header">
+                            <div>
+                                <span>CHAPTER CONTENT</span>
+                                <h3>Subchapters</h3>
                             </div>
+                            <span class="badge badge--indigo"><%= Plural(Contents.Count, "subchapter") %></span>
+                        </div>
+                        <div class="content-summary-grid content-summary-grid--single">
+                            <div>
+                                <% if (Contents.Count == 0) { %>
+                                <p class="summary-empty">No subchapters yet.</p>
+                                <% } %>
+                                <% for (int s = 0; s < Contents.Count; s++) { %>
+                                <div class="summary-item">
+                                    <span class="summary-icon summary-icon--book"><%= TeacherIcons.Svg("book", 15) %></span>
+                                    <div><small>Subchapter <%= s + 1 %></small><strong><%: Contents[s].Title %></strong></div>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="chapter-detail-actions">
+                            <a class="button button--secondary" href="TeacherChapterContent.aspx?chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterContent.aspx?chapter="><%= TeacherIcons.Svg("layers", 17) %><span>Manage subchapters</span></a>
+                            <a class="button button--primary" href="TeacherChapterAdd.aspx?kind=subchapter&amp;chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterAdd.aspx?kind=subchapter&amp;chapter="><%= TeacherIcons.Svg("plus", 17) %><span>Add subchapter</span></a>
+                        </div>
+                    </article>
+
+                    <article class="chapter-detail-card content-summary-card">
+                        <div class="chapter-card-header">
+                            <div>
+                                <span>END OF CHAPTER</span>
+                                <h3>Quiz or assessment</h3>
+                            </div>
+                            <% if (c.Test != null) { %>
+                            <span class="badge badge--<%= c.Test.Type == "quiz" ? "warning" : "success" %>"><%= c.Test.Type == "quiz" ? "Quiz" : "Assessment" %></span>
                             <% } %>
                         </div>
-                        <div>
-                            <span class="summary-column-title"><%= TeacherIcons.Svg("question", 15) %>Quizzes</span>
-                            <% int q = 0; foreach (TeacherContentItem item in Contents) { if (item.Type != "quiz") continue; q++; %>
-                            <div class="summary-item">
-                                <span class="summary-icon summary-icon--quiz"><%= TeacherIcons.Svg("question", 15) %></span>
-                                <div><small>Quiz <%= q %></small><strong><%: item.Title %></strong></div>
+                        <% if (c.Test != null) { %>
+                        <div class="content-summary-grid content-summary-grid--single">
+                            <div>
+                                <div class="summary-item">
+                                    <span class="summary-icon <%= c.Test.Type == "quiz" ? "summary-icon--quiz" : "summary-icon--assessment" %>"><%= TeacherIcons.Svg(c.Test.Type == "quiz" ? "question" : "grade", 15) %></span>
+                                    <div><small><%= Plural(c.Test.Questions, "question") %> &middot; <%= Plural(c.Test.TotalMarks, "mark") %></small><strong><%: c.Test.Title %></strong></div>
+                                </div>
                             </div>
-                            <% } %>
                         </div>
-                    </div>
-                    <a class="button button--secondary" href="TeacherChapterContent.aspx?chapter=<%= Active.Id %>&amp;n=<%= ActiveNumber %>" data-tp-ch-link="TeacherChapterContent.aspx?chapter="><%= TeacherIcons.Svg("layers", 17) %><span>Manage subchapters/quizzes</span></a>
-                </article>
+                        <div class="chapter-detail-actions">
+                            <%-- TODO (F5): TeacherChapterTest.aspx is added in step F5 --%>
+                            <a class="button button--secondary" href="TeacherChapterTest.aspx?chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterTest.aspx?chapter="><%= TeacherIcons.Svg("edit", 17) %><span>Edit <%= c.Test.Type %></span></a>
+                        </div>
+                        <% } else { %>
+                        <p class="summary-empty">This chapter has no quiz or assessment yet. A chapter can have one or the other.</p>
+                        <div class="chapter-detail-actions">
+                            <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=quiz&amp;chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterAdd.aspx?kind=quiz&amp;chapter="><%= TeacherIcons.Svg("question", 17) %><span>Add quiz</span></a>
+                            <a class="button button--secondary" href="TeacherChapterAdd.aspx?kind=assessment&amp;chapter=<%= c.Id %>&amp;n=<%= i + 1 %>" data-tp-ch-link="TeacherChapterAdd.aspx?kind=assessment&amp;chapter="><%= TeacherIcons.Svg("grade", 17) %><span>Add assessment</span></a>
+                        </div>
+                        <% } %>
+                    </article>
+                </div>
+                <% } %>
             </div>
         </div>
     </section>

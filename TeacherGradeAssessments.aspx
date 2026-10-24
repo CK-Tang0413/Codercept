@@ -28,13 +28,13 @@
         </div>
 
         <section class="flow-section grading-flow-section">
-            <uc:StepHeading runat="server" Step="1" Title="Select quiz / exam" Subtitle="Choose the exam or quiz submission you want to mark." />
+            <uc:StepHeading runat="server" Step="1" Title="Select exam / quiz / assessment" Subtitle="Choose the exam, quiz or chapter assessment submission you want to mark." />
             <div class="assessment-select-layout">
                 <div class="assessment-groups">
-                    <% foreach (string type in new[] { "Exam", "Quiz" }) { %>
+                    <% foreach (string type in Types) { if (!Assessments.Any(a => a.Type == type)) continue; %>
                     <div class="assessment-group">
                         <div class="assessment-group-heading">
-                            <span class="assessment-type-icon <%= type == "Exam" ? "is-exam" : "is-quiz" %>"><%= TeacherIcons.Svg(type == "Exam" ? "exams" : "question", 17) %></span>
+                            <span class="assessment-type-icon <%= TypeClass(type) %>"><%= TeacherIcons.Svg(TypeIcon(type), 17) %></span>
                             <div>
                                 <h3><%= type %></h3>
                                 <span><%= Assessments.Count(a => a.Type == type) %> available</span>
@@ -44,7 +44,7 @@
                             <% foreach (TeacherAssessment a in Assessments.Where(x => x.Type == type)) { bool sel = a.Key == SelectedAssessment.Key; %>
                             <button type="button" class="assessment-tile<%= sel ? " is-selected" : "" %>" data-tp-assessment
                                 data-key="<%= a.Key %>" data-title="<%: a.Title %>" data-pending="<%= a.Pending %>" data-questions="<%= a.Questions %>">
-                                <span class="assessment-type-icon <%= type == "Exam" ? "is-exam" : "is-quiz" %>"><%= TeacherIcons.Svg(type == "Exam" ? "exams" : "question", 18) %></span>
+                                <span class="assessment-type-icon <%= TypeClass(type) %>"><%= TeacherIcons.Svg(TypeIcon(type), 18) %></span>
                                 <span>
                                     <strong><%: a.Title %></strong>
                                     <small><%= a.Questions %> questions</small>
@@ -59,7 +59,7 @@
                 </div>
                 <aside class="selected-assessment-summary">
                     <span>SELECTED ASSESSMENT</span>
-                    <span class="summary-assessment-icon"><%= TeacherIcons.Svg("exams", 21) %></span>
+                    <span class="summary-assessment-icon" data-tp-sum-icon><%= TeacherIcons.Svg(TypeIcon(SelectedAssessment.Type), 21) %></span>
                     <h3 data-tp-sum-title><%: SelectedAssessment.Title %></h3>
                     <p data-tp-sum-text><%= SelectedAssessment.Questions %> questions &middot; 100 total marks</p>
                     <span class="badge badge--warning" data-tp-sum-badge><%= SelectedAssessment.Pending %> pending</span>
@@ -155,7 +155,7 @@
                             </div>
                             <label class="form-field">
                                 <span>Comment</span>
-                                <asp:TextBox ID="txtTeacherCommentQ2" runat="server" TextMode="MultiLine" Rows="3" placeholder="Add feedback for the learner..."></asp:TextBox>
+                                <asp:TextBox ID="txtTeacherCommentQ2" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="3" placeholder="Add feedback for the learner..."></asp:TextBox>
                             </label>
                         </div>
                     </article>

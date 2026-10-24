@@ -7434,3 +7434,88 @@
   font-size: 14px;
   font-weight: 650;
 }
+
+/* Manage Chapters: per-chapter subchapters and quiz / assessment cards */
+.tp-app .chapter-extra {
+  display: contents;
+}
+
+.tp-app .chapter-extra[hidden] {
+  display: none;
+}
+
+.tp-app .content-summary-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.tp-app .summary-icon--assessment {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.tp-app .summary-empty {
+  margin: 0 0 19px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tp-app .content-summary-card .chapter-detail-actions {
+  flex-wrap: wrap;
+}
+
+/* A lone add-button (Manage Subchapters, Manage Chapters) uses the whole row and keeps its label on one line */
+.tp-app .chapter-list-actions > .button:only-child {
+  grid-column: 1 / -1;
+  white-space: nowrap;
+}
+
+/* The subchapter editor card already has its own padding: no extra space above its heading */
+.tp-app .subcontent-editors .chapter-detail-card > .chapter-card-header {
+  padding-top: 0;
+}
+
+/* Exam page: pass mark, time limit and the read-only course language */
+.tp-app .exam-primary-rules .exam-language-field {
+  grid-column: 1 / -1;
+}
+
+.tp-app .language-select--static {
+  gap: 10px;
+  background: #f8fafc;
+}
+
+.tp-app .language-select--static strong {
+  color: var(--heading);
+  font-size: 14px;
+}
+
+.tp-app .exam-new-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding: 13px 16px;
+  border: 1px solid #ddd6fe;
+  border-radius: 11px;
+  color: var(--body);
+  background: var(--indigo-tint);
+}
+
+.tp-app .exam-new-note .icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--indigo);
+}
+
+.tp-app .exam-new-note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Grading: chapter assessments get their own colour next to exams and quizzes */
+.tp-app .assessment-type-icon.is-assessment {
+  color: #047857;
+  background: #d1fae5;
+}
