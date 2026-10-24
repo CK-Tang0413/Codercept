@@ -10,19 +10,8 @@
 namespace Codercept
 {
 
-
     public partial class TAGrading
     {
-
-        /// <summary>
-        /// form1 control.
-        /// </summary>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
-        /// TASideBarCtrl control.
-        /// </summary>
-        protected global::Codercept.TASideBar TASideBarCtrl;
 
         /// <summary>
         /// litCountAll control.
@@ -30,14 +19,14 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litCountAll;
 
         /// <summary>
-        /// litCountTodo control.
+        /// litCountPending control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCountTodo;
+        protected global::System.Web.UI.WebControls.Literal litCountPending;
 
         /// <summary>
-        /// litCountSubmitted control.
+        /// litCountReviewed control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCountSubmitted;
+        protected global::System.Web.UI.WebControls.Literal litCountReviewed;
 
         /// <summary>
         /// litCountApproved control.
@@ -100,24 +89,19 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.HyperLink hlCourse;
 
         /// <summary>
-        /// pnlTeacherNote control.
+        /// pnlReviewState control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlTeacherNote;
+        protected global::System.Web.UI.WebControls.Panel pnlReviewState;
 
         /// <summary>
-        /// litTeacherNote control.
+        /// litReviewState control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litTeacherNote;
+        protected global::System.Web.UI.WebControls.Literal litReviewState;
 
         /// <summary>
-        /// pnlLocked control.
+        /// litFilterLabel control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlLocked;
-
-        /// <summary>
-        /// litLockedText control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLockedText;
+        protected global::System.Web.UI.WebControls.Literal litFilterLabel;
 
         /// <summary>
         /// pnlMessage control.
@@ -128,6 +112,11 @@ namespace Codercept
         /// litMessage control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litMessage;
+
+        /// <summary>
+        /// hfAttemptId control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HiddenField hfAttemptId;
 
         /// <summary>
         /// rptQuestions control.

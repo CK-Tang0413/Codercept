@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
+using System.Web.UI.WebControls;
 
 namespace Codercept
 {
     public partial class TAGrading : System.Web.UI.Page
     {
-        // Workflow: Pending -> In Progress (draft saved) -> Submitted (awaiting teacher)
-        //           -> Approved (official grade, visible to learner) or Returned (teacher asks TA to revise)
+        // Workflow: Pending -> In Progress (draft saved) -> Reviewed (awaiting teacher)
+        //           -> Approved (official grade, visible to learner)
 
-        // 1. Define Dummy Data Structures
-        public class DummySubmission
+        // 1. Define Data Structures
+        public class Submission
         {
             public int AttemptId { get; set; }
             public string LearnerName { get; set; }
@@ -22,39 +26,39 @@ namespace Codercept
             public string Submitted { get; set; }
             public string Status { get; set; }
             public string StatusCss { get; set; }
-            public string TeacherNote { get; set; }
+            public string ProgressNotes { get; set; }
             public string CssClass { get; set; }
         }
 
-        public class DummyQuestion
+        public class Question
         {
             public int QuestionId { get; set; }
             public int Number { get; set; }
             public string Content { get; set; }
             public string TypeLabel { get; set; }
             public string Answer { get; set; }
+            public string AnswerHtml { get; set; }
             public bool IsCode { get; set; }
             public bool AutoGraded { get; set; }
             public bool Locked { get; set; }      // whole submission is read-only
             public bool ScoreLocked { get; set; } // auto-graded or read-only
-            public int MaxScore { get; set; }
-            public string Score { get; set; }
+            public double MaxScore { get; set; }
+            public double ScoreValue { get; set; }
+            public string Score { get { return ScoreValue.ToString("0.##", CultureInfo.InvariantCulture); } }
             public string Comment { get; set; }
         }
 
+        private readonly string connString = TAHelpers.ConnectionString;
+
         protected string CurrentFilter { get; private set; } = "all";
+
+        private int TaId { get { return Convert.ToInt32(Session["UserId"]); } }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Security Check
-            if (Session["UserType"] == null || Session["UserType"].ToString() != "TA")
-            {
-                Response.Redirect("signIn.aspx");
-                return;
-            }
-
             string filter = (Request.QueryString["filter"] ?? "all").ToLower();
-            CurrentFilter = (filter == "todo" || filter == "submitted" || filter == "approved") ? filter : "all";
+            if (filter == "todo") filter = "pending"; // old links
+            CurrentFilter = (filter == "pending" || filter == "reviewed" || filter == "approved") ? filter : "all";
 
             if (!IsPostBack)
             {
@@ -67,36 +71,152 @@ namespace Codercept
             return tab == CurrentFilter ? "active" : "";
         }
 
-        private static bool IsTodo(DummySubmission s)
+        private static bool IsPending(Submission s)
         {
-            return s.Status == "Pending" || s.Status == "In Progress" || s.Status == "Returned";
+            return s.Status == GradingStatus.Pending || s.Status == GradingStatus.InProgress;
         }
+
+        private static bool IsLocked(string status)
+        {
+            return status == GradingStatus.Reviewed || status == GradingStatus.Approved;
+        }
+
+        // ---------- Data access ----------
+
+        // Everything this TA may see: submitted attempts nobody has claimed, plus their own work (any status).
+        private List<Submission> GetVisibleSubmissions()
+        {
+            const string query = @"
+                SELECT
+                    a.AttemptId,
+                    l.Name AS LearnerName,
+                    a.AttemptDate,
+                    COALESCE(q.QuizTitle, asm.AssessmentTitle, ex.ExamTitle) AS Title,
+                    CASE WHEN a.QuizId IS NOT NULL THEN 'Quiz' WHEN a.AssessmentId IS NOT NULL THEN 'Assessment' ELSE 'Exam' END AS Type,
+                    c.CourseId, c.CourseTitle, ch.ChapterNum,
+                    COALESCE(gp.ProgressStatus, 'Pending') AS Status,
+                    gp.ProgressNotes
+                FROM [dbo].[Attempt] a
+                INNER JOIN [dbo].[Learner] l ON l.LearnerId = a.LearnerId
+                LEFT JOIN [dbo].[Quiz] q ON q.QuizId = a.QuizId
+                LEFT JOIN [dbo].[SubChapter] sc ON sc.SubChapterId = q.SubChapterId
+                LEFT JOIN [dbo].[Assessment] asm ON asm.AssessmentId = a.AssessmentId
+                LEFT JOIN [dbo].[Exam] ex ON ex.ExamId = a.ExamId
+                LEFT JOIN [dbo].[Chapter] ch ON ch.ChapterId = COALESCE(sc.ChapterId, asm.ChapterId, ex.ChapterId)
+                LEFT JOIN [dbo].[Course] c ON c.CourseId = ch.CourseId
+                LEFT JOIN [dbo].[GradingProgress] gp ON gp.AttemptId = a.AttemptId
+                WHERE (a.AttemptStatus = 'Submitted' AND (gp.GradingProgId IS NULL OR gp.TA_Id = @TA_Id))
+                   OR (a.AttemptStatus = 'Graded' AND gp.TA_Id = @TA_Id)
+                ORDER BY CASE WHEN a.AttemptStatus = 'Graded' THEN 1 ELSE 0 END,
+                         a.AttemptDate ASC";
+
+            var list = new List<Submission>();
+
+            using (SqlConnection con = new SqlConnection(connString))
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                cmd.Parameters.AddWithValue("@TA_Id", TaId);
+                con.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string status = reader["Status"].ToString();
+
+                        list.Add(new Submission
+                        {
+                            AttemptId = Convert.ToInt32(reader["AttemptId"]),
+                            LearnerName = reader["LearnerName"].ToString(),
+                            Title = reader["Title"].ToString(),
+                            Type = reader["Type"].ToString(),
+                            Course = reader["CourseTitle"] != DBNull.Value ? reader["CourseTitle"].ToString() : "",
+                            CourseId = reader["CourseId"] != DBNull.Value ? Convert.ToInt32(reader["CourseId"]) : 0,
+                            ChapterNum = reader["ChapterNum"] != DBNull.Value ? Convert.ToInt32(Convert.ToDouble(reader["ChapterNum"])) : 0,
+                            Submitted = TAHelpers.TimeAgo(Convert.ToDateTime(reader["AttemptDate"])),
+                            Status = status,
+                            StatusCss = TAHelpers.GetStatusCss(status),
+                            ProgressNotes = reader["ProgressNotes"] != DBNull.Value ? reader["ProgressNotes"].ToString() : ""
+                        });
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        private List<Question> GetQuestions(int attemptId, bool locked)
+        {
+            const string query = @"
+                SELECT qn.QuestionId, qn.QuestionContent, qn.QuestionType, qn.QuestionScore,
+                       aa.AnswerContent, aa.ObtainedScore, aa.TeacherComment
+                FROM [dbo].[Attempt] a
+                INNER JOIN [dbo].[Question] qn
+                    ON qn.QuizId = a.QuizId OR qn.AssessmentId = a.AssessmentId OR qn.ExamId = a.ExamId
+                LEFT JOIN [dbo].[AttemptAnswer] aa ON aa.AttemptId = a.AttemptId AND aa.QuestionId = qn.QuestionId
+                WHERE a.AttemptId = @AttemptId
+                ORDER BY qn.QuestionId";
+
+            var list = new List<Question>();
+
+            using (SqlConnection con = new SqlConnection(connString))
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                con.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    int number = 1;
+                    while (reader.Read())
+                    {
+                        string type = reader["QuestionType"].ToString();
+                        bool auto = type == "MCQ";
+                        string answer = reader["AnswerContent"] != DBNull.Value ? reader["AnswerContent"].ToString() : "";
+
+                        list.Add(new Question
+                        {
+                            QuestionId = Convert.ToInt32(reader["QuestionId"]),
+                            Number = number++,
+                            Content = reader["QuestionContent"].ToString(),
+                            TypeLabel = type == "MCQ" ? "Multiple Choice" : type,
+                            Answer = answer.Length > 0 ? answer : "(No answer submitted)",
+                            AnswerHtml = answer.Length == 0 ? "<em>(No answer submitted)</em>"
+                                       : (type == "Code" ? TAHelpers.FormatCodeBlock(answer) : TAHelpers.FormatRichText(answer)),
+                            IsCode = type == "Code",
+                            AutoGraded = auto,
+                            Locked = locked,
+                            ScoreLocked = locked || auto,
+                            MaxScore = Convert.ToDouble(reader["QuestionScore"]),
+                            ScoreValue = reader["ObtainedScore"] != DBNull.Value ? Convert.ToDouble(reader["ObtainedScore"]) : 0,
+                            Comment = reader["TeacherComment"] != DBNull.Value ? reader["TeacherComment"].ToString() : ""
+                        });
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        // ---------- Page binding ----------
 
         private void LoadGradingData()
         {
-            // 2. Generate Dummy Data
-            var all = new List<DummySubmission>
-            {
-                new DummySubmission { AttemptId = 101, CourseId = 1, ChapterNum = 3, LearnerName = "Alex Chen", Title = "Functions Assessment", Type = "Assessment", Course = "Python for Beginners", Submitted = "2 hours ago", Status = "Pending", StatusCss = "status-pending" },
-                new DummySubmission { AttemptId = 102, CourseId = 2, ChapterNum = 2, LearnerName = "Mei Ling", Title = "Control Flow Exam", Type = "Exam", Course = "Java Fundamentals", Submitted = "5 hours ago", Status = "In Progress", StatusCss = "status-inprogress" },
-                new DummySubmission { AttemptId = 103, CourseId = 3, ChapterNum = 2, LearnerName = "Daniel Tan", Title = "Pointers Quiz", Type = "Quiz", Course = "C Programming Essentials", Submitted = "Yesterday", Status = "Returned", StatusCss = "status-returned",
-                    TeacherNote = "Q2 loses marks for not handling an empty list. Please re-check the scoring and add feedback." },
-                new DummySubmission { AttemptId = 104, CourseId = 4, ChapterNum = 1, LearnerName = "Sara Ahmad", Title = "Classes Assessment", Type = "Assessment", Course = "C++ Object-Oriented Programming", Submitted = "Yesterday", Status = "Pending", StatusCss = "status-pending" },
-                new DummySubmission { AttemptId = 105, CourseId = 5, ChapterNum = 2, LearnerName = "Ravi Kumar", Title = "Flexbox Quiz", Type = "Quiz", Course = "Responsive Web Design", Submitted = "2 days ago", Status = "Submitted", StatusCss = "status-submitted" },
-                new DummySubmission { AttemptId = 106, CourseId = 1, ChapterNum = 1, LearnerName = "Kylan Shane Sedrick", Title = "Variables Quiz", Type = "Quiz", Course = "Python for Beginners", Submitted = "3 days ago", Status = "Approved", StatusCss = "status-approved" },
-                new DummySubmission { AttemptId = 107, CourseId = 2, ChapterNum = 2, LearnerName = "Wan Hon Kit", Title = "Loops Assessment", Type = "Assessment", Course = "Java Fundamentals", Submitted = "4 days ago", Status = "Approved", StatusCss = "status-approved" }
-            };
+            var all = GetVisibleSubmissions();
 
-            // 3. Tab counts (always computed over the full list)
-            litCountAll.Text = $" ({all.Count})";
-            litCountTodo.Text = $" ({all.Count(IsTodo)})";
-            litCountSubmitted.Text = $" ({all.Count(s => s.Status == "Submitted")})";
-            litCountApproved.Text = $" ({all.Count(s => s.Status == "Approved")})";
+            // Tab counts (always computed over the full list)
+            litCountAll.Text = $"{all.Count}";
+            litCountPending.Text = $"{all.Count(IsPending)}";
+            litCountReviewed.Text = $"{all.Count(s => s.Status == GradingStatus.Reviewed)}";
+            litCountApproved.Text = all.Count(s => s.Status == GradingStatus.Approved).ToString();
 
-            // 4. Apply the active filter
-            List<DummySubmission> filtered;
-            if (CurrentFilter == "todo") filtered = all.Where(IsTodo).ToList();
-            else if (CurrentFilter == "submitted") filtered = all.Where(s => s.Status == "Submitted").ToList();
+            string label = CurrentFilter == "pending" ? "Pending" : CurrentFilter == "reviewed" ? "Reviewed" : CurrentFilter == "approved" ? "Approved" : "All submissions";
+            litFilterLabel.Text = label;
+
+            // Apply the active filter
+            List<Submission> filtered;
+            if (CurrentFilter == "pending") filtered = all.Where(IsPending).ToList();
+            else if (CurrentFilter == "reviewed") filtered = all.Where(s => s.Status == GradingStatus.Reviewed).ToList();
             else if (CurrentFilter == "approved") filtered = all.Where(s => s.Status == "Approved").ToList();
             else filtered = all;
 
@@ -108,7 +228,7 @@ namespace Codercept
             rptSubmissions.DataSource = filtered;
             rptSubmissions.DataBind();
 
-            // 5. Bind the grading panel for the selected submission
+            // Bind the grading panel for the selected submission
             if (selected == null)
             {
                 phGradingPanel.Visible = false;
@@ -116,84 +236,252 @@ namespace Codercept
                 return;
             }
 
-            // Once submitted, the TA can no longer edit; the teacher owns it from there
-            bool locked = selected.Status == "Submitted" || selected.Status == "Approved";
-            var questions = BuildQuestions(selected, locked);
+            phGradingPanel.Visible = true;
+            phNoSelection.Visible = false;
+            hfAttemptId.Value = selected.AttemptId.ToString();
 
-            litAssessmentTitle.Text = selected.Title;
-            litLearnerName.Text = selected.LearnerName;
-            litCourseName.Text = selected.Course;
+            // Once submitted, the TA can no longer edit; the teacher owns it from there
+            bool locked = IsLocked(selected.Status);
+            var questions = GetQuestions(selected.AttemptId, locked);
+
+            litAssessmentTitle.Text = Server.HtmlEncode(selected.Title);
+            litLearnerName.Text = Server.HtmlEncode(selected.LearnerName);
+            litCourseName.Text = Server.HtmlEncode(selected.Course);
             litSubmitted.Text = selected.Submitted;
             litStatus.Text = selected.Status;
-            litChapterRef.Text = $"Chapter {selected.ChapterNum}";
+
+            litChapterRef.Text = selected.ChapterNum > 0 ? $"Chapter {selected.ChapterNum}" : "Course";
+            hlCourse.Visible = selected.CourseId > 0;
             hlCourse.NavigateUrl = $"TACourseView.aspx?id={selected.CourseId}&focus={selected.ChapterNum}";
 
-            pnlTeacherNote.Visible = selected.Status == "Returned";
-            litTeacherNote.Text = Server.HtmlEncode(selected.TeacherNote ?? "");
+            // Reviewed and Approved replace the Save/Submit buttons with a status badge
+            pnlReviewState.Visible = locked;
+            if (locked)
+            {
+                bool approved = selected.Status == GradingStatus.Approved;
+                litReviewState.Text = approved ? "Submission approved" : "Submitted for teacher review";
+                pnlReviewState.CssClass = "review-state " + (approved ? "state-approved" : "state-reviewed");
+            }
 
-            pnlLocked.Visible = locked;
-            litLockedText.Text = selected.Status == "Approved"
-                ? "This submission was approved by the teacher. The scores are final and visible to the learner."
-                : "Submitted to the teacher for approval. Scores are locked until the teacher responds.";
-
+            txtOverallFeedback.Text = selected.ProgressNotes;
             txtOverallFeedback.ReadOnly = locked;
-            if (locked) txtOverallFeedback.Text = "Good understanding of the core concepts. Review edge-case handling in your code.";
             btnSaveDraft.Visible = !locked;
             btnSubmitGrades.Visible = !locked;
 
             rptQuestions.DataSource = questions;
             rptQuestions.DataBind();
 
-            litTotalScore.Text = questions.Sum(q => int.Parse(q.Score)).ToString();
-            litTotalMax.Text = questions.Sum(q => q.MaxScore).ToString();
+            litTotalScore.Text = questions.Sum(q => q.ScoreValue).ToString("0.##", CultureInfo.InvariantCulture);
+            litTotalMax.Text = questions.Sum(q => q.MaxScore).ToString("0.##", CultureInfo.InvariantCulture);
         }
 
-        private List<DummyQuestion> BuildQuestions(DummySubmission submission, bool locked)
+        protected void rptQuestions_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            // Only submissions the TA has worked on already carry suggested scores
-            bool scored = locked || submission.Status == "In Progress" || submission.Status == "Returned";
+            if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem) return;
 
-            return new List<DummyQuestion>
-            {
-                new DummyQuestion
-                {
-                    QuestionId = 1, Number = 1, TypeLabel = "Short Answer", MaxScore = 10, IsCode = false, AutoGraded = false,
-                    Content = "Explain the difference between a parameter and an argument.",
-                    Answer = "A parameter is the variable listed in a function's definition, while an argument is the actual value that is passed in when the function is called.",
-                    Score = scored ? "9" : "0", Comment = scored ? "Clear and correct." : ""
-                },
-                new DummyQuestion
-                {
-                    QuestionId = 2, Number = 2, TypeLabel = "Code", MaxScore = 20, IsCode = true, AutoGraded = false,
-                    Content = "Write a function that returns the largest number in a list.",
-                    Answer = "def largest(numbers):\n    biggest = numbers[0]\n    for n in numbers:\n        if n > biggest:\n            biggest = n\n    return biggest",
-                    Score = scored ? "17" : "0", Comment = scored ? "Works, but does not handle an empty list." : ""
-                },
-                new DummyQuestion
-                {
-                    QuestionId = 3, Number = 3, TypeLabel = "Multiple Choice", MaxScore = 5, IsCode = false, AutoGraded = true,
-                    Content = "Which keyword is used to return a value from a function?",
-                    Answer = "return",
-                    Score = "5", Comment = ""
-                }
-            }.Select(q => { q.Locked = locked; q.ScoreLocked = locked || q.AutoGraded; return q; }).ToList();
+            var question = (Question)e.Item.DataItem;
+            var txtScore = (TextBox)e.Item.FindControl("txtScore");
+            txtScore.Attributes["min"] = "0";
+            txtScore.Attributes["max"] = question.MaxScore.ToString(CultureInfo.InvariantCulture);
+            txtScore.Attributes["step"] = "0.5";
         }
+
+        // ---------- Saving ----------
 
         protected void btnSaveDraft_Click(object sender, EventArgs e)
         {
-            // We will implement this later
-            ShowMessage("Draft saved. (Preview only — saving will be implemented with the backend.)");
+            SaveGrades(submit: false);
         }
 
         protected void btnSubmitGrades_Click(object sender, EventArgs e)
         {
-            // We will implement this later
-            ShowMessage("Submitted to the teacher for approval. (Preview only — saving will be implemented with the backend.)");
+            SaveGrades(submit: true);
         }
 
-        private void ShowMessage(string message)
+        private class ScoreEntry
         {
-            litMessage.Text = message;
+            public int QuestionId { get; set; }
+            public double Score { get; set; }
+            public double Max { get; set; }
+            public string Comment { get; set; }
+        }
+
+        private void SaveGrades(bool submit)
+        {
+            int attemptId;
+            if (!int.TryParse(hfAttemptId.Value, out attemptId))
+            {
+                ShowMessage("No submission selected.", false);
+                return;
+            }
+
+            // 1. Read and validate what the TA entered
+            var entries = new List<ScoreEntry>();
+            foreach (RepeaterItem item in rptQuestions.Items)
+            {
+                var txtScore = (TextBox)item.FindControl("txtScore");
+                if (txtScore.ReadOnly) continue; // multiple-choice answers are scored automatically
+
+                var hfQuestionId = (HiddenField)item.FindControl("hfQuestionId");
+                var hfMax = (HiddenField)item.FindControl("hfMaxScore");
+                var txtComment = (TextBox)item.FindControl("txtComment");
+
+                double score;
+                double max = double.Parse(hfMax.Value, CultureInfo.InvariantCulture);
+                if (!double.TryParse(txtScore.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out score) || score < 0 || score > max)
+                {
+                    ShowMessage($"Score for question {item.ItemIndex + 1} must be a number between 0 and {max.ToString("0.##", CultureInfo.InvariantCulture)}.", false);
+                    return;
+                }
+
+                entries.Add(new ScoreEntry
+                {
+                    QuestionId = int.Parse(hfQuestionId.Value),
+                    Score = score,
+                    Max = max,
+                    Comment = txtComment.Text.Trim()
+                });
+            }
+
+            string feedback = txtOverallFeedback.Text.Trim();
+            if (submit && feedback.Length == 0)
+            {
+                ShowMessage("Please write overall feedback for the teacher before submitting.", false);
+                return;
+            }
+
+            // 2. Save inside one transaction
+            string error = null;
+
+            using (SqlConnection con = new SqlConnection(connString))
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        error = WriteGrades(con, tx, attemptId, entries, feedback, submit);
+                        if (error == null) tx.Commit(); else tx.Rollback();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
+
+            if (error != null)
+            {
+                ShowMessage(error, false);
+                return;
+            }
+
+            // 3. Re-load so the list, status badge and locked state reflect the new data
+            LoadGradingData();
+            ShowMessage(submit ? "Review sent to the teacher for approval." : "Draft saved.", true);
+        }
+
+        // Returns an error message, or null when everything was written
+        private string WriteGrades(SqlConnection con, SqlTransaction tx, int attemptId, List<ScoreEntry> entries, string feedback, bool submit)
+        {
+            // The attempt must still be waiting to be marked
+            using (SqlCommand cmd = new SqlCommand("SELECT AttemptStatus FROM [dbo].[Attempt] WHERE AttemptId = @AttemptId", con, tx))
+            {
+                cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                object status = cmd.ExecuteScalar();
+                if (status == null || status.ToString() != "Submitted")
+                {
+                    return "This submission is no longer open for marking.";
+                }
+            }
+
+            // Check who owns the grading row (UPDLOCK stops two TAs claiming the same attempt at once)
+            int? gradingId = null;
+            string progressStatus = null;
+            using (SqlCommand cmd = new SqlCommand("SELECT GradingProgId, TA_Id, ProgressStatus FROM [dbo].[GradingProgress] WITH (UPDLOCK, HOLDLOCK) WHERE AttemptId = @AttemptId", con, tx))
+            {
+                cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        if (reader["TA_Id"] == DBNull.Value || Convert.ToInt32(reader["TA_Id"]) != TaId)
+                        {
+                            return "Another teaching assistant is already marking this submission.";
+                        }
+                        gradingId = Convert.ToInt32(reader["GradingProgId"]);
+                        progressStatus = reader["ProgressStatus"].ToString();
+                    }
+                }
+            }
+
+            if (progressStatus != null && IsLocked(progressStatus))
+            {
+                return "This submission has already been sent to the teacher and can no longer be edited.";
+            }
+
+            // Scores and comments
+            foreach (var entry in entries)
+            {
+                string isCorrect;
+                if (!submit && entry.Score == 0 && entry.Comment.Length == 0) isCorrect = "Pending";
+                else if (entry.Score >= entry.Max) isCorrect = "Correct";
+                else if (entry.Score <= 0) isCorrect = "Incorrect";
+                else isCorrect = "Partial";
+
+                const string upsert = @"
+                    UPDATE [dbo].[AttemptAnswer]
+                       SET ObtainedScore = @Score, IsCorrect = @IsCorrect, TeacherComment = @Comment
+                     WHERE AttemptId = @AttemptId AND QuestionId = @QuestionId;
+                    IF @@ROWCOUNT = 0
+                        INSERT INTO [dbo].[AttemptAnswer] (AttemptId, QuestionId, AnswerContent, IsCorrect, ObtainedScore, TeacherComment)
+                        VALUES (@AttemptId, @QuestionId, '', @IsCorrect, @Score, @Comment);";
+
+                using (SqlCommand cmd = new SqlCommand(upsert, con, tx))
+                {
+                    cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                    cmd.Parameters.AddWithValue("@QuestionId", entry.QuestionId);
+                    cmd.Parameters.AddWithValue("@Score", entry.Score);
+                    cmd.Parameters.AddWithValue("@IsCorrect", isCorrect);
+                    cmd.Parameters.AddWithValue("@Comment", entry.Comment);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            string newStatus = submit ? GradingStatus.Reviewed : GradingStatus.InProgress;
+
+            if (gradingId == null)
+            {
+                using (SqlCommand cmd = new SqlCommand(
+                    "INSERT INTO [dbo].[GradingProgress] (ProgressStatus, ProgressNotes, TA_Id, AttemptId) VALUES (@Status, @Notes, @TA_Id, @AttemptId)", con, tx))
+                {
+                    cmd.Parameters.AddWithValue("@Status", newStatus);
+                    cmd.Parameters.AddWithValue("@Notes", feedback);
+                    cmd.Parameters.AddWithValue("@TA_Id", TaId);
+                    cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                using (SqlCommand cmd = new SqlCommand(
+                    "UPDATE [dbo].[GradingProgress] SET ProgressStatus = @Status, ProgressNotes = @Notes WHERE GradingProgId = @Id", con, tx))
+                {
+                    cmd.Parameters.AddWithValue("@Status", newStatus);
+                    cmd.Parameters.AddWithValue("@Notes", feedback);
+                    cmd.Parameters.AddWithValue("@Id", gradingId.Value);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            return null;
+        }
+
+        private void ShowMessage(string message, bool success)
+        {
+            litMessage.Text = Server.HtmlEncode(message);
+            pnlMessage.CssClass = success ? "toast" : "toast toast-error";
             pnlMessage.Visible = true;
         }
     }

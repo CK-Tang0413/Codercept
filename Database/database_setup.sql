@@ -8,8 +8,10 @@ DROP TABLE IF EXISTS [dbo].[LearnerProgress];
 DROP TABLE IF EXISTS [dbo].[User_Log];
 DROP TABLE IF EXISTS [dbo].[Qualification];
 DROP TABLE IF EXISTS [dbo].[Post_Reply];
+DROP TABLE IF EXISTS [dbo].[Forum_Escalation];
 DROP TABLE IF EXISTS [dbo].[Moderate_Forum];
 DROP TABLE IF EXISTS [dbo].[Forum];
+DROP TABLE IF EXISTS [dbo].[EducatorSubject];
 DROP TABLE IF EXISTS [dbo].[TeacherSubject];
 DROP TABLE IF EXISTS [dbo].[CourseSubject];
 DROP TABLE IF EXISTS [dbo].[Course_Review];
@@ -304,13 +306,20 @@ CREATE TABLE [dbo].[CourseSubject] (
     CONSTRAINT [FK_CourseSubject_Subject] FOREIGN KEY ([SubjectId]) REFERENCES [dbo].[Subject] ([SubjectId])
 );
 
-CREATE TABLE [dbo].[TeacherSubject] (
-    [TeacherId] INT NOT NULL,
-    [SubjectId] INT NOT NULL,
-    CONSTRAINT [PK_TeacherSubject] PRIMARY KEY CLUSTERED ([TeacherId] ASC, [SubjectId] ASC),
-    CONSTRAINT [FK_TeacherSubject_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
-    CONSTRAINT [FK_TeacherSubject_Subject] FOREIGN KEY ([SubjectId]) REFERENCES [dbo].[Subject] ([SubjectId])
+CREATE TABLE [dbo].[EducatorSubject] (
+    [EducatorSubjectId] INT IDENTITY (1, 1) NOT NULL,
+    [TeacherId]         INT NULL,
+    [TA_Id]             INT NULL,
+    [SubjectId]         INT NOT NULL,
+    CONSTRAINT [PK_EducatorSubject] PRIMARY KEY CLUSTERED ([EducatorSubjectId] ASC),
+    CONSTRAINT [FK_EducatorSubject_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
+    CONSTRAINT [FK_EducatorSubject_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id]),
+    CONSTRAINT [FK_EducatorSubject_Subject] FOREIGN KEY ([SubjectId]) REFERENCES [dbo].[Subject] ([SubjectId]),
+    CONSTRAINT [CK_EducatorSubject_Owner] CHECK (([TeacherId] IS NOT NULL AND [TA_Id] IS NULL) OR ([TeacherId] IS NULL AND [TA_Id] IS NOT NULL))
 );
+
+CREATE UNIQUE NONCLUSTERED INDEX [UX_EducatorSubject_Teacher] ON [dbo].[EducatorSubject] ([TeacherId], [SubjectId]) WHERE [TeacherId] IS NOT NULL;
+CREATE UNIQUE NONCLUSTERED INDEX [UX_EducatorSubject_TA] ON [dbo].[EducatorSubject] ([TA_Id], [SubjectId]) WHERE [TA_Id] IS NOT NULL;
 
 CREATE TABLE [dbo].[Forum] (
     [PostId]     INT            IDENTITY (1, 1) NOT NULL,
@@ -323,11 +332,14 @@ CREATE TABLE [dbo].[Forum] (
 );
 
 CREATE TABLE [dbo].[Moderate_Forum] (
-    [PostId]         INT            NOT NULL,
-    [TA_Id]          INT            NOT NULL,
-    [ModerateReason] NVARCHAR (MAX) NOT NULL,
-    [DateModerate]   DATETIME       NOT NULL,
-    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([PostId] ASC, [TA_Id] ASC),
+    [ModerationId]     INT            IDENTITY (1, 1) NOT NULL,
+    [PostId]           INT            NOT NULL,
+    [TA_Id]            INT            NOT NULL,
+    [ModerationAction] NVARCHAR (20)  NOT NULL,
+    [ModerateReason]   NVARCHAR (MAX) NOT NULL,
+    [DateModerate]     DATETIME       NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerationId] ASC),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerationAction] IN ('Hide', 'Flag', 'Delete')),
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
@@ -337,6 +349,7 @@ CREATE TABLE [dbo].[Post_Reply] (
     [DatePinned]   DATETIME       NULL,
     [ReplyComment] NVARCHAR (MAX) NOT NULL,
     [IsPinned]     NVARCHAR (50)  NOT NULL,
+    [DateReplied]  DATETIME       NOT NULL DEFAULT GETDATE(),
     [PostId]       INT            NOT NULL,
     [LearnerId]    INT            NULL,
     [TeacherId]    INT            NULL,

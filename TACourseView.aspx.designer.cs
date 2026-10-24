@@ -10,19 +10,8 @@
 namespace Codercept
 {
 
-
     public partial class TACourseView
     {
-
-        /// <summary>
-        /// form1 control.
-        /// </summary>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
-        /// TASideBarCtrl control.
-        /// </summary>
-        protected global::Codercept.TASideBar TASideBarCtrl;
 
         /// <summary>
         /// phNotFound control.
@@ -35,14 +24,19 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.PlaceHolder phCourse;
 
         /// <summary>
-        /// litLanguage control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLanguage;
-
-        /// <summary>
         /// litLevel control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litLevel;
+
+        /// <summary>
+        /// litSubjects control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSubjects;
+
+        /// <summary>
+        /// litMine control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litMine;
 
         /// <summary>
         /// litTitle control.
@@ -70,8 +64,13 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litChapterCount;
 
         /// <summary>
-        /// rptChapters control.
+        /// litOutline control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptChapters;
+        protected global::System.Web.UI.WebControls.Literal litOutline;
+
+        /// <summary>
+        /// litChapter control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litChapter;
     }
 }

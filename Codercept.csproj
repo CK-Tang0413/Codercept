@@ -190,6 +190,7 @@
     <Content Include="CourseDetails.aspx" />
     <Content Include="CourseViewer.aspx" />
     <Content Include="css\global.css" />
+    <Content Include="css\ta-responsive.css" />
     <Content Include="Database\database_setup.sql" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
@@ -261,12 +262,14 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="signIn.aspx" />
     <Content Include="signUp.aspx" />
+    <Content Include="TACourses.aspx" />
     <Content Include="TACourseView.aspx" />
     <Content Include="TADashboard.aspx" />
     <Content Include="TAForumModeration.aspx" />
     <Content Include="TAGrading.aspx" />
     <Content Include="TAProfile.aspx" />
     <Content Include="TASideBar.ascx" />
+    <Content Include="TASite.master" />
     <Content Include="TeacherRegistration.aspx" />
     <Content Include="VerifyOTP.aspx" />
     <Content Include="Web.config" />
@@ -411,6 +414,14 @@
     <Compile Include="signUp.aspx.designer.cs">
       <DependentUpon>signUp.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TAHelpers.cs" />
+    <Compile Include="TACourses.aspx.cs">
+      <DependentUpon>TACourses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TACourses.aspx.designer.cs">
+      <DependentUpon>TACourses.aspx</DependentUpon>
+    </Compile>
     <Compile Include="TACourseView.aspx.cs">
       <DependentUpon>TACourseView.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -452,6 +463,13 @@
     </Compile>
     <Compile Include="TASideBar.ascx.designer.cs">
       <DependentUpon>TASideBar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TASite.master.cs">
+      <DependentUpon>TASite.master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TASite.master.designer.cs">
+      <DependentUpon>TASite.master</DependentUpon>
     </Compile>
     <Compile Include="TeacherRegistration.aspx.cs">
       <DependentUpon>TeacherRegistration.aspx</DependentUpon>

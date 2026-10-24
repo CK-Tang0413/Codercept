@@ -10,39 +10,23 @@
 namespace Codercept
 {
 
-
     public partial class TAForumModeration
     {
 
         /// <summary>
-        /// form1 control.
+        /// litFilterLabel control.
         /// </summary>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        protected global::System.Web.UI.WebControls.Literal litFilterLabel;
 
         /// <summary>
-        /// TASideBarCtrl control.
+        /// litPostBadges control.
         /// </summary>
-        protected global::Codercept.TASideBar TASideBarCtrl;
+        protected global::System.Web.UI.WebControls.Literal litPostBadges;
 
         /// <summary>
         /// litCountAll control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litCountAll;
-
-        /// <summary>
-        /// litCountReported control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCountReported;
-
-        /// <summary>
-        /// litCountUnanswered control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCountUnanswered;
-
-        /// <summary>
-        /// litCountEscalated control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCountEscalated;
 
         /// <summary>
         /// phListEmpty control.
@@ -63,6 +47,11 @@ namespace Codercept
         /// phThread control.
         /// </summary>
         protected global::System.Web.UI.WebControls.PlaceHolder phThread;
+
+        /// <summary>
+        /// hfPostId control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HiddenField hfPostId;
 
         /// <summary>
         /// pnlMessage control.
@@ -100,54 +89,9 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Panel pnlModeration;
 
         /// <summary>
-        /// pnlReportInfo control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlReportInfo;
-
-        /// <summary>
-        /// litReportReason control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litReportReason;
-
-        /// <summary>
         /// txtModReason control.
         /// </summary>
         protected global::System.Web.UI.WebControls.TextBox txtModReason;
-
-        /// <summary>
-        /// btnDismissReport control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Button btnDismissReport;
-
-        /// <summary>
-        /// btnRemovePost control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Button btnRemovePost;
-
-        /// <summary>
-        /// pnlAskTeacher control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlAskTeacher;
-
-        /// <summary>
-        /// txtTeacherNote control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.TextBox txtTeacherNote;
-
-        /// <summary>
-        /// btnAskTeacher control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Button btnAskTeacher;
-
-        /// <summary>
-        /// pnlEscalated control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlEscalated;
-
-        /// <summary>
-        /// litEscalationNote control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litEscalationNote;
 
         /// <summary>
         /// litReplyCount control.
@@ -168,5 +112,50 @@ namespace Codercept
         /// btnReply control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Button btnReply;
+
+        /// <summary>
+        /// litCountUnsolved control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litCountUnsolved;
+
+        /// <summary>
+        /// litCountVerified control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litCountVerified;
+
+        /// <summary>
+        /// litCountReported control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litCountReported;
+
+        /// <summary>
+        /// pnlHiddenNotice control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlHiddenNotice;
+
+        /// <summary>
+        /// btnFlagPost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnFlagPost;
+
+        /// <summary>
+        /// btnHidePost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnHidePost;
+
+        /// <summary>
+        /// btnDeletePost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnDeletePost;
+
+        /// <summary>
+        /// phModLog control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phModLog;
+
+        /// <summary>
+        /// rptModLog control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptModLog;
     }
 }

@@ -10,19 +10,8 @@
 namespace Codercept
 {
 
-
     public partial class TAProfile
     {
-
-        /// <summary>
-        /// form1 control.
-        /// </summary>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
-        /// TASideBarCtrl control.
-        /// </summary>
-        protected global::Codercept.TASideBar TASideBarCtrl;
 
         /// <summary>
         /// pnlMessage control.
@@ -33,6 +22,11 @@ namespace Codercept
         /// litMessage control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litMessage;
+
+        /// <summary>
+        /// litIdentity control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litIdentity;
 
         /// <summary>
         /// litStatGraded control.

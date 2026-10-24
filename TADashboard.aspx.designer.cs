@@ -10,19 +10,8 @@
 namespace Codercept
 {
 
-
     public partial class TADashboard
     {
-
-        /// <summary>
-        /// form1 control.
-        /// </summary>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
-        /// TASideBarCtrl control.
-        /// </summary>
-        protected global::Codercept.TASideBar TASideBarCtrl;
 
         /// <summary>
         /// litWelcomeName control.
@@ -40,19 +29,14 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litStatPending;
 
         /// <summary>
-        /// litStatGraded control.
+        /// litStatAwaiting control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litStatGraded;
+        protected global::System.Web.UI.WebControls.Literal litStatAwaiting;
 
         /// <summary>
-        /// litStatReported control.
+        /// litStatUnsolved control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litStatReported;
-
-        /// <summary>
-        /// litStatUnanswered control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litStatUnanswered;
+        protected global::System.Web.UI.WebControls.Literal litStatUnsolved;
 
         /// <summary>
         /// phQueueEmpty control.
