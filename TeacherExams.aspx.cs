@@ -7,13 +7,25 @@ namespace Codercept
     {
         private List<TeacherCourse> courses;
 
-        /// <summary>The logged-in teacher's courses. TODO (step 2.5): whether each has an exam.</summary>
+        /// <summary>The logged-in teacher's courses.</summary>
         protected List<TeacherCourse> Courses
         {
             get
             {
                 if (courses == null) courses = TeacherCourseData.GetCourses();
                 return courses;
+            }
+        }
+
+        private HashSet<int> examCourseIds;
+
+        /// <summary>CourseIds of the teacher's courses that have their final exam.</summary>
+        protected HashSet<int> ExamCourseIds
+        {
+            get
+            {
+                if (examCourseIds == null) examCourseIds = TeacherCourseData.GetCourseIdsWithExam();
+                return examCourseIds;
             }
         }
 

@@ -78,7 +78,7 @@
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
                         <div><span>Date Created</span><strong><%: Selected.Date %></strong></div>
                     </div>
-                    <div class="detail-item">
+                    <div class="detail-item detail-item--wide">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
                         <div><span>Date Updated</span><strong><%: Selected.Updated %></strong></div>
                     </div>

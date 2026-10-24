@@ -259,6 +259,7 @@
             title.value = desc.value = dur.value = "";
             lang.selectedIndex = 0;
             diff.value = "Easy";
+            qsa("[data-tp-domains]", root).forEach(function (f) { f.dispatchEvent(new Event("tp-domains-clear")); });
             submitted = false;
             update();
         });
@@ -1005,9 +1006,19 @@
             });
             // choosing a suggestion from the list fills the box without typing
             text.addEventListener("input", function (e) {
+                // a comma (typed or pasted in a list such as "a, b, c") ends a domain
+                if (text.value.indexOf(",") !== -1) {
+                    var parts = text.value.split(",");
+                    var rest = parts.pop();
+                    parts.forEach(function (part) { text.value = part; commit(); });
+                    text.value = rest;
+                    return;
+                }
                 if (e.inputType === "insertReplacementText" || (!e.inputType && text.value)) commit();
             });
             text.addEventListener("blur", commit);
+            // the page's "Clear all fields" button empties the tags too
+            field.addEventListener("tp-domains-clear", function () { list = []; text.value = ""; error(""); render(); });
             box.addEventListener("click", function (e) { if (e.target === box) text.focus(); });
             render();
         });

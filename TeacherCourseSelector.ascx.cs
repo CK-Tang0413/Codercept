@@ -65,6 +65,14 @@ namespace Codercept
             // A teacher with no courses has nothing to select: send them to create one
             if (Courses.Count == 0) Response.Redirect("~/TeacherCourseCreate.aspx");
 
+            // Arriving with ?course=<id> (for example after creating a course) selects that course
+            int linked;
+            if (!IsPostBack && string.IsNullOrEmpty(hfTeacherSelId.Value)
+                && int.TryParse(Request.QueryString["course"], out linked) && Courses.Any(c => c.Id == linked))
+            {
+                hfTeacherSelId.Value = linked.ToString();
+            }
+
             // A posted id that is not one of this teacher's courses is simply not found, so the first course is shown
             string picked = Request.Form[UniqueID + "$sel"];
             if (!string.IsNullOrEmpty(picked))

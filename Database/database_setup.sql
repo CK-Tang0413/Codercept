@@ -181,10 +181,11 @@ CREATE TABLE [dbo].[Exam] (
     [DateUpdate]      DATETIME       NULL,
     [ExamTitle]       NVARCHAR (50)  NOT NULL,
     [ExamDescription] NVARCHAR (MAX) NOT NULL,
-    [ChapterId]       INT            NOT NULL,
+    [CourseId]        INT            NOT NULL,
     [TeacherId]       INT            NOT NULL,
     PRIMARY KEY CLUSTERED ([ExamId] ASC),
-    CONSTRAINT [FK_Exam_Chapter] FOREIGN KEY ([ChapterId]) REFERENCES [dbo].[Chapter] ([ChapterId]),
+    UNIQUE NONCLUSTERED ([CourseId] ASC), -- one final exam per course; learners take it to earn the certificate
+    CONSTRAINT [FK_Exam_Course] FOREIGN KEY ([CourseId]) REFERENCES [dbo].[Course] ([CourseId]),
     CONSTRAINT [FK_Exam_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
 
@@ -511,3 +512,70 @@ INSERT INTO [dbo].[Chapter] ([DateCreation], [DateUpdate], [ChapterNum], [Chapte
 VALUES
     (DATEADD(DAY, -10, GETDATE()), DATEADD(DAY, -7, GETDATE()), 1, 'Machine Learning Foundations', 'Understand supervised learning, features, labels, and how models are trained and tested.', '3 hours', NULL, @CourseId, @SarahId),
     (DATEADD(DAY, -9, GETDATE()), DATEADD(DAY, -5, GETDATE()), 2, 'Training Your First Model', 'Fit a simple model, make predictions, and measure how well it performs.', '4 hours', NULL, @CourseId, @SarahId);
+
+-- ==========================================
+-- Teacher portal test data (Backend Phase 2, Step 2.5)
+-- Enrolments, a final exam for some courses, a quiz and an assessment, and attempts in each AttemptStatus.
+-- AttemptStatus: 'completed' (learner finished and submitted), 'in_progress' (learner is working on it),
+--                'incomplete' (learner stopped without finishing).
+-- A completed attempt with no Result row is waiting for the teacher to grade it.
+-- Courses without learners (Data Analysis, C++, Machine Learning) stay deletable.
+-- ==========================================
+DECLARE @KylanId INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'kylan1234@gmail.com');
+DECLARE @WanId INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'wan1234@gmail.com');
+DECLARE @PythonCourse INT = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = 'Python Programming Fundamentals');
+DECLARE @JavaCourse INT = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = 'Java Programming Masterclass');
+DECLARE @CCourse INT = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = 'C Programming Essentials');
+DECLARE @PyChapter1 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = @PythonCourse AND [ChapterNum] = 1);
+DECLARE @PyChapter2 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = @PythonCourse AND [ChapterNum] = 2);
+DECLARE @SubChapterId INT, @QuizId INT, @AssessmentId INT, @PyExamId INT, @CExamId INT, @QuestionId INT, @AttemptId INT;
+
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum])
+VALUES (@KylanId, @PythonCourse, 2), (@KylanId, @JavaCourse, 1), (@WanId, @PythonCourse, 1), (@WanId, @CCourse, 1);
+
+-- Python: a subchapter with a quiz, an assessment at the end of chapter 1, and the final exam
+INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [ChapterId], [TeacherId])
+VALUES (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 1, 'Numbers and Strings', 'How Python stores whole numbers, decimals and text.', NULL, @PyChapter2, @BryanId);
+SET @SubChapterId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [SubChapterId], [TeacherId])
+VALUES (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 'Variables Quiz', 'Check your understanding of variables and data types.', @SubChapterId, @BryanId);
+SET @QuizId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId])
+VALUES (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -35, GETDATE()), 'Chapter 1 Assessment', 'Explain how a Python program is run and structured.', @PyChapter1, @BryanId);
+SET @AssessmentId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [CourseId], [TeacherId])
+VALUES (DATEADD(DAY, -30, GETDATE()), NULL, 'Final Course Examination', 'Final exam for Python Programming Fundamentals.', @PythonCourse, @BryanId);
+SET @PyExamId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [QuizId])
+VALUES ('Which type does the value 3.5 have in Python?', 'MCQ', 2, @BryanId, @QuizId);
+SET @QuestionId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [QuestionId]) VALUES ('int', @QuestionId), ('float', @QuestionId), ('str', @QuestionId);
+
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [AssessmentId])
+VALUES ('Describe what happens when you run a Python file.', 'Essay', 10, @BryanId, @AssessmentId);
+
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [TeacherId], [ExamId])
+VALUES ('Which keyword defines a function in Python?', 'MCQ', 5, @BryanId, @PyExamId);
+SET @QuestionId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [QuestionId]) VALUES ('def', @QuestionId), ('func', @QuestionId), ('lambda', @QuestionId);
+
+-- C: a final exam
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [CourseId], [TeacherId])
+VALUES (DATEADD(DAY, -10, GETDATE()), NULL, 'Final Course Examination', 'Final exam for C Programming Essentials.', @CCourse, @SarahId);
+SET @CExamId = SCOPE_IDENTITY();
+
+-- Attempts (Python): two waiting to be graded, one graded, one in progress, one incomplete
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(HOUR, -3, GETDATE()), 'completed', @KylanId, @QuizId);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(HOUR, -5, GETDATE()), 'completed', @KylanId, @AssessmentId);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @WanId, @QuizId);
+SET @AttemptId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (2, 'A', 100, 'Well done.', @AttemptId);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -1, GETDATE()), 'in_progress', @WanId, @PyExamId);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'incomplete', @WanId, @AssessmentId);
+
+-- Attempts (C): one exam waiting to be graded
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(HOUR, -26, GETDATE()), 'completed', @WanId, @CExamId);

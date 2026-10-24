@@ -11,11 +11,10 @@ namespace Codercept
 
             litTeacherFirstName.Text = Server.HtmlEncode(Master.UserName.Split(' ')[0]);
 
-            // TODO (backend): replace the sample data with queries for the logged-in teacher
-            rptTeacherStats.DataSource = TeacherSampleData.GetDashboardStats();
+            rptTeacherStats.DataSource = TeacherDashboardData.GetStats();
             rptTeacherStats.DataBind();
 
-            rptTeacherActivities.DataSource = TeacherSampleData.GetRecentActivities();
+            rptTeacherActivities.DataSource = TeacherDashboardData.GetRecentActivities(4);
             rptTeacherActivities.DataBind();
 
             rptTeacherRecentCourses.DataSource = TeacherCourseData.GetCourses().Take(3).ToList();

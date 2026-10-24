@@ -7423,3 +7423,14 @@
 .tp-app .tp-domain-box input:focus {
   outline: 0;
 }
+
+/* The domain field inside the Create course form looks like the other labels */
+.tp-app .form-field > .tp-inline-field {
+  gap: 7px;
+}
+
+.tp-app .form-field > .tp-inline-field > span {
+  color: var(--body);
+  font-size: 14px;
+  font-weight: 650;
+}

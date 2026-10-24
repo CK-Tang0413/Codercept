@@ -35,7 +35,7 @@ namespace Codercept
             // No ?course= means the first course; an id that is not this teacher's course goes back to the grading list
             Course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
             if (Course == null) Response.Redirect("~/TeacherGrading.aspx");
-            Pending = TeacherSampleData.PendingSubmissions(Course.Id);
+            TeacherCourseData.GetPendingCounts().TryGetValue(Course.Id, out Pending);
 
             // TODO (backend): this course's exams/quizzes and the learners who submitted them
             Assessments = TeacherSampleData.GetAssessments();

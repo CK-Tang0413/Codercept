@@ -1,5 +1,6 @@
 <%@ Page Title="Create Course - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherCourseCreate.aspx.cs" Inherits="Codercept.TeacherCourseCreate" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
+<%@ Register Src="~/TeacherDomainInput.ascx" TagPrefix="uc" TagName="DomainInput" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
 </asp:Content>
@@ -28,7 +29,7 @@
                 <label id="fldTeacherTitle" runat="server" class="form-field" data-tp-cf-field="title">
                     <span>Title <b>*</b></span>
                     <div class="validated-input">
-                        <asp:TextBox ID="txtTeacherCourseTitle" runat="server" placeholder="e.g. Python Programming Fundamentals" data-tp-cf="title"></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherCourseTitle" runat="server" maxlength="255" placeholder="e.g. Python Programming Fundamentals" data-tp-cf="title"></asp:TextBox>
                         <span data-tp-cf-check style="display: contents" hidden><%= TeacherIcons.Svg("check", 17) %></span>
                     </div>
                     <small id="hintTeacherTitle" runat="server" data-tp-cf-hint data-ok="Use a clear, descriptive course title." data-err="Enter a title with at least 4 characters.">Use a clear, descriptive course title.</small>
@@ -51,6 +52,11 @@
                     </div>
                     <small>Select the primary language taught in this course.</small>
                 </label>
+
+                <div class="form-field">
+                    <uc:DomainInput ID="ctlTeacherDomains" runat="server" />
+                    <small>Optional topics such as Machine Learning. Pick an existing one or type a new one.</small>
+                </div>
 
                 <fieldset class="form-field">
                     <legend>Difficulty level <b>*</b></legend>

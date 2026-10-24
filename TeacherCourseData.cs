@@ -7,6 +7,16 @@ using System.Text.RegularExpressions;
 
 namespace Codercept
 {
+    /// <summary>What happened when a teacher asked to delete a course.</summary>
+    public enum CourseDeleteResult
+    {
+        Deleted,
+        /// <summary>No such course for this teacher (it is not revealed whether it belongs to someone else).</summary>
+        NotFound,
+        /// <summary>Learners are enrolled, or have attempts, certificates or reviews: their records are kept, so the course stays.</summary>
+        HasLearnerData
+    }
+
     /// <summary>
     /// Database queries for the signed-in teacher's courses. Every query on teacher data filters on
     /// TeacherId = @TeacherId, so a teacher can never read another teacher's course even with a forged id.
@@ -138,6 +148,7 @@ namespace Codercept
             error = null;
             List<string> clean = new List<string>();
             List<string> languages = GetLanguages().Select(l => l.Language).ToList();
+            List<string> known = GetDomainNames();
             foreach (string raw in typed ?? new string[0])
             {
                 string name = Regex.Replace((raw ?? "").Trim(), @"\s+", " ");
@@ -152,6 +163,9 @@ namespace Codercept
                     error = name + " is a programming language. Choose it as the language instead.";
                     return null;
                 }
+                // a domain that already exists keeps its stored spelling ("machine learning" -> "Machine Learning")
+                string existing = known.FirstOrDefault(k => string.Equals(k, name, StringComparison.OrdinalIgnoreCase));
+                if (existing != null) name = existing;
                 if (!clean.Any(d => string.Equals(d, name, StringComparison.OrdinalIgnoreCase))) clean.Add(name);
             }
             if (clean.Count > MaxDomains)
@@ -160,6 +174,39 @@ namespace Codercept
                 return null;
             }
             return clean;
+        }
+
+        /// <summary>
+        /// Adds a course for the signed-in teacher, with its language and domains, in one transaction.
+        /// Returns the new CourseId.
+        /// </summary>
+        public static int CreateCourse(string title, string description, string language, string difficulty, int hours, List<string> domains)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    int courseId;
+                    using (SqlCommand cmd = new SqlCommand(
+                        "INSERT INTO Course (DateCreation, DateUpdate, CourseTitle, CourseDescription, DifficultyLevel, CourseDuration, TeacherId) " +
+                        "VALUES (GETDATE(), NULL, @Title, @Description, @Difficulty, @Duration, @TeacherId); " +
+                        "SELECT CAST(SCOPE_IDENTITY() AS INT)", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@Title", title);
+                        cmd.Parameters.AddWithValue("@Description", description);
+                        cmd.Parameters.AddWithValue("@Difficulty", difficulty);
+                        cmd.Parameters.AddWithValue("@Duration", DurationText(hours));
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        courseId = (int)cmd.ExecuteScalar();
+                    }
+
+                    SaveSubjects(con, tx, courseId, language, domains);
+                    tx.Commit();
+                    return courseId;
+                }
+            }
         }
 
         /// <summary>
@@ -187,6 +234,129 @@ namespace Codercept
                     return true;
                 }
             }
+        }
+
+        // Parts of a course, found from the course down (all use @CourseId)
+        private const string CourseChapters = "(SELECT ChapterId FROM Chapter WHERE CourseId = @CourseId)";
+        private const string CourseSubChapters = "(SELECT SubChapterId FROM SubChapter WHERE ChapterId IN " + CourseChapters + ")";
+        private const string CourseQuizzes = "(SELECT QuizId FROM Quiz WHERE SubChapterId IN " + CourseSubChapters + ")";
+        private const string CourseAssessments = "(SELECT AssessmentId FROM Assessment WHERE ChapterId IN " + CourseChapters + ")";
+        private const string CourseExams = "(SELECT ExamId FROM Exam WHERE CourseId = @CourseId)";
+        private const string CourseQuestionTest =
+            "QuizId IN " + CourseQuizzes + " OR AssessmentId IN " + CourseAssessments + " OR ExamId IN " + CourseExams;
+
+        /// <summary>
+        /// Deletes one of the signed-in teacher's courses with everything the teacher built under it (chapters, subchapters,
+        /// quizzes, assessments, exams, questions and options), in foreign-key order inside one transaction.
+        /// A course that learners are enrolled in, or have attempts, certificates or reviews for, is NOT deleted:
+        /// their progress and certificates must be kept.
+        /// </summary>
+        public static CourseDeleteResult DeleteCourse(int courseId)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            SqlParameter id() { return new SqlParameter("@CourseId", courseId); }
+
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    int owned;
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseId", courseId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        owned = (int)cmd.ExecuteScalar();
+                    }
+                    if (owned == 0) return CourseDeleteResult.NotFound;
+
+                    int learnerData;
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT CASE WHEN EXISTS (SELECT 1 FROM LearnerProgress WHERE CourseId = @CourseId) " +
+                        "OR EXISTS (SELECT 1 FROM [Certificate] WHERE CourseId = @CourseId) " +
+                        "OR EXISTS (SELECT 1 FROM Course_Review WHERE CourseId = @CourseId) " +
+                        "OR EXISTS (SELECT 1 FROM Attempt WHERE QuizId IN " + CourseQuizzes + " OR AssessmentId IN " + CourseAssessments + " OR ExamId IN " + CourseExams + ") " +
+                        "THEN 1 ELSE 0 END", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseId", courseId);
+                        learnerData = (int)cmd.ExecuteScalar();
+                    }
+                    if (learnerData == 1) return CourseDeleteResult.HasLearnerData;
+
+                    Run(con, tx, "DELETE FROM MCQ_Option WHERE QuestionId IN (SELECT QuestionId FROM Question WHERE " + CourseQuestionTest + ")", id());
+                    Run(con, tx, "DELETE FROM Question WHERE " + CourseQuestionTest, id());
+                    Run(con, tx, "DELETE FROM Quiz WHERE SubChapterId IN " + CourseSubChapters, id());
+                    Run(con, tx, "DELETE FROM Assessment WHERE ChapterId IN " + CourseChapters, id());
+                    Run(con, tx, "DELETE FROM Exam WHERE CourseId = @CourseId", id());
+                    Run(con, tx, "DELETE FROM SubChapter WHERE ChapterId IN " + CourseChapters, id());
+                    Run(con, tx, "DELETE FROM Chapter WHERE CourseId = @CourseId", id());
+                    Run(con, tx, "DELETE FROM CourseSubject WHERE CourseId = @CourseId", id());
+                    Run(con, tx, "DELETE FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId", id(), new SqlParameter("@TeacherId", teacherId));
+                    tx.Commit();
+                    return CourseDeleteResult.Deleted;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Every attempt on a quiz, assessment or exam of a course, as one list (a WITH clause to put in front of a SELECT):
+        /// quiz -> subchapter -> chapter -> course, assessment -> chapter -> course, exam -> course.
+        /// </summary>
+        internal const string CourseAttemptsCte =
+            "WITH CourseAttempt AS ( " +
+            "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, a.AttemptStatus, qz.QuizTitle AS Title " +
+            "FROM Attempt a INNER JOIN Quiz qz ON qz.QuizId = a.QuizId " +
+            "INNER JOIN SubChapter sc ON sc.SubChapterId = qz.SubChapterId INNER JOIN Chapter ch ON ch.ChapterId = sc.ChapterId " +
+            "UNION ALL " +
+            "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, a.AttemptStatus, asm.AssessmentTitle " +
+            "FROM Attempt a INNER JOIN Assessment asm ON asm.AssessmentId = a.AssessmentId " +
+            "INNER JOIN Chapter ch ON ch.ChapterId = asm.ChapterId " +
+            "UNION ALL " +
+            "SELECT ex.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, a.AttemptStatus, ex.ExamTitle " +
+            "FROM Attempt a INNER JOIN Exam ex ON ex.ExamId = a.ExamId) ";
+
+        /// <summary>The CourseIds (of the signed-in teacher's courses) that have their final exam.</summary>
+        public static HashSet<int> GetCourseIdsWithExam()
+        {
+            HashSet<int> ids = new HashSet<int>();
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT e.CourseId FROM Exam e INNER JOIN Course c ON c.CourseId = e.CourseId WHERE c.TeacherId = @TeacherId", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read()) ids.Add(reader.GetInt32(0));
+                }
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// Submissions waiting for the teacher, per CourseId: attempts the learner has completed that have no Result yet.
+        /// Courses with none are not in the dictionary.
+        /// </summary>
+        public static Dictionary<int, int> GetPendingCounts()
+        {
+            Dictionary<int, int> counts = new Dictionary<int, int>();
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                CourseAttemptsCte +
+                "SELECT ca.CourseId, COUNT(*) FROM CourseAttempt ca INNER JOIN Course c ON c.CourseId = ca.CourseId " +
+                "WHERE c.TeacherId = @TeacherId AND ca.AttemptStatus = 'completed' " +
+                "AND NOT EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = ca.AttemptId) GROUP BY ca.CourseId", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read()) counts[reader.GetInt32(0)] = reader.GetInt32(1);
+                }
+            }
+            return counts;
         }
 
         /// <summary>Replaces the language and domain rows of a course. The caller has already checked ownership.</summary>

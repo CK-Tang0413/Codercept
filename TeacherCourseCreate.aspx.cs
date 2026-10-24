@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Script.Serialization;
 
@@ -31,16 +32,43 @@ namespace Codercept
             int hours;
             bool durationError = !int.TryParse(txtTeacherCourseDuration.Text, out hours) || hours <= 0;
 
+            string domainError;
+            List<string> domains = TeacherCourseData.CleanDomains(ctlTeacherDomains.Domains, out domainError);
+            if (domainError != null) ctlTeacherDomains.ShowError(domainError); else ctlTeacherDomains.ClearError();
+
             MarkError(fldTeacherTitle, hintTeacherTitle, titleError);
             MarkError(fldTeacherDescription, hintTeacherDescription, descriptionError);
             MarkError(fldTeacherDuration, hintTeacherDuration, durationError);
 
-            if (titleError || descriptionError || durationError) return;
+            if (titleError || descriptionError || durationError || domainError != null) return;
 
-            // TODO (backend): INSERT INTO Course (Title, Description, Language, Difficulty, Duration, TeacherId, ...)
-            //   values: txtTeacherCourseTitle.Text, txtTeacherCourseDescription.Text, ddlTeacherCourseLanguage.SelectedValue,
-            //           hfTeacherCourseDifficulty.Value, hours, Session["UserId"]
-            Master.ShowToast("Course created successfully");
+            string language = ddlTeacherCourseLanguage.SelectedValue;
+            if (TeacherCourseData.GetLanguages().All(l => l.Language != language))
+            {
+                Master.ShowToast("Please choose a programming language.");
+                return;
+            }
+
+            string difficulty = hfTeacherCourseDifficulty.Value;
+            if (difficulty != "Easy" && difficulty != "Medium" && difficulty != "Hard") difficulty = "Easy";
+
+            string title = txtTeacherCourseTitle.Text.Trim();
+            // Two courses may share a title, but the teacher is told about it
+            bool duplicate = TeacherCourseData.GetCourses().Any(c => string.Equals(c.Title, title, StringComparison.OrdinalIgnoreCase));
+
+            int courseId;
+            try
+            {
+                courseId = TeacherCourseData.CreateCourse(title, txtTeacherCourseDescription.Text.Trim(), language, difficulty, hours, domains);
+            }
+            catch (SqlException)
+            {
+                Master.ShowToast("Could not create the course. Please try again.");
+                return;
+            }
+
+            // Manage Courses, with the new course selected (and a toast there)
+            Response.Redirect("~/TeacherCourses.aspx?course=" + courseId + "&created=1" + (duplicate ? "&dup=1" : ""));
         }
 
         private static void MarkError(System.Web.UI.HtmlControls.HtmlGenericControl field, System.Web.UI.HtmlControls.HtmlGenericControl hint, bool error)

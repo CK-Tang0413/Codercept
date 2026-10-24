@@ -12,6 +12,20 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!IsPostBack)
+            {
+                if (Request.QueryString["created"] == "1")
+                {
+                    Master.ShowToast(Request.QueryString["dup"] == "1"
+                        ? "Course created. You already have another course with this title."
+                        : "Course created successfully");
+                }
+                else if (Request.QueryString["deleted"] == "1")
+                {
+                    Master.ShowToast("Course deleted");
+                }
+            }
+
             List<TeacherCourse> courses = TeacherCourseData.GetLanguages();
             if (!IsPostBack)
             {
@@ -46,7 +60,7 @@ namespace Codercept
             }
 
             mdlTeacherDeleteCourse.BodyHtml = "This will permanently delete <strong>" + Server.HtmlEncode(Selected.Title)
-                + "</strong>, including its chapters, quizzes, and learner records. This action cannot be undone.";
+                + "</strong>, including its chapters, quizzes, and exams. A course that learners are enrolled in cannot be deleted. This action cannot be undone.";
         }
 
         protected void btnTeacherUpdateCourse_Click(object sender, EventArgs e)
@@ -107,8 +121,36 @@ namespace Codercept
 
         protected void mdlTeacherDeleteCourse_Confirmed(object sender, EventArgs e)
         {
-            // TODO (backend): delete the course (and its chapters, quizzes and learner records)
-            Master.ShowToast(selTeacherCourse.SelectedCourse.Title + " deleted");
+            if (!selTeacherCourse.SelectionIsValid)
+            {
+                Master.ShowToast("That course could not be found.");
+                return;
+            }
+
+            CourseDeleteResult result;
+            try
+            {
+                result = TeacherCourseData.DeleteCourse(selTeacherCourse.SelectedId);
+            }
+            catch (SqlException)
+            {
+                Master.ShowToast("Could not delete the course. Please try again.");
+                return;
+            }
+
+            switch (result)
+            {
+                case CourseDeleteResult.Deleted:
+                    // reload the page so the course list and the details show what is left
+                    Response.Redirect("~/TeacherCourses.aspx?deleted=1");
+                    break;
+                case CourseDeleteResult.HasLearnerData:
+                    Master.ShowToast("This course can't be deleted because learners are enrolled in it or have progress, certificates or reviews for it.");
+                    break;
+                default:
+                    Master.ShowToast("That course could not be found.");
+                    break;
+            }
         }
     }
 }

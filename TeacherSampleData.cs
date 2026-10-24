@@ -21,17 +21,6 @@ namespace Codercept
         // TODO (backend): the report course comes from the selected course
         public const string ReportCourseTitle = "C Programming Essentials";
 
-        public static List<TeacherStat> GetDashboardStats()
-        {
-            return new List<TeacherStat>
-            {
-                new TeacherStat { Label = "Total courses", Value = "8", Hint = "2 added this month", Icon = "book", Tone = "indigo" },
-                new TeacherStat { Label = "Total learners", Value = "326", Hint = "12% from last month", Icon = "learners", Tone = "teal" },
-                new TeacherStat { Label = "Pending gradings", Value = "14", Hint = "Needs your attention", Icon = "clock", Tone = "amber", Badge = "Action needed" },
-                new TeacherStat { Label = "Unread forum posts", Value = "9", Hint = "3 new today", Icon = "message", Tone = "rose" }
-            };
-        }
-
         /// <summary>Badge tone used for a course difficulty (Easy/Medium/Hard).</summary>
         public static string DifficultyTone(string difficulty)
         {
@@ -94,12 +83,6 @@ namespace Codercept
                 new TeacherLearner { Id = 4, Initials = "JT", Name = "Jessica Tan", Email = "jessica.tan@student.edu.my", Tone = "amber", Age = "19", Gender = "Female", Level = "Beginner", Chapter = "Chapter 5 of 12", Progress = 42, Quizzes = "10 of 24", ExamDate = "-", Enrolled = "2 March 2024", Accessed = "27 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "74%" },
                 new TeacherLearner { Id = 5, Initials = "RK", Name = "Ravi Kumar", Email = "ravi.kumar@student.edu.my", Tone = "rose", Age = "23", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 7 of 12", Progress = 58, Quizzes = "15 of 24", ExamDate = "-", Enrolled = "22 February 2024", Accessed = "25 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "79%" }
             };
-        }
-
-        /// <summary>Prototype rule: every third course (starting with the second) has no exam yet. TODO (backend): Exam table.</summary>
-        public static bool HasExam(int courseId)
-        {
-            return (courseId - 1) % 3 != 1;
         }
 
         /// <summary>Course used by the chapter pages' breadcrumb (prototype value). TODO (backend): selected course.</summary>
@@ -205,13 +188,6 @@ Id = 1,
                     AcceptedAnswers = "", ModelAnswer = "", MarkingGuide = ""
                 }
             };
-        }
-
-        /// <summary>Pending submissions per course (prototype values, by CourseId). TODO (backend): count ungraded Attempt rows.</summary>
-        public static int PendingSubmissions(int courseId)
-        {
-            int[] pending = { 14, 8, 21, 6, 11, 4 };
-            return courseId >= 1 && courseId <= pending.Length ? pending[courseId - 1] : 0;
         }
 
         /// <summary>TODO (backend): Exam and Quiz rows of the course with their ungraded submissions.</summary>
@@ -365,17 +341,6 @@ Id = 3,
                 new TeacherReportScore { Item = "Quiz 3 · Control Flow", Score = "19 / 20", Grade = "A" },
                 new TeacherReportScore { Item = "Chapter Assessment", Score = "42 / 50", Grade = "A" },
                 new TeacherReportScore { Item = "Final Examination", Score = "86 / 100", Grade = "A" }
-            };
-        }
-
-        public static List<TeacherActivity> GetRecentActivities()
-        {
-            return new List<TeacherActivity>
-            {
-                new TeacherActivity { Time = "10:24 AM", Initials = "AL", Tone = "teal", Name = "Amanda Lee", Action = "submitted", Detail = "Python Basics — Chapter 4 Quiz", Type = "submitted", HasButton = true },
-                new TeacherActivity { Time = "9:42 AM", Initials = "MK", Tone = "blue", Name = "Muhammad Khairul", Action = "started", Detail = "Introduction to Java — Final Exam", Type = "started" },
-                new TeacherActivity { Time = "Yesterday", Initials = "JT", Tone = "amber", Name = "Jessica Tan", Action = "submitted", Detail = "Web Development Fundamentals — HTML Forms", Type = "submitted", HasButton = true },
-                new TeacherActivity { Time = "Yesterday", Initials = "RK", Tone = "rose", Name = "Ravi Kumar", Action = "started", Detail = "C++ Programming — Pointers & Memory", Type = "started" }
             };
         }
     }

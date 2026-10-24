@@ -41,7 +41,7 @@
         </div>
 
         <div class="exam-course-grid exam-course-grid--grid" data-tp-cl-grid>
-            <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; bool configured = TeacherSampleData.HasExam(c.Id); %>
+            <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; bool configured = ExamCourseIds.Contains(c.Id); %>
             <article class="exam-course-card" data-tp-cl-item data-title="<%: c.Title %>" data-status="<%= configured ? "Exam configured" : "No exam yet" %>">
                 <div class="course-thumbnail course-thumbnail--<%= c.Theme %> exam-course-thumbnail">
                     <span><%: c.Glyph %></span>
