@@ -156,9 +156,8 @@ namespace Codercept
                 return;
             }
 
-            int total, max;
-            string grade;
-            GradingSaveResult result = TeacherGradingData.ConfirmGrade(Course.Id, submission.Id, Request.Unvalidated.Form, out total, out max, out grade);
+            GradeOutcome outcome;
+            GradingSaveResult result = TeacherGradingData.ConfirmGrade(Course.Id, submission.Id, Request.Unvalidated.Form, out outcome);
             switch (result)
             {
                 case GradingSaveResult.Saved:
@@ -167,7 +166,14 @@ namespace Codercept
                     Assessments = TeacherGradingData.GetGradables(Course.Id);
                     Submissions = TeacherGradingData.GetSubmissions(Course.Id);
                     Sheets = TeacherGradingData.GetMarkingSheets(Course.Id, Submissions);
-                    Master.ShowToast("Grade confirmed: " + total + " / " + max + " (grade " + grade + ").");
+                    string message = "Grade confirmed: " + outcome.Total + " / " + outcome.Max + " (grade " + outcome.Grade + ").";
+                    if (outcome.IsExam)
+                    {
+                        if (!outcome.Passed) message += " The learner did not reach the pass mark of " + outcome.PassMark + "%, so no certificate was issued.";
+                        else if (outcome.CertificateIssued) message += " The learner passed (pass mark " + outcome.PassMark + "%) and a certificate was issued.";
+                        else message += " The learner passed (pass mark " + outcome.PassMark + "%) and already has a certificate for this course.";
+                    }
+                    Master.ShowToast(message);
                     break;
                 case GradingSaveResult.AlreadyGraded:
                     Master.ShowToast("This submission has already been graded, so nothing was changed.");

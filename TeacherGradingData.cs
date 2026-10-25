@@ -19,6 +19,21 @@ namespace Codercept
         CommentTooLong
     }
 
+    /// <summary>What a confirmed grade came to (set by ConfirmGrade).</summary>
+    public class GradeOutcome
+    {
+        public int Total { get; set; }
+        public int Max { get; set; }
+        public string Grade { get; set; }
+        /// <summary>The attempt was of the course's exam (quizzes and assessments never earn a certificate).</summary>
+        public bool IsExam { get; set; }
+        /// <summary>Exam.PassMark, a percentage; only meaningful for an exam.</summary>
+        public int PassMark { get; set; }
+        public bool Passed { get; set; }
+        /// <summary>A Certificate row was added now (false when the learner already had one for the course).</summary>
+        public bool CertificateIssued { get; set; }
+    }
+
     /// <summary>One answer choice of a multiple-choice question, as the learner saw it.</summary>
     public class TeacherMarkingOption
     {
@@ -470,13 +485,16 @@ namespace Codercept
         /// Confirms the grade of a submission: scores the multiple-choice answers automatically, takes the marks and comments of the
         /// fill-in-the-blank and coding answers from the form (tpm_ / tpc_ fields, validated like SaveProgress; a question with no field
         /// keeps its saved marks, or 0), then in one transaction writes every answer's marks, the Result row (total, grade letter, percentage as
-        /// Average, and the comments as feedback) and marks the GradingProgress row 'completed'. Refused changes nothing. Same ownership and
-        /// "no Result yet" rules as SaveProgress. On Saved, total / max / grade say what was confirmed.
+        /// Average, and the comments as feedback) and marks the GradingProgress row 'completed'. For an exam that the learner passed
+        /// (total * 100 >= PassMark * max) it also adds a Certificate for the course, issued in the teacher's name, unless the learner already has
+        /// one. Refused changes nothing. Same ownership and "no Result yet" rules as SaveProgress. On Saved, outcome says what was confirmed.
         /// </summary>
         public static GradingSaveResult ConfirmGrade(int courseId, int attemptId, System.Collections.Specialized.NameValueCollection form,
-            out int total, out int max, out string grade)
+            out GradeOutcome outcome)
         {
-            total = 0; max = 0; grade = "";
+            outcome = new GradeOutcome { Grade = "" };
+            int total = 0, max = 0;
+            string grade = "";
             int teacherId = TeacherDb.GetTeacherId();
             using (SqlConnection con = TeacherDb.GetConnection())
             {
@@ -592,6 +610,48 @@ namespace Codercept
                         cmd.ExecuteNonQuery();
                     }
 
+                    // a passed exam earns a certificate for the course: one per learner and course, issued in the teacher's name
+                    int passMark = 0, learnerId = 0, examCourseId = 0;
+                    string issuer = "";
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT e.PassMark, a.LearnerId, e.CourseId, t.Name FROM Attempt a INNER JOIN Exam e ON e.ExamId = a.ExamId " +
+                        "INNER JOIN Teacher t ON t.TeacherId = @TeacherId WHERE a.AttemptId = @AttemptId", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                outcome.IsExam = true;
+                                passMark = reader.GetInt32(0);
+                                learnerId = reader.GetInt32(1);
+                                examCourseId = reader.GetInt32(2);
+                                issuer = reader.GetString(3);
+                            }
+                        }
+                    }
+                    if (outcome.IsExam)
+                    {
+                        outcome.PassMark = passMark;
+                        outcome.Passed = max > 0 && total * 100 >= passMark * max;
+                        if (outcome.Passed)
+                        {
+                            using (SqlCommand cmd = new SqlCommand(
+                                "IF NOT EXISTS (SELECT 1 FROM Certificate WITH (UPDLOCK, HOLDLOCK) WHERE LearnerId = @LearnerId AND CourseId = @CourseId) " +
+                                "INSERT INTO Certificate (Issuer, IssueDate, LearnerId, CourseId) VALUES (@Issuer, GETDATE(), @LearnerId, @CourseId)", con, tx))
+                            {
+                                cmd.Parameters.AddWithValue("@Issuer", issuer);
+                                cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                                cmd.Parameters.AddWithValue("@CourseId", examCourseId);
+                                outcome.CertificateIssued = cmd.ExecuteNonQuery() > 0;
+                            }
+                        }
+                    }
+
+                    outcome.Total = total;
+                    outcome.Max = max;
+                    outcome.Grade = grade;
                     tx.Commit();
                     return GradingSaveResult.Saved;
                 }
