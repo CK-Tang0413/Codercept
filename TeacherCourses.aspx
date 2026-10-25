@@ -87,7 +87,6 @@
             </article>
 
             <article class="detail-card course-stats-card">
-                <%-- TODO (backend): statistics below are sample values for the selected course --%>
                 <div class="card-heading simple">
                     <div>
                         <span>Course overview</span>
@@ -98,32 +97,32 @@
                 <div class="compact-stat-list">
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
-                        <div><span>Total chapters</span><strong><%: ChapterCount %></strong></div>
+                        <div><span>Total chapters</span><strong><%: Figures.Chapters %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("chapters", 17) %></span>
-                        <div><span>Subchapters</span><strong><%: SubchapterCount %></strong></div>
+                        <div><span>Subchapters</span><strong><%: Figures.Subchapters %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("question", 17) %></span>
-                        <div><span>Quizzes &amp; assessments</span><strong><%: TestCount %></strong></div>
+                        <div><span>Quizzes &amp; assessments</span><strong><%: Figures.Tests %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("users", 17) %></span>
-                        <div><span>Learners attended</span><strong>84</strong></div>
+                        <div><span>Learners attended</span><strong><%: Figures.Attended %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("award", 17) %></span>
-                        <div><span>Learners completed</span><strong>62</strong></div>
+                        <div><span>Learners completed</span><strong><%: Figures.Completed %></strong></div>
                     </div>
                 </div>
                 <div class="completion-block">
                     <div class="completion-copy">
                         <span>Completion rate</span>
-                        <strong>74%</strong>
+                        <strong><%= Figures.CompletionRate %>%</strong>
                     </div>
-                    <div class="progress-track"><span></span></div>
-                    <p>62 of 84 learners completed this course</p>
+                    <div class="progress-track"><span style="width: <%= Figures.CompletionRate %>%"></span></div>
+                    <p><%: Figures.Completed %> of <%: Figures.Attended %> <%= Figures.Attended == 1 ? "learner" : "learners" %> completed this course</p>
                 </div>
                 <div class="stacked-actions">
                     <a class="button button--secondary" href="TeacherCourseStats.aspx"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>

@@ -475,10 +475,20 @@ namespace Codercept
             }
         }
 
+        /// <summary>Every grade letter, best first. Pages that list the grades (for example the grade distribution) use this, so they cannot drift from the scale.</summary>
+        public static readonly string[] Grades = { "A", "B", "C", "D", "F" };
+
+        /// <summary>The lowest percentage that earns each letter of Grades (the last one, F, takes everything below D). Change a boundary here only.</summary>
+        private static readonly double[] GradeFloors = { 80, 70, 60, 50 };
+
         /// <summary>The grade letter for a percentage: A from 80, B from 70, C from 60, D from 50, otherwise F.</summary>
         public static string GradeOf(double percent)
         {
-            return percent >= 80 ? "A" : percent >= 70 ? "B" : percent >= 60 ? "C" : percent >= 50 ? "D" : "F";
+            for (int i = 0; i < GradeFloors.Length; i++)
+            {
+                if (percent >= GradeFloors[i]) return Grades[i];
+            }
+            return Grades[Grades.Length - 1];
         }
 
         /// <summary>

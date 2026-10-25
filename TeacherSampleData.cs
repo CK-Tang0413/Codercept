@@ -18,9 +18,6 @@ namespace Codercept
         public const string FallbackName = "Bryan Yeong";
         public const string FallbackEmail = "bryanyeong@edu.com.my";
 
-        // TODO (backend): the report course comes from the selected course
-        public const string ReportCourseTitle = "C Programming Essentials";
-
         /// <summary>Badge tone used for a course difficulty (Easy/Medium/Hard).</summary>
         public static string DifficultyTone(string difficulty)
         {
@@ -67,19 +64,6 @@ namespace Codercept
             };
         }
 
-        /// <summary>TODO (backend): learners enrolled in the selected course (Learner + LearnerProgress + Result).</summary>
-        public static List<TeacherLearner> GetLearners()
-        {
-            return new List<TeacherLearner>
-            {
-                new TeacherLearner { Id = 1, Initials = "TC", Name = "Tang Chee Kin", Email = "tang.cheekin@student.edu.my", Tone = "indigo", Age = "21", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 8 of 12", Progress = 67, Quizzes = "18 of 24", ExamDate = "24 May 2024", Enrolled = "12 February 2024", Accessed = "28 May 2024", Completed = "-", Score = "86%", Grade = "A", Average = "81%" },
-                new TeacherLearner { Id = 2, Initials = "AL", Name = "Amanda Lee", Email = "amanda.lee@student.edu.my", Tone = "teal", Age = "20", Gender = "Female", Level = "Beginner", Chapter = "Chapter 10 of 12", Progress = 83, Quizzes = "21 of 24", ExamDate = "-", Enrolled = "18 February 2024", Accessed = "29 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "88%" },
-                new TeacherLearner { Id = 3, Initials = "MK", Name = "Muhammad Khairul", Email = "khairul@student.edu.my", Tone = "blue", Age = "22", Gender = "Male", Level = "Advanced", Chapter = "Chapter 12 of 12", Progress = 100, Quizzes = "24 of 24", ExamDate = "18 May 2024", Enrolled = "4 January 2024", Accessed = "26 May 2024", Completed = "18 May 2024", Score = "92%", Grade = "A", Average = "90%" },
-                new TeacherLearner { Id = 4, Initials = "JT", Name = "Jessica Tan", Email = "jessica.tan@student.edu.my", Tone = "amber", Age = "19", Gender = "Female", Level = "Beginner", Chapter = "Chapter 5 of 12", Progress = 42, Quizzes = "10 of 24", ExamDate = "-", Enrolled = "2 March 2024", Accessed = "27 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "74%" },
-                new TeacherLearner { Id = 5, Initials = "RK", Name = "Ravi Kumar", Email = "ravi.kumar@student.edu.my", Tone = "rose", Age = "23", Gender = "Male", Level = "Intermediate", Chapter = "Chapter 7 of 12", Progress = 58, Quizzes = "15 of 24", ExamDate = "-", Enrolled = "22 February 2024", Accessed = "25 May 2024", Completed = "-", Score = "-", Grade = "-", Average = "79%" }
-            };
-        }
-
         public static List<TeacherExamRule> GetExamRules()
         {
             return new List<TeacherExamRule>
@@ -89,17 +73,6 @@ namespace Codercept
             };
         }
 
-        public static List<TeacherReportScore> GetReportScores()
-        {
-            return new List<TeacherReportScore>
-            {
-                new TeacherReportScore { Item = "Quiz 1 · Fundamentals", Score = "18 / 20", Grade = "A" },
-                new TeacherReportScore { Item = "Quiz 2 · Variables", Score = "16 / 20", Grade = "B" },
-                new TeacherReportScore { Item = "Quiz 3 · Control Flow", Score = "19 / 20", Grade = "A" },
-                new TeacherReportScore { Item = "Chapter Assessment", Score = "42 / 50", Grade = "A" },
-                new TeacherReportScore { Item = "Final Examination", Score = "86 / 100", Grade = "A" }
-            };
-        }
     }
 
     public class TeacherCourse

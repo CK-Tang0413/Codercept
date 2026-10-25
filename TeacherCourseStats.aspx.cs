@@ -4,6 +4,9 @@ namespace Codercept
 {
     public partial class TeacherCourseStats : System.Web.UI.Page
     {
+        /// <summary>The chosen course's engagement figures (only this teacher's courses return anything).</summary>
+        protected TeacherCourseFigures Figures;
+
         protected void Page_Load(object sender, EventArgs e)
         {
         }
@@ -12,8 +15,8 @@ namespace Codercept
         {
             shTeacherResults.Subtitle = "Viewing results for " + selTeacherCourse.SelectedCourse.Title + ".";
 
-            // TODO (backend): load statistics for selTeacherCourse.SelectedCourse
-            rptTeacherCourseStats.DataSource = TeacherSampleData.GetCourseStatisticRows();
+            Figures = TeacherStatsData.GetCourseFigures(selTeacherCourse.SelectedCourse.Id);
+            rptTeacherCourseStats.DataSource = TeacherStatsData.CourseRows(Figures);
             rptTeacherCourseStats.DataBind();
 
             rptTeacherMetrics.DataSource = TeacherSampleData.GetPerformanceMetrics();
