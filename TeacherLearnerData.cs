@@ -178,6 +178,28 @@ namespace Codercept
             return learners;
         }
 
+        /// <summary>
+        /// Removes a learner from one of the signed-in teacher's courses: deletes the learner's LearnerProgress row for that course, joined to
+        /// Course so that only a course with Course.TeacherId = the teacher can lose a learner. Only the enrolment goes; the learner's attempts,
+        /// results, certificates and forum posts are kept. True when exactly one enrolment was removed; false (nothing deleted) for a course
+        /// that is not the teacher's or a learner who is not enrolled in it.
+        /// </summary>
+        public static bool RemoveLearner(int courseId, int learnerId)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "DELETE lp FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
+                "WHERE lp.LearnerId = @LearnerId AND lp.CourseId = @CourseId AND c.TeacherId = @TeacherId", con))
+            {
+                cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                return cmd.ExecuteNonQuery() == 1;
+            }
+        }
+
         private static string DateText(DateTime date)
         {
             return date.ToString("d MMMM yyyy", CultureInfo.InvariantCulture);
