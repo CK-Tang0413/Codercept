@@ -6,31 +6,66 @@ namespace Codercept
 {
     public partial class TeacherLearnerReport : System.Web.UI.Page
     {
+        /// <summary>The most graded results the score chart shows (the newest ones).</summary>
+        private const int MaxBars = 8;
+
+        protected TeacherLearnerReportData Report;
         protected TeacherLearner Learner;
-
         protected int LearnerId;
+        protected int CourseId;
+        protected string CourseTitle;
+        protected string ReportId;
+        protected string Today;
 
-        // TODO (backend): the course title comes from the selected course (pass courseId in the query string)
-        protected string CourseTitle = TeacherSampleData.ReportCourseTitle;
+        /// <summary>The percentages the chart draws, and which result (1, 2, ...) the first bar is.</summary>
+        protected List<int> Bars;
+        protected int FirstBar;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            List<TeacherLearner> learners = TeacherSampleData.GetLearners();
-            int id;
-            int.TryParse(Request.QueryString["learner"], out id);
-            // TODO (backend): unknown learner, or one not enrolled in this teacher's courses -> redirect
-            Learner = learners.FirstOrDefault(l => l.Id == id) ?? learners[0];
-            LearnerId = Learner.Id;
+            // learner and course must both be given, and the learner must be enrolled in one of this teacher's courses; otherwise back to the list
+            int learnerId, courseId;
+            if (!int.TryParse(Request.QueryString["learner"], out learnerId) || !int.TryParse(Request.QueryString["course"], out courseId))
+            {
+                Response.Redirect("~/TeacherLearners.aspx");
+            }
+            else
+            {
+                Report = TeacherLearnerData.GetReport(courseId, learnerId);
+                if (Report == null) Response.Redirect("~/TeacherLearners.aspx");
+            }
 
-            // TODO (backend): load this learner's assessment results for the course
-            rptTeacherReportScores.DataSource = TeacherSampleData.GetReportScores();
+            Learner = Report.Learner;
+            LearnerId = Learner.Id;
+            CourseId = Report.CourseId;
+            CourseTitle = Report.CourseTitle;
+            DateTime now = DateTime.Today;
+            Today = now.ToString("d MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture);
+            ReportId = "CR-" + now.ToString("yyyyMMdd") + "-" + CourseId + "-" + LearnerId;
+
+            FirstBar = Math.Max(0, Report.Percents.Count - MaxBars);
+            Bars = Report.Percents.Skip(FirstBar).ToList();
+
+            rptTeacherReportScores.DataSource = Report.Scores;
             rptTeacherReportScores.DataBind();
+        }
+
+        /// <summary>A detail that is not known (yet) is written "-" in the data; the report says so in words.</summary>
+        protected static string Show(string value)
+        {
+            return value == "-" ? "Not available yet" : value;
+        }
+
+        /// <summary>The same for the short figures of the summary boxes.</summary>
+        protected static string Short(string value)
+        {
+            return value == "-" ? "\u2013" : value;
         }
 
         protected void btnTeacherSaveReportPdf_Click(object sender, EventArgs e)
         {
             // Same PDF as "Open in new window", sent as a download
-            Response.Redirect("TeacherLearnerReportPdf.ashx?download=1&learner=" + LearnerId);
+            Response.Redirect("TeacherLearnerReportPdf.ashx?download=1&learner=" + LearnerId + "&course=" + CourseId);
         }
     }
 }

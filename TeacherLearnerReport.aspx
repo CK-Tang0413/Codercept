@@ -15,8 +15,8 @@
             <div class="report-toolbar">
                 <asp:LinkButton ID="btnTeacherSaveReportPdf" runat="server" CssClass="button button--primary" OnClick="btnTeacherSaveReportPdf_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 3v12m-5-5 5 5 5-5M5 21h14' /></svg><span>Save as PDF</span></asp:LinkButton>
                 <button type="button" class="button button--secondary" data-tp-print><%= TeacherIcons.Svg("print", 17) %><span>Print report</span></button>
-                <a class="button button--ghost" href="TeacherLearnerReportPdf.ashx?learner=<%= LearnerId %>" target="_blank" rel="noopener"><%= TeacherIcons.Svg("external", 17) %><span>Open in new window</span></a>
-                <a class="button button--ghost" href="TeacherLearners.aspx"><span>Go back</span></a>
+                <a class="button button--ghost" href="TeacherLearnerReportPdf.ashx?learner=<%= LearnerId %>&course=<%= CourseId %>" target="_blank" rel="noopener"><%= TeacherIcons.Svg("external", 17) %><span>Open in new window</span></a>
+                <a class="button button--ghost" href="TeacherLearners.aspx?course=<%= CourseId %>"><span>Go back</span></a>
             </div>
         </div>
 
@@ -38,8 +38,8 @@
                         </div>
                         <div class="report-meta">
                             <strong>COURSE PROGRESS REPORT</strong>
-                            <span>Report ID &middot; CR-2024-0528</span>
-                            <span>Generated &middot; 28 May 2024</span>
+                            <span>Report ID &middot; <%: ReportId %></span>
+                            <span>Generated &middot; <%: Today %></span>
                         </div>
                     </header>
 
@@ -53,9 +53,9 @@
                         <h2>Learner details</h2>
                         <div class="report-details-grid">
                             <div><span>Email address</span><strong><%: Learner.Email %></strong></div>
-                            <div><span>Student level</span><strong><%: Learner.Level %></strong></div>
+                            <div><span>Student level</span><strong><%: Show(Learner.Level) %></strong></div>
                             <div><span>Enrolled on</span><strong><%: Learner.Enrolled %></strong></div>
-                            <div><span>Last accessed</span><strong><%: Learner.Accessed %></strong></div>
+                            <div><span>Last accessed</span><strong><%: Show(Learner.Accessed) %></strong></div>
                         </div>
                     </section>
 
@@ -67,9 +67,9 @@
                                 <strong><%= Learner.Progress %>%</strong>
                                 <div class="report-progress"><i style="width: <%= Learner.Progress %>%"></i></div>
                             </div>
-                            <div><span>Quizzes completed</span><strong><%: Learner.Quizzes %></strong></div>
-                            <div><span>Overall average</span><strong><%: Learner.Average %></strong></div>
-                            <div><span>Current grade</span><strong class="report-grade"><%: Learner.Grade %></strong></div>
+                            <div><span>Quizzes completed</span><strong><%: Short(Learner.Quizzes) %></strong></div>
+                            <div><span>Overall average</span><strong><%: Short(Learner.Average) %></strong></div>
+                            <div><span>Current grade</span><strong class="report-grade"><%: Short(Learner.Grade) %></strong></div>
                         </div>
                     </section>
 
@@ -84,23 +84,30 @@
                                     <asp:Repeater ID="rptTeacherReportScores" runat="server">
                                         <ItemTemplate>
                                             <tr>
-                                                <td><%# Eval("Item") %></td>
-                                                <td><%# Eval("Score") %></td>
-                                                <td><span><%# Eval("Grade") %></span></td>
+                                                <td><%#: Eval("Item") %></td>
+                                                <td><%#: Eval("Score") %></td>
+                                                <td><span><%#: Eval("Grade") %></span></td>
                                             </tr>
                                         </ItemTemplate>
                                     </asp:Repeater>
+                                    <% if (Report.Scores.Count == 0) { %>
+                                    <tr><td colspan="3">No graded results yet.</td></tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
                         <div>
                             <h2>Score overview</h2>
+                            <% if (Bars.Count == 0) { %>
+                            <p>No graded results yet.</p>
+                            <% } else { %>
                             <div class="report-chart">
-                                <% int[] bars = { 72, 80, 76, 88, 86 }; for (int i = 0; i < bars.Length; i++) { %>
-                                <div><span><%= bars[i] %></span><i style="height: <%= bars[i] %>%"></i><small>Q<%= i + 1 %></small></div>
+                                <% for (int i = 0; i < Bars.Count; i++) { %>
+                                <div><span><%= Bars[i] %></span><i style="height: <%= Bars[i] %>%"></i><small><%= FirstBar + i + 1 %></small></div>
                                 <% } %>
                             </div>
-                            <p>Scores show consistent improvement across course assessments.</p>
+                            <p>Each bar is one graded result as a percentage, numbered as in the table.</p>
+                            <% } %>
                         </div>
                     </section>
 
@@ -111,7 +118,7 @@
                             <small>Codercept Teacher Portal</small>
                         </div>
                         <div>
-                            <span class="signature-line">28 May 2024</span>
+                            <span class="signature-line"><%: Today %></span>
                             <strong>Date issued</strong>
                             <small>Verified digital report</small>
                         </div>

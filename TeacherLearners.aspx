@@ -134,7 +134,7 @@
                 <aside class="learner-actions">
                     <span>ACTIONS</span>
                     <a class="button button--primary" href="TeacherGradeAssessments.aspx?course=<%= selTeacherCourse.SelectedCourse.Id %>"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
-                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= Learner.Id %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
+                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= Learner.Id %>&course=<%= selTeacherCourse.SelectedCourse.Id %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
                     <div></div>
                     <button type="button" class="button button--danger" data-tp-open-modal="tpRemoveLearnerModal"><%= TeacherIcons.Svg("trash", 17) %><span>Remove learner</span></button>
                 </aside>

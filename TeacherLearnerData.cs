@@ -6,6 +6,18 @@ using System.Linq;
 
 namespace Codercept
 {
+    /// <summary>Everything one learner's course report shows.</summary>
+    public class TeacherLearnerReportData
+    {
+        public int CourseId { get; set; }
+        public string CourseTitle { get; set; }
+        public TeacherLearner Learner { get; set; }
+        /// <summary>The graded results of the course, in the order they happened ("Quiz · Variables Quiz", "2 / 2", "A").</summary>
+        public List<TeacherReportScore> Scores { get; set; }
+        /// <summary>Each graded result as a percentage, in the same order (for the bar chart).</summary>
+        public List<int> Percents { get; set; }
+    }
+
     /// <summary>What happened when a teacher added a learner to a course.</summary>
     public enum AddLearnerResult
     {
@@ -211,6 +223,76 @@ namespace Codercept
                 con.Open();
                 return cmd.ExecuteNonQuery() == 1;
             }
+        }
+
+        /// <summary>
+        /// The report of one learner in one course: null unless the learner is enrolled in a course of the signed-in teacher (the learner, the
+        /// course title and the graded results are all read through Course.TeacherId, so a forged id finds nothing).
+        /// </summary>
+        public static TeacherLearnerReportData GetReport(int courseId, int learnerId)
+        {
+            TeacherLearner learner = GetLearners(courseId).FirstOrDefault(l => l.Id == learnerId);
+            if (learner == null) return null;
+
+            int teacherId = TeacherDb.GetTeacherId();
+            TeacherLearnerReportData report = new TeacherLearnerReportData
+            {
+                CourseId = courseId,
+                Learner = learner,
+                Scores = new List<TeacherReportScore>(),
+                Percents = new List<int>()
+            };
+
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+
+                using (SqlCommand cmd = new SqlCommand("SELECT CourseTitle FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId", con))
+                {
+                    cmd.Parameters.AddWithValue("@CourseId", courseId);
+                    cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                    object title = cmd.ExecuteScalar();
+                    if (title == null) return null;
+                    report.CourseTitle = (string)title;
+                }
+
+                using (SqlCommand cmd = new SqlCommand(
+                    "WITH CA AS (" +
+                    "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, 'Quiz' AS Kind, z.QuizTitle AS Title, " +
+                    "(SELECT ISNULL(SUM(q.QuestionScore), 0) FROM Question q WHERE q.QuizId = z.QuizId) AS MaxMarks " +
+                    "FROM Attempt a INNER JOIN Quiz z ON z.QuizId = a.QuizId INNER JOIN Chapter ch ON ch.ChapterId = z.ChapterId " +
+                    "UNION ALL " +
+                    "SELECT ch.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, 'Assessment', s.AssessmentTitle, " +
+                    "(SELECT ISNULL(SUM(q.QuestionScore), 0) FROM Question q WHERE q.AssessmentId = s.AssessmentId) " +
+                    "FROM Attempt a INNER JOIN Assessment s ON s.AssessmentId = a.AssessmentId INNER JOIN Chapter ch ON ch.ChapterId = s.ChapterId " +
+                    "UNION ALL " +
+                    "SELECT ex.CourseId, a.AttemptId, a.LearnerId, a.AttemptDate, 'Exam', ex.ExamTitle, " +
+                    "(SELECT ISNULL(SUM(q.QuestionScore), 0) FROM Question q WHERE q.ExamId = ex.ExamId) " +
+                    "FROM Attempt a INNER JOIN Exam ex ON ex.ExamId = a.ExamId) " +
+                    "SELECT ca.Kind, ca.Title, r.TotalScore, ca.MaxMarks, r.Average, r.Grade " +
+                    "FROM CA ca INNER JOIN Course c ON c.CourseId = ca.CourseId INNER JOIN Result r ON r.AttemptId = ca.AttemptId " +
+                    "WHERE ca.CourseId = @CourseId AND ca.LearnerId = @LearnerId AND c.TeacherId = @TeacherId " +
+                    "ORDER BY ca.AttemptDate, ca.AttemptId", con))
+                {
+                    cmd.Parameters.AddWithValue("@CourseId", courseId);
+                    cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                    cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            report.Scores.Add(new TeacherReportScore
+                            {
+                                Item = reader.GetString(0) + " \u00b7 " + reader.GetString(1),
+                                Score = reader.GetDouble(2).ToString("0.##", CultureInfo.InvariantCulture) + " / " + reader.GetDouble(3).ToString("0.##", CultureInfo.InvariantCulture),
+                                Grade = reader.GetString(5)
+                            });
+                            report.Percents.Add((int)Math.Max(0, Math.Min(100, Math.Round(reader.GetDouble(4)))));
+                        }
+                    }
+                }
+            }
+            return report;
         }
 
         /// <summary>The longest email Learner.Email can hold.</summary>
