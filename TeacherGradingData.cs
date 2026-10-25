@@ -360,25 +360,8 @@ namespace Codercept
                 con.Open();
                 using (SqlTransaction tx = con.BeginTransaction())
                 {
-                    // the attempt: completed, in this teacher's course; the lock keeps a second request from grading it at the same time
-                    bool graded;
-                    using (SqlCommand cmd = new SqlCommand(
-                        "SELECT CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) THEN 1 ELSE 0 END " +
-                        "FROM Attempt a WITH (UPDLOCK, HOLDLOCK) " +
-                        "LEFT JOIN Exam e ON e.ExamId = a.ExamId " +
-                        "LEFT JOIN Quiz z ON z.QuizId = a.QuizId LEFT JOIN Chapter cz ON cz.ChapterId = z.ChapterId " +
-                        "LEFT JOIN Assessment s ON s.AssessmentId = a.AssessmentId LEFT JOIN Chapter cs ON cs.ChapterId = s.ChapterId " +
-                        "INNER JOIN Course c ON c.CourseId = COALESCE(e.CourseId, cz.CourseId, cs.CourseId) " +
-                        "WHERE a.AttemptId = @AttemptId AND a.AttemptStatus = 'completed' AND c.CourseId = @CourseId AND c.TeacherId = @TeacherId", con, tx))
-                    {
-                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
-                        cmd.Parameters.AddWithValue("@CourseId", courseId);
-                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
-                        object found = cmd.ExecuteScalar();
-                        if (found == null) return GradingSaveResult.NotFound;
-                        graded = (int)found == 1;
-                    }
-                    if (graded) return GradingSaveResult.AlreadyGraded;
+                    GradingSaveResult? refused = CheckGradable(con, tx, courseId, attemptId, teacherId);
+                    if (refused != null) return refused.Value;
 
                     // the manual questions of the attempt's own exam / quiz / assessment, and what each is worth
                     List<int> questionIds = new List<int>();
@@ -440,6 +423,169 @@ namespace Codercept
                         "UPDATE GradingProgress SET ProgressStatus = 'in_progress', TeacherId = @TeacherId WHERE AttemptId = @AttemptId; " +
                         "IF @@ROWCOUNT = 0 INSERT INTO GradingProgress (ProgressStatus, ProgressNotes, TeacherId, TA_Id, AttemptId) " +
                         "VALUES ('in_progress', '', @TeacherId, NULL, @AttemptId)", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                    return GradingSaveResult.Saved;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Null when the attempt can be graded: a completed attempt of an exam, quiz or assessment of this teacher's course (checked through
+        /// Course.TeacherId) that has no Result yet. Otherwise NotFound or AlreadyGraded. It locks the attempt for the rest of the
+        /// transaction, so a second request cannot grade it at the same time.
+        /// </summary>
+        private static GradingSaveResult? CheckGradable(SqlConnection con, SqlTransaction tx, int courseId, int attemptId, int teacherId)
+        {
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) THEN 1 ELSE 0 END " +
+                "FROM Attempt a WITH (UPDLOCK, HOLDLOCK) " +
+                "LEFT JOIN Exam e ON e.ExamId = a.ExamId " +
+                "LEFT JOIN Quiz z ON z.QuizId = a.QuizId LEFT JOIN Chapter cz ON cz.ChapterId = z.ChapterId " +
+                "LEFT JOIN Assessment s ON s.AssessmentId = a.AssessmentId LEFT JOIN Chapter cs ON cs.ChapterId = s.ChapterId " +
+                "INNER JOIN Course c ON c.CourseId = COALESCE(e.CourseId, cz.CourseId, cs.CourseId) " +
+                "WHERE a.AttemptId = @AttemptId AND a.AttemptStatus = 'completed' AND c.CourseId = @CourseId AND c.TeacherId = @TeacherId", con, tx))
+            {
+                cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                object found = cmd.ExecuteScalar();
+                if (found == null) return GradingSaveResult.NotFound;
+                return (int)found == 1 ? GradingSaveResult.AlreadyGraded : (GradingSaveResult?)null;
+            }
+        }
+
+        /// <summary>The grade letter for a percentage: A from 80, B from 70, C from 60, D from 50, otherwise F.</summary>
+        public static string GradeOf(double percent)
+        {
+            return percent >= 80 ? "A" : percent >= 70 ? "B" : percent >= 60 ? "C" : percent >= 50 ? "D" : "F";
+        }
+
+        /// <summary>
+        /// Confirms the grade of a submission: scores the multiple-choice answers automatically, takes the marks and comments of the
+        /// fill-in-the-blank and coding answers from the form (tpm_ / tpc_ fields, validated like SaveProgress; a question with no field
+        /// keeps its saved marks, or 0), then in one transaction writes every answer's marks, the Result row (total, grade letter, percentage as
+        /// Average, and the comments as feedback) and marks the GradingProgress row 'completed'. Refused changes nothing. Same ownership and
+        /// "no Result yet" rules as SaveProgress. On Saved, total / max / grade say what was confirmed.
+        /// </summary>
+        public static GradingSaveResult ConfirmGrade(int courseId, int attemptId, System.Collections.Specialized.NameValueCollection form,
+            out int total, out int max, out string grade)
+        {
+            total = 0; max = 0; grade = "";
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    GradingSaveResult? refused = CheckGradable(con, tx, courseId, attemptId, teacherId);
+                    if (refused != null) return refused.Value;
+
+                    // every question of the attempt's own exam / quiz / assessment, with whether the chosen option was right and any saved marks
+                    List<int> ids = new List<int>();
+                    List<string> types = new List<string>();
+                    List<int> marksOf = new List<int>();
+                    List<bool> mcqRight = new List<bool>();
+                    List<int> savedMarks = new List<int>();
+                    List<string> savedComments = new List<string>();
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT q.QuestionId, q.QuestionType, q.QuestionScore, " +
+                        "CASE WHEN q.QuestionType = 'MCQ' AND EXISTS (SELECT 1 FROM MCQ_Option o WHERE o.QuestionId = q.QuestionId AND o.IsCorrect = 1 " +
+                        "AND CAST(o.MCQ_OptionId AS NVARCHAR(20)) = s.AnswerContent) THEN 1 ELSE 0 END, " +
+                        "ISNULL(s.ObtainedScore, 0), ISNULL(s.TeacherComment, '') " +
+                        "FROM Question q INNER JOIN Attempt a ON (q.ExamId = a.ExamId OR q.QuizId = a.QuizId OR q.AssessmentId = a.AssessmentId) " +
+                        "LEFT JOIN AttemptAnswer s ON s.AttemptId = a.AttemptId AND s.QuestionId = q.QuestionId " +
+                        "WHERE a.AttemptId = @AttemptId ORDER BY q.QuestionOrder, q.QuestionId", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                ids.Add(reader.GetInt32(0));
+                                types.Add(reader.GetString(1));
+                                marksOf.Add((int)Math.Round(reader.GetDouble(2)));
+                                mcqRight.Add(reader.GetInt32(3) == 1);
+                                savedMarks.Add((int)Math.Round(reader.GetDouble(4)));
+                                savedComments.Add(reader.GetString(5));
+                            }
+                        }
+                    }
+
+                    // work out every mark first, so that one bad value changes nothing
+                    int count = ids.Count;
+                    int[] given = new int[count];
+                    string[] comments = new string[count];
+                    string[] verdict = new string[count];
+                    List<string> feedback = new List<string>();
+                    for (int i = 0; i < count; i++)
+                    {
+                        max += marksOf[i];
+                        if (types[i] == "MCQ")
+                        {
+                            given[i] = mcqRight[i] ? marksOf[i] : 0;
+                            comments[i] = savedComments[i];
+                            verdict[i] = mcqRight[i] ? "correct" : "incorrect";
+                        }
+                        else
+                        {
+                            string markField = form["tpm_" + attemptId + "_" + ids[i]];
+                            int mark = savedMarks[i];
+                            if (markField != null && (!int.TryParse(markField, NumberStyles.None, CultureInfo.InvariantCulture, out mark) || mark < 0 || mark > marksOf[i]))
+                            {
+                                return GradingSaveResult.InvalidMarks;
+                            }
+                            if (mark > marksOf[i]) mark = marksOf[i];
+                            string commentField = form["tpc_" + attemptId + "_" + ids[i]];
+                            string comment = (commentField ?? savedComments[i]).Trim();
+                            if (comment.Length > MaxCommentLength) return GradingSaveResult.CommentTooLong;
+                            given[i] = mark;
+                            comments[i] = comment;
+                            verdict[i] = mark == marksOf[i] ? "correct" : mark == 0 ? "incorrect" : "partial";
+                            if (comment.Length > 0) feedback.Add("Q" + (i + 1) + ": " + comment);
+                        }
+                        total += given[i];
+                    }
+
+                    double percent = max > 0 ? Math.Round(total * 100.0 / max, 1) : 0;
+                    grade = GradeOf(percent);
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        using (SqlCommand cmd = new SqlCommand(
+                            "UPDATE AttemptAnswer SET ObtainedScore = @Marks, IsCorrect = @Verdict, TeacherComment = @Comment WHERE AttemptId = @AttemptId AND QuestionId = @QuestionId; " +
+                            "IF @@ROWCOUNT = 0 INSERT INTO AttemptAnswer (AttemptId, QuestionId, AnswerContent, IsCorrect, ObtainedScore, TeacherComment) " +
+                            "VALUES (@AttemptId, @QuestionId, '', @Verdict, @Marks, @Comment)", con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                            cmd.Parameters.AddWithValue("@QuestionId", ids[i]);
+                            cmd.Parameters.AddWithValue("@Marks", (double)given[i]);
+                            cmd.Parameters.AddWithValue("@Verdict", verdict[i]);
+                            cmd.Parameters.AddWithValue("@Comment", comments[i]);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "INSERT INTO Result (TotalScore, Grade, Average, ResultFeedback, AttemptId) VALUES (@Total, @Grade, @Average, @Feedback, @AttemptId)", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@Total", (double)total);
+                        cmd.Parameters.AddWithValue("@Grade", grade);
+                        cmd.Parameters.AddWithValue("@Average", percent);
+                        cmd.Parameters.AddWithValue("@Feedback", string.Join("\n", feedback));
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE GradingProgress SET ProgressStatus = 'completed', TeacherId = @TeacherId WHERE AttemptId = @AttemptId; " +
+                        "IF @@ROWCOUNT = 0 INSERT INTO GradingProgress (ProgressStatus, ProgressNotes, TeacherId, TA_Id, AttemptId) " +
+                        "VALUES ('completed', '', @TeacherId, NULL, @AttemptId)", con, tx))
                     {
                         cmd.Parameters.AddWithValue("@AttemptId", attemptId);
                         cmd.Parameters.AddWithValue("@TeacherId", teacherId);

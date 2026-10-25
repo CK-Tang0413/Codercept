@@ -124,7 +124,7 @@
                          plain fields named tpm_<AttemptId>_<QuestionId> and tpc_<AttemptId>_<QuestionId>. --%>
                     <% foreach (TeacherSubmission s in Submissions) { foreach (TeacherMarkingQuestion q in Sheets[s.Id]) { %>
                     <% if (q.IsAuto) { %>
-                    <article class="marking-question" data-tp-marking="<%= s.Id %>" data-tp-auto-marks="<%= q.AutoScore %>" hidden>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>" data-tp-auto-marks="<%= q.AutoScore %>"<%= s.Status == "Graded" ? " inert" : "" %> hidden>
                         <div class="marking-question-heading">
                             <span class="question-number">Q<%= q.Number %></span>
                             <div>
@@ -143,7 +143,7 @@
                         <div class="auto-score"><%= TeacherIcons.Svg("info", 14) %>Automatically scored &middot; <%= q.AutoScore %> / <%= q.Marks %> marks</div>
                     </article>
                     <% } else { bool code = q.Type == "Coding"; %>
-                    <article class="marking-question" data-tp-marking="<%= s.Id %>" hidden>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>"<%= s.Status == "Graded" ? " inert" : "" %> hidden>
                         <div class="marking-question-heading">
                             <span class="question-number">Q<%= q.Number %></span>
                             <div>

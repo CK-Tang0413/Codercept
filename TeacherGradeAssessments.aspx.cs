@@ -149,8 +149,39 @@ namespace Codercept
 
         protected void mdlTeacherConfirmGrade_Confirmed(object sender, EventArgs e)
         {
-            // TODO (Phase 4): confirm the grade (Result) so the learner can see the grade and feedback
-            Master.ShowToast("Confirming grades is added in a later step, so nothing was saved.");
+            TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
+            if (submission == null)
+            {
+                Master.ShowToast("Choose a submission first, so nothing was confirmed.");
+                return;
+            }
+
+            int total, max;
+            string grade;
+            GradingSaveResult result = TeacherGradingData.ConfirmGrade(Course.Id, submission.Id, Request.Unvalidated.Form, out total, out max, out grade);
+            switch (result)
+            {
+                case GradingSaveResult.Saved:
+                    // the submission is now Graded, so the lists and the pending counts are read again
+                    TeacherCourseData.GetPendingCounts().TryGetValue(Course.Id, out Pending);
+                    Assessments = TeacherGradingData.GetGradables(Course.Id);
+                    Submissions = TeacherGradingData.GetSubmissions(Course.Id);
+                    Sheets = TeacherGradingData.GetMarkingSheets(Course.Id, Submissions);
+                    Master.ShowToast("Grade confirmed: " + total + " / " + max + " (grade " + grade + ").");
+                    break;
+                case GradingSaveResult.AlreadyGraded:
+                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    break;
+                case GradingSaveResult.InvalidMarks:
+                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was confirmed.");
+                    break;
+                case GradingSaveResult.CommentTooLong:
+                    Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was confirmed.");
+                    break;
+                default:
+                    Master.ShowToast("That submission could not be found, so nothing was confirmed.");
+                    break;
+            }
         }
     }
 }
