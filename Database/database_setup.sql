@@ -7,6 +7,7 @@ GO
 DROP TABLE IF EXISTS [dbo].[LearnerProgress];
 DROP TABLE IF EXISTS [dbo].[User_Log];
 DROP TABLE IF EXISTS [dbo].[Qualification];
+DROP TABLE IF EXISTS [dbo].[ForumRead];
 DROP TABLE IF EXISTS [dbo].[Post_Reply];
 DROP TABLE IF EXISTS [dbo].[Moderate_Forum];
 DROP TABLE IF EXISTS [dbo].[Forum];
@@ -342,9 +343,13 @@ CREATE TABLE [dbo].[Forum] (
     [Title]      NVARCHAR (255) NOT NULL,
     [Content]    NVARCHAR (MAX) NOT NULL,
     [DatePosted] DATETIME       NOT NULL,
-    [LearnerId]  INT            NOT NULL,
+    [LearnerId]  INT            NULL,
+    [Tags]       NVARCHAR (255) NULL, -- comma-separated, for example 'Python,Fundamental'
+    [TeacherId]  INT            NULL,
     PRIMARY KEY CLUSTERED ([PostId] ASC),
-    CONSTRAINT [FK_Forum_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId])
+    CONSTRAINT [CK_Forum_OneAuthor] CHECK ((CASE WHEN [LearnerId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) = 1), -- written by a learner or by a teacher
+    CONSTRAINT [FK_Forum_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
+    CONSTRAINT [FK_Forum_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
 
 CREATE TABLE [dbo].[Moderate_Forum] (
@@ -366,11 +371,22 @@ CREATE TABLE [dbo].[Post_Reply] (
     [LearnerId]    INT            NULL,
     [TeacherId]    INT            NULL,
     [TA_Id]        INT            NULL,
+    [ParentThreadId] INT          NULL, -- the reply this one answers (NULL = a reply to the post itself)
     PRIMARY KEY CLUSTERED ([ThreadId] ASC),
+    CONSTRAINT [FK_PostReply_Parent] FOREIGN KEY ([ParentThreadId]) REFERENCES [dbo].[Post_Reply] ([ThreadId]),
     CONSTRAINT [FK_PostReply_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_PostReply_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
     CONSTRAINT [FK_PostReply_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
     CONSTRAINT [FK_PostReply_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
+);
+
+CREATE TABLE [dbo].[ForumRead] (
+    [PostId]   INT      NOT NULL,
+    [TeacherId] INT     NOT NULL,
+    [DateRead] DATETIME NOT NULL, -- the teacher has seen this post (it no longer counts as unread)
+    CONSTRAINT [PK_ForumRead] PRIMARY KEY CLUSTERED ([PostId] ASC, [TeacherId] ASC),
+    CONSTRAINT [FK_ForumRead_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
+    CONSTRAINT [FK_ForumRead_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
 
 CREATE TABLE [dbo].[Qualification] (
@@ -648,3 +664,35 @@ VALUES
     (@AttWanQuiz, @QuizQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @QuizQ1 AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 2, ''),
     -- Wan, C final exam: chose 'Dennis Ritchie' (right)
     (@AttWanCExam, @CExamQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @CExamQ1 AND [OptionOrder] = 2) AS NVARCHAR(20)), 'pending', 0, '');
+
+-- ==========================================
+-- Forum posts (Backend Phase 5, Step 5.1)
+-- A teacher sees the posts they wrote and the posts of learners enrolled in one of their courses.
+-- Kylan is in Bryan's courses, Wan is in Bryan's Python course and Sarah's C course.
+-- Post_Reply.IsPinned is 'Yes' or 'No'.
+-- ==========================================
+DECLARE @PostId INT, @ThreadId INT;
+
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
+VALUES ('What is String in Python?', 'I am currently going through the Python Programming Fundamentals course and I am a bit confused about strings. What exactly is a string, and how is it different from a list?', DATEADD(DAY, -2, GETDATE()), @KylanId, 'Python,Fundamental', NULL);
+SET @PostId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
+VALUES ('A string is just a sequence of characters. They are strictly immutable.', 'No', NULL, @PostId, @WanId, NULL, NULL);
+SET @ThreadId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
+VALUES ('Wan is correct! Because strings are immutable, if you want to "modify" one you actually create a brand new string.', 'Yes', DATEADD(DAY, -1, GETDATE()), @PostId, NULL, @BryanId, @ThreadId);
+
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
+VALUES ('Error setting up Visual Studio for C++', 'Every time I try to compile my first Hello World program, it throws an error. I installed Visual Studio yesterday.', DATEADD(DAY, -1, GETDATE()), @WanId, 'C++,Environment,Error', NULL);
+SET @PostId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
+VALUES ('Check that the Desktop development with C++ workload is installed in Visual Studio Installer.', 'No', NULL, @PostId, @KylanId, NULL, NULL);
+
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
+VALUES ('Welcome to Python Programming Fundamentals', 'Introduce yourself here and tell us what you would like to build with Python.', DATEADD(DAY, -5, GETDATE()), NULL, 'Announcement', @BryanId);
+SET @PostId = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
+VALUES ('Hi everyone! I want to build a small game.', 'No', NULL, @PostId, @KylanId, NULL, NULL);
+
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
+VALUES ('Reminder: C final examination', 'The final examination for C Programming Essentials covers every chapter. Revise pointers and arrays.', DATEADD(DAY, -3, GETDATE()), NULL, 'Exam,Reminder', @SarahId);

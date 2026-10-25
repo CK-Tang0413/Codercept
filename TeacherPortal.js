@@ -1190,6 +1190,7 @@
         var replyingLabel = qs("[data-tp-forum-replying-label]", root);
         var replyInput = qs("[data-tp-forum-reply-input]", root);
         var title = qs("[data-tp-forum-title]", root);
+        if (!title) return; // no posts yet: nothing to wire up
 
         function closeFlags() { qsa("[data-tp-forum-flag-pop]", root).forEach(function (p) { p.hidden = true; }); }
 

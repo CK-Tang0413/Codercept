@@ -18,6 +18,11 @@
             <a class="button button--primary" href="TeacherForumAdd.aspx"><span>Add new post</span></a>
         </div>
 
+        <% if (Posts.Count == 0) { %>
+        <article class="chapter-detail-card">
+            <p class="summary-empty">There are no forum posts yet. Posts by learners in your courses appear here, and you can start a discussion with "Add new post".</p>
+        </article>
+        <% } else { %>
         <div class="forum-layout">
             <section class="post-list" aria-label="Forum posts">
                 <% foreach (TeacherForumPost post in Posts) { bool sel = post.Id == SelectedPost.Id; %>
@@ -77,6 +82,7 @@
                 </div>
             </section>
         </div>
+        <% } %>
 
         <a class="mobile-add-post" href="TeacherForumAdd.aspx" aria-label="Add new post"><%= TeacherIcons.Svg("plus", 23) %></a>
     </div>

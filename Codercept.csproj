@@ -540,6 +540,7 @@
     <Compile Include="TeacherCourseData.cs" />
     <Compile Include="TeacherDashboardData.cs" />
     <Compile Include="TeacherExamData.cs" />
+    <Compile Include="TeacherForumData.cs" />
     <Compile Include="TeacherGradingData.cs" />
     <Compile Include="TeacherMediaStore.cs" />
     <Compile Include="TeacherSubChapterData.cs" />
