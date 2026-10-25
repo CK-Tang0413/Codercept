@@ -18,7 +18,7 @@ namespace Codercept
         /// <summary>primary | secondary | ghost | danger</summary>
         public string ConfirmVariant { get { return confirmVariant ?? "danger"; } set { confirmVariant = value; } }
 
-        /// <summary>Raised when the confirm button is clicked. TODO (backend): perform the action in the handler.</summary>
+        /// <summary>Raised when the confirm button is clicked.</summary>
         public event EventHandler Confirmed;
 
         private string iconName, iconCss, cancelText, confirmIcon, confirmVariant;

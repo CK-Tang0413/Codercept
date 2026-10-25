@@ -138,7 +138,7 @@ namespace Codercept
     {
         /// <summary>
         /// Exam, Quiz and Assessment are separate tables, so their ids can overlap (Exam 1 and Quiz 1). Pages therefore identify
-        /// one by Key ("exam:1", "quiz:3", "assessment:2"), never by Id alone. TODO (backend): ExamId, QuizId or AssessmentId.
+        /// one by Key ("exam:1", "quiz:3", "assessment:2"), never by Id alone.
         /// </summary>
         public int Id { get; set; }
         public string Key { get { return (Type ?? "").ToLowerInvariant() + ":" + Id; } }
@@ -153,7 +153,7 @@ namespace Codercept
 
     public class TeacherSubmission
     {
-        /// <summary>One learner's submission of the assessment. TODO (backend): AttemptId.</summary>
+        /// <summary>One learner's submission of the assessment.</summary>
         public int Id { get; set; }
         public string Initials { get; set; }
         public string Name { get; set; }
