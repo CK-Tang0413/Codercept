@@ -6,6 +6,8 @@ namespace Codercept
     {
         /// <summary>The chosen course's engagement figures (only this teacher's courses return anything).</summary>
         protected TeacherCourseFigures Figures;
+        /// <summary>The chosen course's graded results (only this teacher's courses return anything).</summary>
+        protected TeacherPerformance Performance;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -19,13 +21,14 @@ namespace Codercept
             rptTeacherCourseStats.DataSource = TeacherStatsData.CourseRows(Figures);
             rptTeacherCourseStats.DataBind();
 
-            rptTeacherMetrics.DataSource = TeacherSampleData.GetPerformanceMetrics();
+            Performance = TeacherStatsData.GetPerformance(selTeacherCourse.SelectedCourse.Id);
+            rptTeacherMetrics.DataSource = Performance.Metrics;
             rptTeacherMetrics.DataBind();
 
-            rptTeacherGradeBars.DataSource = TeacherSampleData.GetGradeDistribution();
+            rptTeacherGradeBars.DataSource = Performance.GradeCounts;
             rptTeacherGradeBars.DataBind();
 
-            rptTeacherGradeLegend.DataSource = TeacherSampleData.GetGradeDistribution();
+            rptTeacherGradeLegend.DataSource = Performance.GradeCounts;
             rptTeacherGradeLegend.DataBind();
         }
 

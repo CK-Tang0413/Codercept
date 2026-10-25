@@ -58,7 +58,7 @@
                         <span>Assessment results</span>
                         <h3>Performance Statistics</h3>
                     </div>
-                    <span class="badge badge--success">84 graded</span>
+                    <span class="badge badge--success"><%: Performance.Graded %> graded</span>
                 </div>
                 <div class="metric-grid">
                     <asp:Repeater ID="rptTeacherMetrics" runat="server">

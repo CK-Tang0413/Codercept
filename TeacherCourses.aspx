@@ -125,7 +125,7 @@
                     <p><%: Figures.Completed %> of <%: Figures.Attended %> <%= Figures.Attended == 1 ? "learner" : "learners" %> completed this course</p>
                 </div>
                 <div class="stacked-actions">
-                    <a class="button button--secondary" href="TeacherCourseStats.aspx"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>
+                    <a class="button button--secondary" href="TeacherCourseStats.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>
                     <a class="button button--ghost" href="TeacherLearners.aspx"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
                 </div>
             </article>

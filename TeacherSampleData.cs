@@ -39,31 +39,6 @@ namespace Codercept
             };
         }
 
-        public static List<TeacherDetailItem> GetPerformanceMetrics()
-        {
-            return new List<TeacherDetailItem>
-            {
-                new TeacherDetailItem { Label = "Average", Value = "78.4" },
-                new TeacherDetailItem { Label = "Median", Value = "80.0" },
-                new TeacherDetailItem { Label = "Minimum", Value = "42.0" },
-                new TeacherDetailItem { Label = "Maximum", Value = "98.0" },
-                new TeacherDetailItem { Label = "Std. deviation", Value = "12.6" }
-            };
-        }
-
-        public static List<TeacherGrade> GetGradeDistribution()
-        {
-            return new List<TeacherGrade>
-            {
-                new TeacherGrade { Grade = "A", Count = 18, Value = 82 },
-                new TeacherGrade { Grade = "B", Count = 24, Value = 100 },
-                new TeacherGrade { Grade = "C", Count = 19, Value = 86 },
-                new TeacherGrade { Grade = "D", Count = 14, Value = 64 },
-                new TeacherGrade { Grade = "E", Count = 6, Value = 36 },
-                new TeacherGrade { Grade = "F", Count = 3, Value = 22 }
-            };
-        }
-
         public static List<TeacherExamRule> GetExamRules()
         {
             return new List<TeacherExamRule>
