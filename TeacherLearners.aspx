@@ -27,6 +27,9 @@
         <% if (Learner == null) { %>
         <article class="chapter-detail-card">
             <p class="summary-empty">No learners are enrolled in this course yet.</p>
+            <div class="chapter-detail-actions">
+                <button type="button" class="button button--primary" data-tp-open-modal="tpAddLearnerModal"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></button>
+            </div>
         </article>
         <% } else { %>
         <div class="learner-master-detail">
@@ -36,7 +39,7 @@
                         <span>ENROLLED LEARNERS</span>
                         <strong><%= Learners.Count %> learners</strong>
                     </div>
-                    <asp:LinkButton ID="btnTeacherAddLearner" runat="server" CssClass="button button--primary" OnClick="btnTeacherAddLearner_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></asp:LinkButton>
+                    <button type="button" class="button button--primary" data-tp-open-modal="tpAddLearnerModal"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></button>
                 </div>
                 <div class="learner-search">
                     <label class="input-wrap">
@@ -142,5 +145,22 @@
 </asp:Content>
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
+    <%-- Add learner: the teacher types the learner's email. It is reopened with the error when the add was refused. --%>
+    <div class="modal-backdrop" role="presentation" id="tpAddLearnerModal" data-tp-modal data-tp-region="tpAddLearnerModal"<%= ReopenAddLearner ? "" : " hidden" %>>
+        <asp:Panel ID="pnlTeacherAddLearner" runat="server" CssClass="modal" DefaultButton="btnTeacherAddLearner" role="dialog" aria-modal="true" aria-labelledby="tpAddLearnerModalTitle">
+            <span class="modal-success-icon"><%= TeacherIcons.Svg("users", 22) %></span>
+            <h2 id="tpAddLearnerModalTitle">Add learner</h2>
+            <p>Enter the email address of the learner's Codercept account to enrol them in <strong><%: CourseTitle %></strong>.</p>
+            <label id="fldTeacherAddLearner" runat="server" class="portal-form-field">
+                <span>Learner email</span>
+                <asp:TextBox ID="txtTeacherAddLearnerEmail" runat="server" MaxLength="50" autocomplete="off" data-tp-autofocus data-tp-clear-on-close></asp:TextBox>
+                <small id="hintTeacherAddLearner" runat="server"></small>
+            </label>
+            <div class="modal-actions">
+                <button type="button" class="button button--ghost" data-tp-close-modal><span>Cancel</span></button>
+                <asp:LinkButton ID="btnTeacherAddLearner" runat="server" CssClass="button button--primary" OnClick="btnTeacherAddLearner_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></asp:LinkButton>
+            </div>
+        </asp:Panel>
+    </div>
     <uc:ConfirmModal ID="mdlTeacherRemoveLearner" runat="server" ModalId="tpRemoveLearnerModal" TitleText="Remove learner?" IconName="users" ConfirmText="Remove learner" OnConfirmed="mdlTeacherRemoveLearner_Confirmed" />
 </asp:Content>

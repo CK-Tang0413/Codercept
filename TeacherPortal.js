@@ -48,6 +48,16 @@
     function closeModal(modal) {
         if (!modal) return;
         modal.hidden = true;
+        // a field marked data-tp-clear-on-close starts empty the next time the dialog is opened (and loses its error message)
+        qsa("[data-tp-clear-on-close]", modal).forEach(function (field) {
+            field.value = "";
+            var wrap = field.closest(".portal-form-field");
+            if (wrap) {
+                wrap.classList.remove("has-error");
+                var hint = qs("small", wrap);
+                if (hint) hint.textContent = "";
+            }
+        });
         if (lastTrigger && lastTrigger.focus) lastTrigger.focus();
     }
 

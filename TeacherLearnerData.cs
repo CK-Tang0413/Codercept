@@ -6,6 +6,19 @@ using System.Linq;
 
 namespace Codercept
 {
+    /// <summary>What happened when a teacher added a learner to a course.</summary>
+    public enum AddLearnerResult
+    {
+        Added,
+        /// <summary>The text is not an email address (or is longer than Learner.Email allows).</summary>
+        InvalidEmail,
+        /// <summary>No learner account with that email is active. Not revealed: whether it exists but is not active.</summary>
+        NotFound,
+        AlreadyEnrolled,
+        /// <summary>The course is not one of the signed-in teacher's.</summary>
+        CourseNotFound
+    }
+
     /// <summary>
     /// Database queries for the teacher's learner pages. A learner belongs to a teacher through an enrolment (LearnerProgress) in one of that
     /// teacher's courses, so every query is joined to Course and filtered on Course.TeacherId = @TeacherId: a forged CourseId of another
@@ -197,6 +210,83 @@ namespace Codercept
                 cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                 con.Open();
                 return cmd.ExecuteNonQuery() == 1;
+            }
+        }
+
+        /// <summary>The longest email Learner.Email can hold.</summary>
+        public const int MaxEmailLength = 50;
+
+        /// <summary>True for "name@host.tld" style text no longer than MaxEmailLength.</summary>
+        public static bool LooksLikeEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email) || email.Length > MaxEmailLength) return false;
+            try
+            {
+                System.Net.Mail.MailAddress address = new System.Net.Mail.MailAddress(email);
+                return address.Address == email && email.Contains(".") && email.IndexOf('@') > 0;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Enrols the learner whose account has this email in one of the signed-in teacher's courses (a LearnerProgress row, EnrolledDate now,
+        /// starting at the first chapter when the course has chapters). In one transaction it checks that the course is the teacher's, that an
+        /// active learner account has the email and that the learner is not enrolled yet (locked, so two requests at once cannot both enrol
+        /// them); anything else adds nothing. learnerId and name say who was added.
+        /// </summary>
+        public static AddLearnerResult AddLearner(int courseId, string email, out int learnerId, out string name)
+        {
+            learnerId = 0; name = "";
+            email = (email ?? "").Trim();
+            if (!LooksLikeEmail(email)) return AddLearnerResult.InvalidEmail;
+
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Course WHERE CourseId = @CourseId AND TeacherId = @TeacherId", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseId", courseId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        if ((int)cmd.ExecuteScalar() == 0) return AddLearnerResult.CourseNotFound;
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand("SELECT LearnerId, Name FROM Learner WHERE Email = @Email AND AccStatus = 'Active'", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read()) return AddLearnerResult.NotFound;
+                            learnerId = reader.GetInt32(0);
+                            name = reader.GetString(1);
+                        }
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT COUNT(*) FROM LearnerProgress WITH (UPDLOCK, HOLDLOCK) WHERE LearnerId = @LearnerId AND CourseId = @CourseId", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                        cmd.Parameters.AddWithValue("@CourseId", courseId);
+                        if ((int)cmd.ExecuteScalar() > 0) return AddLearnerResult.AlreadyEnrolled;
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "INSERT INTO LearnerProgress (LearnerId, CourseId, ChapNum, EnrolledDate) " +
+                        "VALUES (@LearnerId, @CourseId, CASE WHEN EXISTS (SELECT 1 FROM Chapter WHERE CourseId = @CourseId) THEN 1 ELSE NULL END, GETDATE())", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                        cmd.Parameters.AddWithValue("@CourseId", courseId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                    return AddLearnerResult.Added;
+                }
             }
         }
 

@@ -9,6 +9,11 @@ namespace Codercept
     {
         private List<TeacherLearner> learners;
 
+        /// <summary>Show the Add learner dialog again (with its error) after a refused add.</summary>
+        protected bool ReopenAddLearner;
+
+        protected string CourseTitle { get { return selTeacherCourse.SelectedCourse.Title; } }
+
         /// <summary>The learners enrolled in the chosen course (only this teacher's courses return anything).</summary>
         protected List<TeacherLearner> Learners
         {
@@ -70,8 +75,36 @@ namespace Codercept
 
         protected void btnTeacherAddLearner_Click(object sender, EventArgs e)
         {
-            // TODO (backend): open/process "add learner to course" (INSERT enrolment)
-            Master.ShowToast("Add learner selected");
+            // a stale or forged course id must not enrol the learner in the first course instead
+            if (!selTeacherCourse.SelectionIsValid)
+            {
+                Master.ShowToast("Choose a course first, so nobody was added.");
+                return;
+            }
+
+            string email = txtTeacherAddLearnerEmail.Text.Trim();
+            int learnerId;
+            string name;
+            AddLearnerResult result = TeacherLearnerData.AddLearner(selTeacherCourse.SelectedCourse.Id, email, out learnerId, out name);
+
+            string error = null;
+            if (result == AddLearnerResult.InvalidEmail) error = "Enter a valid email address.";
+            else if (result == AddLearnerResult.NotFound) error = "No active learner account was found for that email.";
+            else if (result == AddLearnerResult.AlreadyEnrolled) error = "That learner is already enrolled in this course.";
+            else if (result == AddLearnerResult.CourseNotFound) error = "That course could not be found.";
+
+            fldTeacherAddLearner.Attributes["class"] = error == null ? "portal-form-field" : "portal-form-field has-error";
+            hintTeacherAddLearner.InnerText = error ?? "";
+            if (error != null)
+            {
+                ReopenAddLearner = true;
+                return;
+            }
+
+            txtTeacherAddLearnerEmail.Text = "";
+            learners = null; // read the list again with them
+            hfTeacherLearnerId.Value = learnerId.ToString(); // show the new learner
+            Master.ShowToast(name + " added to the course");
         }
 
         protected void mdlTeacherRemoveLearner_Confirmed(object sender, EventArgs e)
