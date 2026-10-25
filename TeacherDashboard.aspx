@@ -66,8 +66,7 @@
                                 <p><strong><%# Server.HtmlEncode((string)Eval("Name")) %></strong> <%# Eval("Action") %> answers for</p>
                                 <span><%# Server.HtmlEncode((string)Eval("Detail")) %></span>
                             </div>
-                            <%-- TODO (backend): link to the specific submission --%>
-                            <a id="lnkTeacherMarkAnswers" runat="server" class="button button--primary" href="~/TeacherGradeAssessments.aspx" visible='<%# (bool)Eval("HasButton") %>'><%= TeacherIcons.Svg("check", 17) %><span>Mark answers</span></a>
+                            <a id="lnkTeacherMarkAnswers" runat="server" class="button button--primary" href='<%# "~/TeacherGradeAssessments.aspx?course=" + Eval("CourseId") + "&submission=" + Eval("AttemptId") %>' visible='<%# (bool)Eval("HasButton") %>'><%= TeacherIcons.Svg("check", 17) %><span>Mark answers</span></a>
                         </article>
                     </ItemTemplate>
                 </asp:Repeater>

@@ -126,16 +126,16 @@
                 </div>
                 <div class="stacked-actions">
                     <a class="button button--secondary" href="TeacherCourseStats.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>
-                    <a class="button button--ghost" href="TeacherLearners.aspx"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
+                    <a class="button button--ghost" href="TeacherLearners.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
                 </div>
             </article>
         </div>
 
         <div class="bottom-action-bar">
             <div class="action-bar-group">
-                <a class="button button--secondary" href="TeacherChapters.aspx"><%= TeacherIcons.Svg("layers", 17) %><span>Manage chapters/subchapters</span></a>
-                <a class="button button--secondary" href="TeacherExams.aspx"><%= TeacherIcons.Svg("exams", 17) %><span>Manage exam</span></a>
-                <a class="button button--secondary" href="TeacherGrading.aspx"><%= TeacherIcons.Svg("grade", 17) %><span>Grade assessments</span></a>
+                <a class="button button--secondary" href="TeacherChapters.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("layers", 17) %><span>Manage chapters/subchapters</span></a>
+                <a class="button button--secondary" href="TeacherExamEdit.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("exams", 17) %><span>Manage exam</span></a>
+                <a class="button button--secondary" href="TeacherGradeAssessments.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("grade", 17) %><span>Grade assessments</span></a>
             </div>
             <div class="danger-action">
                 <button type="button" class="button button--danger" data-tp-open-modal="tpDeleteCourseModal"><%= TeacherIcons.Svg("trash", 17) %><span>Delete course</span></button>

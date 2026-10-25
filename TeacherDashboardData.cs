@@ -68,7 +68,7 @@ namespace Codercept
             using (SqlCommand cmd = new SqlCommand(
                 TeacherCourseData.CourseAttemptsCte +
                 "SELECT TOP (@Count) ca.AttemptDate, ca.AttemptStatus, ca.LearnerId, ca.Title, c.CourseTitle, l.Name, " +
-                "       CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = ca.AttemptId) THEN 0 ELSE 1 END AS Ungraded " +
+                "       CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = ca.AttemptId) THEN 0 ELSE 1 END AS Ungraded, ca.CourseId, ca.AttemptId " +
                 "FROM CourseAttempt ca " +
                 "INNER JOIN Course c ON c.CourseId = ca.CourseId " +
                 "INNER JOIN Learner l ON l.LearnerId = ca.LearnerId " +
@@ -93,7 +93,9 @@ namespace Codercept
                             Action = completed ? "submitted" : "started",
                             Type = completed ? "submitted" : "started",
                             Detail = reader.GetString(4) + " — " + reader.GetString(3),
-                            HasButton = completed && reader.GetInt32(6) == 1
+                            HasButton = completed && reader.GetInt32(6) == 1,
+                            CourseId = reader.GetInt32(7),
+                            AttemptId = reader.GetInt32(8)
                         });
                     }
                 }

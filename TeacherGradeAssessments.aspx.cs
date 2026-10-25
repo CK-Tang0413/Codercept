@@ -80,7 +80,19 @@ namespace Codercept
             mdlTeacherConfirmGrade.BodyHtml = "You are about to confirm a total of <strong data-tp-confirm-total>0 / " + SelectedAssessment.TotalMarks + "</strong> for "
                 + "<strong data-tp-confirm-learner>" + (chosen == null ? "" : Server.HtmlEncode(chosen.Name)) + "</strong>. "
                 + "The learner will be able to see the grade and your feedback.";
-            if (!IsPostBack) hfTeacherGradeAssessment.Value = SelectedAssessment.Key;
+            if (!IsPostBack)
+            {
+                hfTeacherGradeAssessment.Value = SelectedAssessment.Key;
+
+                // ?submission= (the dashboard's "Mark answers") opens that submission, but only if it is one of this course's own
+                int linked;
+                TeacherSubmission target = int.TryParse(Request.QueryString["submission"], out linked) ? Submissions.FirstOrDefault(s => s.Id == linked) : null;
+                if (target != null)
+                {
+                    hfTeacherGradeAssessment.Value = target.TestKey;
+                    hfTeacherGradeLearner.Value = target.Id.ToString();
+                }
+            }
         }
 
         /// <summary>"1 question", "3 questions".</summary>

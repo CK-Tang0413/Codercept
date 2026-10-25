@@ -304,5 +304,8 @@ namespace Codercept
         public string Detail { get; set; }
         public string Type { get; set; }
         public bool HasButton { get; set; }
+        /// <summary>The course and attempt the activity is about (the "Mark answers" link opens that submission).</summary>
+        public int CourseId { get; set; }
+        public int AttemptId { get; set; }
     }
 }
