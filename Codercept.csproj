@@ -212,7 +212,7 @@
     <Content Include="LearnerDashboard.aspx" />
     <Content Include="LearnerForum.aspx" />
     <Content Include="LearnerSideBar.ascx" />
-    <Content Include="media\uploads\1\f01ab01517bc434eb5514dd0f45db7c1.jpg" />
+    <Content Include="media\uploads\1\13551c8f08844826b9841992d3314ee0.jpg" />
     <Content Include="MyProgress.aspx" />
     <Content Include="profile.aspx" />
     <Content Include="ResetPassword.aspx" />
@@ -540,6 +540,7 @@
     <Compile Include="TeacherCourseData.cs" />
     <Compile Include="TeacherDashboardData.cs" />
     <Compile Include="TeacherExamData.cs" />
+    <Compile Include="TeacherGradingData.cs" />
     <Compile Include="TeacherMediaStore.cs" />
     <Compile Include="TeacherSubChapterData.cs" />
     <Compile Include="TeacherTestData.cs" />

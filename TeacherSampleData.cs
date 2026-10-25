@@ -564,6 +564,8 @@ Id = 3,
         public string Title { get; set; }
         public int Pending { get; set; }
         public int Questions { get; set; }
+        /// <summary>The sum of the marks of its questions.</summary>
+        public int TotalMarks { get; set; }
     }
 
     public class TeacherSubmission
@@ -577,6 +579,8 @@ Id = 3,
         /// <summary>Not graded | In progress | Graded</summary>
         public string Status { get; set; }
         public string Submitted { get; set; }
+        /// <summary>Which exam, quiz or assessment it is a submission of: the Key of its TeacherAssessment.</summary>
+        public string TestKey { get; set; }
     }
 
     public class TeacherExamRule

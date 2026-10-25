@@ -8,24 +8,33 @@
 </asp:Content>
 
 <asp:Content ID="ContentMain" ContentPlaceHolderID="cphMain" runat="server">
+    <div class="exam-course-banner course-thumbnail--<%= Course.Theme %>">
+        <span class="exam-banner-glyph"><%: Course.Glyph %></span>
+        <div>
+            <span>GRADING ASSESSMENTS FOR</span>
+            <h1><%: Course.Title %></h1>
+            <p><%: Course.Language %> &bull; <%= Pending %> pending submissions</p>
+        </div>
+        <span class="badge badge--warning"><%= Pending %> pending</span>
+        <i class="code-symbol code-symbol--one">{ }</i>
+        <i class="code-symbol code-symbol--two">01</i>
+    </div>
+
+    <% if (Assessments.Count == 0) { %>
+    <article class="chapter-detail-card">
+        <p class="summary-empty">This course has no exam, quiz or assessment to grade yet. Add a quiz or assessment in Manage Chapters, or create the exam in Exams.</p>
+        <div class="chapter-detail-actions">
+            <a class="button button--ghost" href="TeacherGrading.aspx"><span>Back to courses</span></a>
+        </div>
+    </article>
+    <% } else { %>
     <%-- Choosing an assessment / learner and the live total run client-side (data-tp-grade-*);
          the choices are posted in hfTeacherGradeAssessment (the assessment's Key, e.g. "quiz:3") and
-         hfTeacherGradeLearner (the submission's Id). --%>
+         hfTeacherGradeLearner (the submission's Id). Every submission of the course is rendered with data-test = the Key of what it
+         submits, and TeacherPortal.js only lists the ones of the chosen exam / quiz / assessment. --%>
     <div data-tp-grading>
         <input type="hidden" id="hfTeacherGradeAssessment" runat="server" data-tp-grade-assessment />
         <input type="hidden" id="hfTeacherGradeLearner" runat="server" value="" data-tp-grade-learner />
-
-        <div class="exam-course-banner course-thumbnail--<%= Course.Theme %>">
-            <span class="exam-banner-glyph"><%: Course.Glyph %></span>
-            <div>
-                <span>GRADING ASSESSMENTS FOR</span>
-                <h1><%: Course.Title %></h1>
-                <p><%: Course.Language %> &bull; <%= Pending %> pending submissions</p>
-            </div>
-            <span class="badge badge--warning"><%= Pending %> pending</span>
-            <i class="code-symbol code-symbol--one">{ }</i>
-            <i class="code-symbol code-symbol--two">01</i>
-        </div>
 
         <section class="flow-section grading-flow-section">
             <uc:StepHeading runat="server" Step="1" Title="Select exam / quiz / assessment" Subtitle="Choose the exam, quiz or chapter assessment submission you want to mark." />
@@ -43,11 +52,11 @@
                         <div class="assessment-tiles">
                             <% foreach (TeacherAssessment a in Assessments.Where(x => x.Type == type)) { bool sel = a.Key == SelectedAssessment.Key; %>
                             <button type="button" class="assessment-tile<%= sel ? " is-selected" : "" %>" data-tp-assessment
-                                data-key="<%= a.Key %>" data-title="<%: a.Title %>" data-pending="<%= a.Pending %>" data-questions="<%= a.Questions %>">
+                                data-key="<%= a.Key %>" data-title="<%: a.Title %>" data-pending="<%= a.Pending %>" data-questions="<%= a.Questions %>" data-marks="<%= a.TotalMarks %>">
                                 <span class="assessment-type-icon <%= TypeClass(type) %>"><%= TeacherIcons.Svg(TypeIcon(type), 18) %></span>
                                 <span>
                                     <strong><%: a.Title %></strong>
-                                    <small><%= a.Questions %> questions</small>
+                                    <small><%= Questions(a.Questions) %></small>
                                 </span>
                                 <span class="badge badge--<%= a.Pending > 0 ? "warning" : "success" %>"><%= a.Pending %> pending</span>
                                 <span class="selected-check" data-tp-tile-check<%= sel ? "" : " hidden" %>><%= TeacherIcons.Svg("check", 13) %></span>
@@ -61,7 +70,7 @@
                     <span>SELECTED ASSESSMENT</span>
                     <span class="summary-assessment-icon" data-tp-sum-icon><%= TeacherIcons.Svg(TypeIcon(SelectedAssessment.Type), 21) %></span>
                     <h3 data-tp-sum-title><%: SelectedAssessment.Title %></h3>
-                    <p data-tp-sum-text><%= SelectedAssessment.Questions %> questions &middot; 100 total marks</p>
+                    <p data-tp-sum-text><%= Questions(SelectedAssessment.Questions) %> &middot; <%= SelectedAssessment.TotalMarks %> total marks</p>
                     <span class="badge badge--warning" data-tp-sum-badge><%= SelectedAssessment.Pending %> pending</span>
                 </aside>
             </div>
@@ -73,8 +82,8 @@
                 <button type="button" class="submission-select-trigger" aria-expanded="false" data-tp-submission-trigger></button>
                 <span hidden data-tp-down-icon><%= TeacherIcons.Svg("down", 16) %></span>
                 <div class="submission-menu" data-tp-submission-menu hidden>
-                    <% for (int i = 0; i < Submissions.Count; i++) { TeacherSubmission s = Submissions[i]; bool first = s.Id == SelectedSubmission.Id; %>
-                    <button type="button" class="<%= first ? "is-selected" : "" %>" data-tp-submission="<%= s.Id %>"
+                    <% for (int i = 0; i < Submissions.Count; i++) { TeacherSubmission s = Submissions[i]; bool first = SelectedSubmission != null && s.Id == SelectedSubmission.Id; %>
+                    <button type="button" class="<%= first ? "is-selected" : "" %>" data-tp-submission="<%= s.Id %>" data-test="<%= s.TestKey %>"
                         data-initials="<%: s.Initials %>" data-tone="<%= s.Tone %>" data-name="<%: s.Name %>" data-email="<%: s.Email %>"
                         data-status="<%: s.Status %>" data-submitted="<%: s.Submitted %>">
                         <span class="avatar avatar--<%= s.Tone %> avatar--sm" aria-hidden="true"><%: s.Initials %></span>
@@ -90,7 +99,7 @@
             </div>
         </section>
 
-        <section class="flow-section grading-flow-section">
+        <section class="flow-section grading-flow-section" data-tp-needs-submission>
             <div class="step-heading">
                 <span class="step-number">3</span>
                 <div>
@@ -163,7 +172,7 @@
             </div>
         </section>
 
-        <div class="grading-sticky-footer">
+        <div class="grading-sticky-footer" data-tp-needs-submission>
             <div class="grading-total">
                 <div>
                     <span>Total</span>
@@ -178,6 +187,7 @@
             </div>
         </div>
     </div>
+    <% } %>
 </asp:Content>
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">

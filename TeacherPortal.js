@@ -907,7 +907,7 @@
         var menu = qs("[data-tp-submission-menu]", root);
         var options = qsa("[data-tp-submission]", root);
         var statusClass = { "Graded": "is-graded", "In progress": "is-progress", "Not graded": "is-ungraded" };
-        var assessment = { key: "", title: "", questions: "", pending: 0 };
+        var assessment = { key: "", type: "", title: "", questions: "", marks: "", pending: 0 };
 
         function esc(text) {
             var d = document.createElement("div");
@@ -915,12 +915,33 @@
             return d.innerHTML;
         }
 
+        // the submissions of the chosen exam / quiz / assessment (every submission of the course is in the page)
+        function visibleOptions() {
+            return options.filter(function (o) { return o.getAttribute("data-test") === assessment.key; });
+        }
+
         function current() {
-            return options.filter(function (o) { return o.getAttribute("data-tp-submission") === learnerInput.value; })[0] || options[0];
+            var list = visibleOptions();
+            return list.filter(function (o) { return o.getAttribute("data-tp-submission") === learnerInput.value; })[0] || list[0] || null;
         }
 
         function render() {
+            options.forEach(function (o) { o.hidden = o.getAttribute("data-test") !== assessment.key; });
             var opt = current();
+
+            // nobody has submitted it yet: say so, and hide the marking panel and the total bar
+            qsa("[data-tp-needs-submission]", root).forEach(function (el) { el.hidden = !opt; });
+            if (!opt) {
+                learnerInput.value = "";
+                qs("[data-tp-grade-subtitle]", root).textContent = "";
+                menu.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.innerHTML = "<span><strong>No submissions yet</strong><small>No learner has submitted this " + esc(assessment.type) + "</small></span>"
+                    + qs("[data-tp-down-icon]", root).innerHTML;
+                return;
+            }
+            learnerInput.value = opt.getAttribute("data-tp-submission");
+
             var name = opt.getAttribute("data-name");
             var submitted = opt.getAttribute("data-submitted");
             var avatar = '<span class="avatar avatar--' + opt.getAttribute("data-tone") + ' avatar--sm" aria-hidden="true">' + esc(opt.getAttribute("data-initials")) + "</span>";
@@ -949,8 +970,10 @@
         function selectTile(tile) {
             assessment = {
                 key: tile.getAttribute("data-key"),
+                type: tile.getAttribute("data-key").split(":")[0],
                 title: tile.getAttribute("data-title"),
                 questions: tile.getAttribute("data-questions"),
+                marks: tile.getAttribute("data-marks"),
                 pending: parseInt(tile.getAttribute("data-pending"), 10)
             };
             assessmentInput.value = assessment.key;
@@ -967,7 +990,7 @@
                 qsa("svg", sumIcon).forEach(function (svg) { svg.setAttribute("width", "21"); svg.setAttribute("height", "21"); });
             }
             qs("[data-tp-sum-title]", root).textContent = assessment.title;
-            qs("[data-tp-sum-text]", root).innerHTML = assessment.questions + " questions &middot; 100 total marks";
+            qs("[data-tp-sum-text]", root).innerHTML = assessment.questions + (assessment.questions === "1" ? " question" : " questions") + " &middot; " + assessment.marks + " total marks";
             var badge = qs("[data-tp-sum-badge]", root);
             badge.textContent = assessment.pending + " pending";
             badge.className = "badge badge--" + (assessment.pending ? "warning" : "success");
