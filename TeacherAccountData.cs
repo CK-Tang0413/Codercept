@@ -46,6 +46,23 @@ namespace Codercept
             }
         }
 
+        /// <summary>
+        /// Deactivates the signed-in teacher's own account (AccStatus = 'Inactive'); sign-in refuses an account that is not Active. Nothing is
+        /// deleted: the teacher's courses, learners' results and forum posts stay as they are. False when the account was not active.
+        /// </summary>
+        public static bool DeactivateAccount()
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "UPDATE Teacher SET AccStatus = 'Inactive' WHERE TeacherId = @TeacherId AND AccStatus = 'Active'", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                return cmd.ExecuteNonQuery() == 1;
+            }
+        }
+
         /// <summary>The signed-in teacher's details, or null when the account no longer exists.</summary>
         public static TeacherProfile GetProfile()
         {

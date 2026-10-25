@@ -44,7 +44,7 @@ namespace Codercept
             }
 
             // The confirmation field is plain HTML inside the shared modal; its text is re-checked in the confirm handler
-            mdlTeacherDeleteAccount.BodyHtml = "This permanently removes your profile and portal access. Type <strong>"
+            mdlTeacherDeleteAccount.BodyHtml = "This deactivates your account and signs you out; you will not be able to sign in again. Your courses and their learners' results are kept. Type <strong>"
                 + HttpUtility.HtmlEncode(Email) + "</strong> to confirm."
                 + "<span class=\"portal-form-field\"><span>Email address</span>"
                 + "<input type=\"text\" name=\"tpDeleteEmail\" aria-label=\"Confirm email address\" autocomplete=\"off\" "
@@ -102,10 +102,32 @@ namespace Codercept
 
         protected void mdlTeacherDeleteAccount_Confirmed(object sender, EventArgs e)
         {
-            if (Request.Form["tpDeleteEmail"] != Email) return;
+            if (Request.Form["tpDeleteEmail"] != Email)
+            {
+                Master.ShowToast("The email you typed does not match, so your account was not deactivated.");
+                return;
+            }
 
-            // TODO (backend): delete / deactivate the teacher's account, then sign out (Session.Abandon(); redirect to signIn.aspx)
-            Master.ShowToast("Account deletion request confirmed");
+            bool deactivated;
+            try
+            {
+                deactivated = TeacherAccountData.DeactivateAccount();
+            }
+            catch (SqlException)
+            {
+                Master.ShowToast("Could not deactivate your account. Please try again.");
+                return;
+            }
+
+            if (!deactivated)
+            {
+                Master.ShowToast("Your account could not be found.");
+                return;
+            }
+
+            // sign out, as the sidebar's Sign out link does
+            Session.Abandon();
+            Response.Redirect("~/signIn.aspx");
         }
     }
 }
