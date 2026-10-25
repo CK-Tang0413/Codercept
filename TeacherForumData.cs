@@ -18,6 +18,15 @@ namespace Codercept
             "(f.TeacherId = @TeacherId OR EXISTS (SELECT 1 FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
             "WHERE lp.LearnerId = f.LearnerId AND c.TeacherId = @TeacherId))";
 
+        /// <summary>Forum.Title is NVARCHAR(255); the form allows 150.</summary>
+        public const int MaxTitleLength = 150;
+
+        /// <summary>The longest post text the form accepts.</summary>
+        public const int MaxDescriptionLength = 5000;
+
+        /// <summary>Forum.Tags is NVARCHAR(255): all the tags joined with commas must fit.</summary>
+        public const int MaxTagsLength = 255;
+
         /// <summary>The longest excerpt shown on a post card.</summary>
         private const int ExcerptLength = 110;
 
@@ -81,6 +90,35 @@ namespace Codercept
                 }
             }
             return posts;
+        }
+
+        /// <summary>
+        /// Saves a new post written by the signed-in teacher (Forum.TeacherId; LearnerId stays NULL because a post has exactly one author).
+        /// Returns the new PostId, or 0 when the title, text or tags break their limits (the page checks them first and shows the message;
+        /// this is the second lock). Tags are stored comma-separated, or NULL when there are none.
+        /// </summary>
+        public static int CreatePost(string title, string description, List<string> tags)
+        {
+            title = (title ?? "").Trim();
+            description = (description ?? "").Trim();
+            string joined = string.Join(",", tags ?? new List<string>());
+            if (title.Length == 0 || title.Length > MaxTitleLength) return 0;
+            if (description.Length == 0 || description.Length > MaxDescriptionLength) return 0;
+            if (joined.Length > MaxTagsLength) return 0;
+
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "INSERT INTO Forum (Title, Content, DatePosted, LearnerId, Tags, TeacherId) " +
+                "VALUES (@Title, @Content, GETDATE(), NULL, @Tags, @TeacherId); SELECT CAST(SCOPE_IDENTITY() AS INT)", con))
+            {
+                cmd.Parameters.AddWithValue("@Title", title);
+                cmd.Parameters.AddWithValue("@Content", description);
+                cmd.Parameters.AddWithValue("@Tags", joined.Length == 0 ? (object)DBNull.Value : joined);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                return (int)cmd.ExecuteScalar();
+            }
         }
 
         /// <summary>The post text on one line, cut to about ExcerptLength characters.</summary>
