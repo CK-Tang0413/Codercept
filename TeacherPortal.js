@@ -941,6 +941,8 @@
                 return;
             }
             learnerInput.value = opt.getAttribute("data-tp-submission");
+            // only the question cards of the chosen submission are shown
+            qsa("[data-tp-marking]", root).forEach(function (card) { card.hidden = card.getAttribute("data-tp-marking") !== learnerInput.value; });
 
             var name = opt.getAttribute("data-name");
             var submitted = opt.getAttribute("data-submitted");
@@ -965,6 +967,7 @@
             qs("[data-tp-grade-subtitle]", root).textContent = "Reviewing " + name + "'s answers for " + assessment.title + ".";
             var confirmName = qs("[data-tp-confirm-learner]");
             if (confirmName) confirmName.textContent = name;
+            updateTotal();
         }
 
         function selectTile(tile) {
@@ -994,17 +997,24 @@
             var badge = qs("[data-tp-sum-badge]", root);
             badge.textContent = assessment.pending + " pending";
             badge.className = "badge badge--" + (assessment.pending ? "warning" : "success");
-            qs("[data-tp-grade-qcount]", root).textContent = assessment.questions;
+            qs("[data-tp-grade-qcount]", root).textContent = assessment.questions + (assessment.questions === "1" ? " question" : " questions");
             render();
         }
 
         function updateTotal() {
+            // the chosen submission's marks: automatic ones (multiple choice) plus the ones typed into the steppers, out of the test's total
             var total = 0;
-            qsa("[data-tp-grade-marks]", root).forEach(function (input) { total += parseInt(input.value, 10) || 0; });
-            qs("[data-tp-grade-total]", root).textContent = total + " / 100";
-            qs("[data-tp-grade-bar]", root).style.width = Math.min(100, total) + "%";
+            var max = parseInt(assessment.marks, 10) || 0;
+            qsa("[data-tp-marking]", root).forEach(function (card) {
+                if (card.getAttribute("data-tp-marking") !== learnerInput.value) return;
+                total += parseInt(card.getAttribute("data-tp-auto-marks"), 10) || 0;
+                var input = qs("[data-tp-grade-marks]", card);
+                if (input) total += parseInt(input.value, 10) || 0;
+            });
+            qs("[data-tp-grade-total]", root).textContent = total + " / " + max;
+            qs("[data-tp-grade-bar]", root).style.width = (max > 0 ? Math.min(100, Math.round(total * 100 / max)) : 0) + "%";
             var confirmTotal = qs("[data-tp-confirm-total]");
-            if (confirmTotal) confirmTotal.textContent = total + " / 100";
+            if (confirmTotal) confirmTotal.textContent = total + " / " + max;
         }
 
         tiles.forEach(function (tile) { tile.addEventListener("click", function () { selectTile(tile); }); });

@@ -116,58 +116,83 @@
                             <small data-tp-panel-submitted></small>
                         </span>
                     </div>
-                    <span>Showing 2 of <span data-tp-grade-qcount><%= SelectedAssessment.Questions %></span> questions</span>
+                    <span data-tp-grade-qcount><%= Questions(SelectedAssessment.Questions) %></span>
                 </div>
                 <div class="marking-questions-scroll">
-                    <%-- TODO (backend): the learner's real answers; these two questions are the prototype's sample --%>
-                    <article class="marking-question">
+                    <%-- One card per question of every submission (data-tp-marking = the AttemptId); TeacherPortal.js shows only the chosen learner's.
+                         A multiple-choice question is scored automatically; fill-in-the-blank and coding are marked here: the marks and comment are
+                         plain fields named tpm_<AttemptId>_<QuestionId> and tpc_<AttemptId>_<QuestionId>. --%>
+                    <% foreach (TeacherSubmission s in Submissions) { foreach (TeacherMarkingQuestion q in Sheets[s.Id]) { %>
+                    <% if (q.IsAuto) { %>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>" data-tp-auto-marks="<%= q.AutoScore %>" hidden>
                         <div class="marking-question-heading">
-                            <span class="question-number">Q1</span>
+                            <span class="question-number">Q<%= q.Number %></span>
                             <div>
-                                <span>MULTIPLE CHOICE &middot; 5 MARKS</span>
-                                <h3>Who developed the C programming language?</h3>
+                                <span>MULTIPLE CHOICE &middot; <%= Marks(q.Marks) %></span>
+                                <h3><%: q.Text %></h3>
                             </div>
-                            <span class="badge badge--danger">Incorrect</span>
+                            <% if (!q.Options.Any(o => o.Chosen)) { %><span class="badge badge--danger">No answer</span>
+                            <% } else if (q.McqCorrect) { %><span class="badge badge--success">Correct</span>
+                            <% } else { %><span class="badge badge--danger">Incorrect</span><% } %>
                         </div>
                         <div class="grading-options">
-                            <div class="grading-option is-neutral"><span>A</span><strong>James Gosling</strong></div>
-                            <div class="grading-option is-correct"><span>B</span><strong>Dennis Ritchie</strong><span class="option-result"><%= TeacherIcons.Svg("check", 14) %>Correct answer</span></div>
-                            <div class="grading-option is-wrong"><span>C</span><strong>Bjarne Stroustrup</strong><span class="option-result"><%= TeacherIcons.Svg("x", 14) %>Learner's choice</span></div>
-                            <div class="grading-option is-neutral"><span>D</span><strong>Guido van Rossum</strong></div>
+                            <% for (int i = 0; i < q.Options.Count; i++) { TeacherMarkingOption o = q.Options[i]; %>
+                            <div class="grading-option <%= o.Correct ? "is-correct" : o.Chosen ? "is-wrong" : "is-neutral" %>"><span><%= (char)('A' + i) %></span><strong><%: o.Text %></strong><% if (o.Correct) { %><span class="option-result"><%= TeacherIcons.Svg("check", 14) %>Correct answer<%= o.Chosen ? " &middot; Learner's choice" : "" %></span><% } else if (o.Chosen) { %><span class="option-result"><%= TeacherIcons.Svg("x", 14) %>Learner's choice</span><% } %></div>
+                            <% } %>
                         </div>
-                        <div class="auto-score"><%= TeacherIcons.Svg("info", 14) %>Automatically scored &middot; 0 / 5 marks</div>
+                        <div class="auto-score"><%= TeacherIcons.Svg("info", 14) %>Automatically scored &middot; <%= q.AutoScore %> / <%= q.Marks %> marks</div>
                     </article>
-
-                    <article class="marking-question">
+                    <% } else { bool code = q.Type == "Coding"; %>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>" hidden>
                         <div class="marking-question-heading">
-                            <span class="question-number">Q2</span>
+                            <span class="question-number">Q<%= q.Number %></span>
                             <div>
-                                <span>SUBJECTIVE &middot; 5 MARKS</span>
-                                <h3>Explain why pointers are useful when working with functions in C.</h3>
+                                <span><%= code ? "CODING" : "FILL IN THE BLANK" %> &middot; <%= Marks(q.Marks) %></span>
+                                <h3><%: q.Text %></h3>
                             </div>
                             <span class="badge badge--warning">Manual grading</span>
                         </div>
                         <div class="learner-answer-block">
                             <span>LEARNER'S ANSWER</span>
-                            <blockquote>Pointers let a function access and change the original value in memory instead of only receiving a copy. They are also useful for passing arrays and larger data structures efficiently.</blockquote>
+                            <% if (q.Answered && q.Answer.Trim().Length > 0) { %><blockquote<%= code ? " class=\"is-code\"" : "" %>><%: q.Answer %></blockquote>
+                            <% } else { %><blockquote>No answer given.</blockquote><% } %>
                         </div>
+                        <% if (!code && q.AcceptedAnswers.Trim().Length > 0) { %>
+                        <div class="learner-answer-block">
+                            <span>ACCEPTED ANSWERS</span>
+                            <blockquote><%: q.AcceptedAnswers %></blockquote>
+                        </div>
+                        <% } %>
+                        <% if (code && q.ModelAnswer.Trim().Length > 0) { %>
+                        <div class="learner-answer-block">
+                            <span>MODEL ANSWER</span>
+                            <blockquote class="is-code"><%: q.ModelAnswer %></blockquote>
+                        </div>
+                        <% } %>
+                        <% if (code && q.MarkingGuide.Trim().Length > 0) { %>
+                        <div class="learner-answer-block">
+                            <span>MARKING GUIDE</span>
+                            <blockquote><%: q.MarkingGuide %></blockquote>
+                        </div>
+                        <% } %>
                         <div class="manual-grading-fields">
                             <div class="marks-given-field">
                                 <span>Marks given</span>
-                                <div class="large-stepper" data-tp-stepper data-min="0" data-max="5">
+                                <div class="large-stepper" data-tp-stepper data-min="0" data-max="<%= q.Marks %>">
                                     <button type="button" aria-label="Decrease marks" data-tp-step="-1">&minus;</button>
-                                    <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Marks given">0</strong>
-                                    <span>/5</span>
+                                    <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Marks given"><%= q.Given %></strong>
+                                    <span>/<%= q.Marks %></span>
                                     <button type="button" aria-label="Increase marks" data-tp-step="1">+</button>
-                                    <input type="hidden" id="hfTeacherMarksQ2" runat="server" value="0" data-tp-step-input data-tp-grade-marks />
+                                    <input type="hidden" name="tpm_<%= s.Id %>_<%= q.Id %>" value="<%= q.Given %>" data-tp-step-input data-tp-grade-marks />
                                 </div>
                             </div>
                             <label class="form-field">
                                 <span>Comment</span>
-                                <asp:TextBox ID="txtTeacherCommentQ2" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="3" placeholder="Add feedback for the learner..."></asp:TextBox>
+                                <textarea name="tpc_<%= s.Id %>_<%= q.Id %>" rows="3" placeholder="Add feedback for the learner..."><%: q.Comment %></textarea>
                             </label>
                         </div>
                     </article>
+                    <% } } } %>
                 </div>
             </div>
         </section>
@@ -176,7 +201,7 @@
             <div class="grading-total">
                 <div>
                     <span>Total</span>
-                    <strong data-tp-grade-total>0 / 100</strong>
+                    <strong data-tp-grade-total>0 / <%= SelectedAssessment.TotalMarks %></strong>
                 </div>
                 <div class="grading-progress-track"><span data-tp-grade-bar style="width: 0%"></span></div>
             </div>

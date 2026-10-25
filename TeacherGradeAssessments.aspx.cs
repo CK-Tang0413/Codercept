@@ -13,6 +13,9 @@ namespace Codercept
         /// <summary>The submissions of every exam, quiz and assessment of the course (each knows which one by TestKey).</summary>
         protected List<TeacherSubmission> Submissions;
 
+        /// <summary>The marking sheet (questions, the learner's answers, marks given so far) of each submission, by AttemptId.</summary>
+        protected Dictionary<int, List<TeacherMarkingQuestion>> Sheets;
+
         /// <summary>The kinds a teacher can grade, in the order they are listed.</summary>
         protected static readonly string[] Types = { "Exam", "Quiz", "Assessment" };
 
@@ -65,6 +68,7 @@ namespace Codercept
 
             Assessments = TeacherGradingData.GetGradables(Course.Id);
             Submissions = TeacherGradingData.GetSubmissions(Course.Id);
+            Sheets = TeacherGradingData.GetMarkingSheets(Course.Id, Submissions);
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
@@ -73,7 +77,7 @@ namespace Codercept
 
             // The learner name and total in the confirm dialog are filled in by TeacherPortal.js
             TeacherSubmission chosen = SelectedSubmission;
-            mdlTeacherConfirmGrade.BodyHtml = "You are about to confirm a total of <strong data-tp-confirm-total>0 / 100</strong> for "
+            mdlTeacherConfirmGrade.BodyHtml = "You are about to confirm a total of <strong data-tp-confirm-total>0 / " + SelectedAssessment.TotalMarks + "</strong> for "
                 + "<strong data-tp-confirm-learner>" + (chosen == null ? "" : Server.HtmlEncode(chosen.Name)) + "</strong>. "
                 + "The learner will be able to see the grade and your feedback.";
             if (!IsPostBack) hfTeacherGradeAssessment.Value = SelectedAssessment.Key;
@@ -85,6 +89,12 @@ namespace Codercept
             return count + (count == 1 ? " question" : " questions");
         }
 
+        /// <summary>"1 mark", "5 marks".</summary>
+        protected static string Marks(int count)
+        {
+            return count + (count == 1 ? " MARK" : " MARKS");
+        }
+
         protected string StatusClass(string status)
         {
             if (status == "Graded") return "is-graded";
@@ -92,11 +102,49 @@ namespace Codercept
             return "is-ungraded";
         }
 
+        /// <summary>
+        /// The submission named by the learner box, but only when it is one of the chosen exam / quiz / assessment's own. Unlike
+        /// SelectedSubmission it never falls back to the first one, so a forged or missing id can never save marks onto another learner.
+        /// </summary>
+        private TeacherSubmission ExactSubmission()
+        {
+            TeacherAssessment assessment = SelectedAssessment;
+            int id;
+            if (assessment == null || !int.TryParse(hfTeacherGradeLearner.Value, out id)) return null;
+            return Submissions.FirstOrDefault(s => s.Id == id && s.TestKey == assessment.Key);
+        }
+
         protected void btnTeacherSaveGrading_Click(object sender, EventArgs e)
         {
-            // TODO (Phase 4): save the grading progress (GradingProgress) for the AttemptId in hfTeacherGradeLearner (checked against this
-            //   teacher's course), marks hfTeacherMarksQ2 and comment txtTeacherCommentQ2
-            Master.ShowToast("Saving grading progress is added in a later step, so nothing was saved.");
+            TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
+            if (submission == null)
+            {
+                Master.ShowToast("Choose a submission first, so nothing was saved.");
+                return;
+            }
+
+            GradingSaveResult result = TeacherGradingData.SaveProgress(Course.Id, submission.Id, Request.Unvalidated.Form);
+            switch (result)
+            {
+                case GradingSaveResult.Saved:
+                    // show the new status ("In progress") and the saved marks and comments
+                    Submissions = TeacherGradingData.GetSubmissions(Course.Id);
+                    Sheets = TeacherGradingData.GetMarkingSheets(Course.Id, Submissions);
+                    Master.ShowToast("Grading progress saved.");
+                    break;
+                case GradingSaveResult.AlreadyGraded:
+                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    break;
+                case GradingSaveResult.InvalidMarks:
+                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was saved.");
+                    break;
+                case GradingSaveResult.CommentTooLong:
+                    Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was saved.");
+                    break;
+                default:
+                    Master.ShowToast("That submission could not be found, so nothing was saved.");
+                    break;
+            }
         }
 
         protected void mdlTeacherConfirmGrade_Confirmed(object sender, EventArgs e)

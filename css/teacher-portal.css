@@ -7568,3 +7568,14 @@
 .tp-app .assessment-tiles {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
+
+/* Grade assessments: a learner's answer keeps its line breaks, and code is shown in a code font */
+.tp-app .learner-answer-block blockquote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tp-app .learner-answer-block blockquote.is-code {
+  font-family: Consolas, "Courier New", monospace;
+  font-style: normal;
+}

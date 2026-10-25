@@ -617,3 +617,34 @@ INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [Asses
 
 -- Attempts (C): one exam waiting to be graded
 INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(HOUR, -26, GETDATE()), 'completed', @WanId, @CExamId);
+
+
+-- ==========================================
+-- Learner answers (Backend Phase 4, Step 4.1)
+-- AttemptAnswer holds what the learner answered on a submitted attempt, one row per question.
+--   Multiple choice: AnswerContent is the chosen MCQ_OptionId. Fill-in-the-blank and coding: the learner's own text.
+--   IsCorrect is 'pending' until the teacher grades the attempt, then 'correct' or 'incorrect'. ObtainedScore is 0 until then.
+-- The Python quiz attempt by Wan already has a Result, so its answer is already marked.
+-- ==========================================
+DECLARE @AttKylanQuiz INT = (SELECT [AttemptId] FROM [dbo].[Attempt] WHERE [LearnerId] = @KylanId AND [QuizId] = @QuizId);
+DECLARE @AttKylanAssessment INT = (SELECT [AttemptId] FROM [dbo].[Attempt] WHERE [LearnerId] = @KylanId AND [AssessmentId] = @AssessmentId);
+DECLARE @AttWanQuiz INT = (SELECT [AttemptId] FROM [dbo].[Attempt] WHERE [LearnerId] = @WanId AND [QuizId] = @QuizId);
+DECLARE @AttWanCExam INT = (SELECT [AttemptId] FROM [dbo].[Attempt] WHERE [LearnerId] = @WanId AND [ExamId] = @CExamId);
+DECLARE @QuizQ1 INT = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = @QuizId AND [QuestionOrder] = 1);
+DECLARE @AsmQ1 INT = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = @AssessmentId AND [QuestionOrder] = 1);
+DECLARE @AsmQ2 INT = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = @AssessmentId AND [QuestionOrder] = 2);
+DECLARE @AsmQ3 INT = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = @AssessmentId AND [QuestionOrder] = 3);
+DECLARE @CExamQ1 INT = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = @CExamId AND [QuestionOrder] = 1);
+
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+VALUES
+    -- Kylan, Variables Quiz: chose 'int' (wrong)
+    (@AttKylanQuiz, @QuizQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @QuizQ1 AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, ''),
+    -- Kylan, Chapter 1 Assessment: right command, accepted blank, a coding answer missing the comma
+    (@AttKylanAssessment, @AsmQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @AsmQ1 AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, ''),
+    (@AttKylanAssessment, @AsmQ2, 'print()', 'pending', 0, ''),
+    (@AttKylanAssessment, @AsmQ3, 'print("Hello World!")', 'pending', 0, ''),
+    -- Wan, Variables Quiz (already graded): chose 'float' (right)
+    (@AttWanQuiz, @QuizQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @QuizQ1 AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 2, ''),
+    -- Wan, C final exam: chose 'Dennis Ritchie' (right)
+    (@AttWanCExam, @CExamQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @CExamQ1 AND [OptionOrder] = 2) AS NVARCHAR(20)), 'pending', 0, '');
