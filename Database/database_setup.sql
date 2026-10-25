@@ -99,6 +99,7 @@ CREATE TABLE [dbo].[Teacher] (
     [Region]        NVARCHAR (50)  NULL,
     [TeachingLevel] NVARCHAR (50)  NULL,
     [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [DateJoined]    DATETIME       NOT NULL DEFAULT GETDATE(),
     [ApplicationId] INT            NULL,
     PRIMARY KEY CLUSTERED ([TeacherId] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
@@ -445,13 +446,13 @@ VALUES ('Wan Hon Kit', 'wan1234@gmail.com', '$2a$12$UtK5EgXtoXPquMKIIrcTuufwaCSl
 -- ==========================================
 
 -- Teachers (passwords are BCrypt cost-12 hashes, same format as the Admin and Learner rows)
-INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [ApplicationId])
-VALUES ('Bryan Yeong', 'bryanyeong@edu.com.my', '$2a$12$CKfrdV0bSGGst.bMr8A4G.RmmIaI93SA9kx3hrkvmk.V/PulB/SwK', 32, 'Kuala Lumpur, Malaysia', 'Advanced', 'Active', NULL);
-INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [ApplicationId])
-VALUES ('Sarah Lim', 'sarahlim@edu.com.my', '$2a$12$ctWavkUvhh0JdPtUx8H1A.s/tF.pNnBRb8qDhxQDSMnrjrZSw6taW', 29, 'Penang, Malaysia', 'Intermediate', 'Active', NULL);
+INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Bryan Yeong', 'bryanyeong@edu.com.my', '$2a$12$CKfrdV0bSGGst.bMr8A4G.RmmIaI93SA9kx3hrkvmk.V/PulB/SwK', 32, 'Kuala Lumpur, Malaysia', 'Advanced', 'Active', '2026-01-15', NULL);
+INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Sarah Lim', 'sarahlim@edu.com.my', '$2a$12$ctWavkUvhh0JdPtUx8H1A.s/tF.pNnBRb8qDhxQDSMnrjrZSw6taW', 29, 'Penang, Malaysia', 'Intermediate', 'Active', '2026-03-10', NULL);
 -- Newly registered teacher with no courses yet (for testing empty states). Password: Newbie1234!
-INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [ApplicationId])
-VALUES ('Nina Tan', 'ninatan@edu.com.my', '$2a$12$.Jve0o18RkIO0nDUO2dgN.Q5o7WUW8GLGlq5s/i2fobHTY1RNZpTu', 26, 'Johor Bahru, Malaysia', 'Beginner', 'Active', NULL);
+INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Nina Tan', 'ninatan@edu.com.my', '$2a$12$.Jve0o18RkIO0nDUO2dgN.Q5o7WUW8GLGlq5s/i2fobHTY1RNZpTu', 26, 'Johor Bahru, Malaysia', 'Beginner', 'Active', '2026-10-20', NULL);
 
 -- Subjects: the four programming languages taught on the platform, plus learning domains
 INSERT INTO [dbo].[Subject] ([SubjectName], [SubjectType])

@@ -633,6 +633,7 @@
     </Compile>
     <Compile Include="TeacherSampleData.cs" />
     <Compile Include="TeacherStatsData.cs" />
+    <Compile Include="TeacherAccountData.cs" />
     <Compile Include="TeacherSideBar.ascx.cs">
       <DependentUpon>TeacherSideBar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

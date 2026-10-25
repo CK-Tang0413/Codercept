@@ -33,13 +33,13 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtTeacherAccountAge;
 
         /// <summary>
-        /// txtTeacherAccountRole control.
+        /// ddlTeacherAccountLevel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtTeacherAccountRole;
+        protected global::System.Web.UI.WebControls.DropDownList ddlTeacherAccountLevel;
 
         /// <summary>
         /// txtTeacherAccountAddress control.

@@ -29,12 +29,20 @@
                     <small>Your email is used for login and cannot be changed.</small>
                 </label>
                 <label class="portal-form-field">
-                    <span>Occupation / Role</span>
-                    <asp:TextBox ID="txtTeacherAccountRole" runat="server"></asp:TextBox>
-                </label>
-                <label class="portal-form-field">
                     <span>Member Since</span>
                     <input type="text" value="<%: MemberSince %>" disabled="disabled" />
+                </label>
+                <label class="portal-form-field">
+                    <span>Occupation / Role</span>
+                    <input type="text" value="Teacher" disabled="disabled" />
+                </label>
+                <label class="portal-form-field">
+                    <span>Teaching Level</span>
+                    <asp:DropDownList ID="ddlTeacherAccountLevel" runat="server" aria-label="Teaching level">
+                        <asp:ListItem>Beginner</asp:ListItem>
+                        <asp:ListItem>Intermediate</asp:ListItem>
+                        <asp:ListItem>Advanced</asp:ListItem>
+                    </asp:DropDownList>
                 </label>
                 <label class="portal-form-field address-field">
                     <span>Address</span>

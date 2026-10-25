@@ -10,16 +10,32 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // TODO (backend): load the logged-in teacher's profile (User table: Name, Age, Occupation, Address, Email, CreatedAt)
-            Email = Master.UserEmail;
-            MemberSince = "October 22, 2026";
+            TeacherProfile profile = TeacherAccountData.GetProfile();
+            if (profile == null)
+            {
+                // the account no longer exists: nothing to show
+                Response.Redirect("~/signIn.aspx");
+                return;
+            }
+            Email = profile.Email;
+            MemberSince = profile.DateJoined.ToString("MMMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture);
 
             if (!IsPostBack)
             {
-                txtTeacherAccountName.Text = Master.UserName;
-                txtTeacherAccountAge.Text = "32";
-                txtTeacherAccountRole.Text = "Teacher";
-                txtTeacherAccountAddress.Text = "Kuala Lumpur, Malaysia";
+                txtTeacherAccountName.Text = profile.Name;
+                txtTeacherAccountAge.Text = profile.Age.HasValue ? profile.Age.Value.ToString() : "";
+                txtTeacherAccountAddress.Text = profile.Region;
+
+                // a level that was never set shows a "Select a level" prompt that has to be changed before saving
+                if (profile.TeachingLevel != null && ddlTeacherAccountLevel.Items.FindByValue(profile.TeachingLevel) != null)
+                {
+                    ddlTeacherAccountLevel.SelectedValue = profile.TeachingLevel;
+                }
+                else
+                {
+                    ddlTeacherAccountLevel.Items.Insert(0, new System.Web.UI.WebControls.ListItem("Select a level", ""));
+                    ddlTeacherAccountLevel.SelectedValue = "";
+                }
             }
 
             // The confirmation field is plain HTML inside the shared modal; its text is re-checked in the confirm handler

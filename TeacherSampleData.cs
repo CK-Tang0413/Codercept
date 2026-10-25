@@ -6,11 +6,8 @@ using System.Web;
 namespace Codercept
 {
     /// <summary>
-    /// Sample (hard-coded) data for the teacher portal, ported from the prototype's arrays.
-    /// Pages bind to these through Repeaters so that the data source can later be switched to SQL
-    /// without touching the markup.
-    /// TODO (backend): replace each Get...() method with a query (tables: Course, Chapter, SubChapter,
-    /// Assessment, Exam, Quiz, Question, MCQ_Option, Attempt, Result, GradingProgress, Forum, Post_Reply).
+    /// What is left of the prototype's hard-coded data: the sidebar fallback name and email, the difficulty badge tone,
+    /// and the exam rules (TODO (backend): replace GetExamRules() with the exam rule rows). The model classes below are shared with the database code.
     /// </summary>
     public static class TeacherSampleData
     {
@@ -24,19 +21,6 @@ namespace Codercept
             if (difficulty == "Easy") return "success";
             if (difficulty == "Medium") return "warning";
             return "danger";
-        }
-
-        public static List<TeacherDetailItem> GetCourseStatisticRows()
-        {
-            return new List<TeacherDetailItem>
-            {
-                new TeacherDetailItem { Icon = "layers", Label = "Total chapters", Value = "12" },
-                new TeacherDetailItem { Icon = "chapters", Label = "Subchapters", Value = "26" },
-                new TeacherDetailItem { Icon = "question", Label = "Quizzes & assessments", Value = "12" },
-                new TeacherDetailItem { Icon = "users", Label = "Learners attended", Value = "84" },
-                new TeacherDetailItem { Icon = "award", Label = "Learners completed", Value = "62" },
-                new TeacherDetailItem { Icon = "clock", Label = "Average completion time", Value = "16.4 hours" }
-            };
         }
 
         public static List<TeacherExamRule> GetExamRules()
