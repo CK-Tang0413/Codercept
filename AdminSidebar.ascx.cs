@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace Codercept
 {
-    public partial class Administrator_Dashboard : System.Web.UI.Page
+    public partial class Admin_Sidebar : System.Web.UI.UserControl
     {
         protected void Page_Load(object sender, EventArgs e)
         {
