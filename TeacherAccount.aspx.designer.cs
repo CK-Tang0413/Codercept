@@ -15,6 +15,78 @@ namespace Codercept
     {
 
         /// <summary>
+        /// fldTeacherAccountName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherAccountName;
+
+        /// <summary>
+        /// hintTeacherAccountName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherAccountName;
+
+        /// <summary>
+        /// fldTeacherAccountAge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherAccountAge;
+
+        /// <summary>
+        /// hintTeacherAccountAge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherAccountAge;
+
+        /// <summary>
+        /// fldTeacherAccountLevel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherAccountLevel;
+
+        /// <summary>
+        /// hintTeacherAccountLevel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherAccountLevel;
+
+        /// <summary>
+        /// fldTeacherAccountAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherAccountAddress;
+
+        /// <summary>
+        /// hintTeacherAccountAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherAccountAddress;
+
+        /// <summary>
         /// txtTeacherAccountName control.
         /// </summary>
         /// <remarks>

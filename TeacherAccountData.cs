@@ -25,6 +25,27 @@ namespace Codercept
         /// <summary>The levels a teacher can choose from, as stored in Teacher.TeachingLevel.</summary>
         public static readonly string[] TeachingLevels = { "Beginner", "Intermediate", "Advanced" };
 
+        /// <summary>
+        /// Saves the signed-in teacher's name, age, address (Teacher.Region; empty is stored as NULL) and teaching level. Only their own row
+        /// can change. The caller has already checked the values; false means the account no longer exists.
+        /// </summary>
+        public static bool UpdateProfile(string name, int age, string region, string teachingLevel)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "UPDATE Teacher SET Name = @Name, Age = @Age, Region = @Region, TeachingLevel = @Level WHERE TeacherId = @TeacherId", con))
+            {
+                cmd.Parameters.AddWithValue("@Name", name);
+                cmd.Parameters.AddWithValue("@Age", age);
+                cmd.Parameters.AddWithValue("@Region", string.IsNullOrEmpty(region) ? (object)DBNull.Value : region);
+                cmd.Parameters.AddWithValue("@Level", teachingLevel);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                return cmd.ExecuteNonQuery() == 1;
+            }
+        }
+
         /// <summary>The signed-in teacher's details, or null when the account no longer exists.</summary>
         public static TeacherProfile GetProfile()
         {

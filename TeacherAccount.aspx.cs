@@ -1,5 +1,8 @@
 using System;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Web;
+using System.Web.UI.HtmlControls;
 
 namespace Codercept
 {
@@ -22,6 +25,8 @@ namespace Codercept
 
             if (!IsPostBack)
             {
+                if (Request.QueryString["saved"] == "1") Master.ShowToast("Personal details updated");
+
                 txtTeacherAccountName.Text = profile.Name;
                 txtTeacherAccountAge.Text = profile.Age.HasValue ? profile.Age.Value.ToString() : "";
                 txtTeacherAccountAddress.Text = profile.Region;
@@ -49,9 +54,50 @@ namespace Codercept
 
         protected void btnTeacherUpdateAccount_Click(object sender, EventArgs e)
         {
-            // TODO (backend): UPDATE [User] SET Name = txtTeacherAccountName.Text, Age = txtTeacherAccountAge.Text,
-            //   Occupation = txtTeacherAccountRole.Text, Address = txtTeacherAccountAddress.Text WHERE UserId = Session["UserId"]
-            Master.ShowToast("Personal details updated");
+            string name = txtTeacherAccountName.Text.Trim();
+            int age;
+            string address = txtTeacherAccountAddress.Text.Trim();
+            string level = ddlTeacherAccountLevel.SelectedValue;
+
+            // the name is shown in the sidebar, so it cannot hold markup
+            bool nameError = name.Length < 2 || name.Length > 50 || name.IndexOfAny(new[] { '<', '>' }) >= 0;
+            bool ageError = !int.TryParse(txtTeacherAccountAge.Text.Trim(), out age) || age < 18 || age > 100;
+            bool addressError = address.Length > 50;
+            bool levelError = !TeacherAccountData.TeachingLevels.Contains(level);
+
+            MarkError(fldTeacherAccountName, hintTeacherAccountName, nameError, "Enter a name of 2 to 50 characters, without < or >.");
+            MarkError(fldTeacherAccountAge, hintTeacherAccountAge, ageError, "Enter your age as a whole number from 18 to 100.");
+            MarkError(fldTeacherAccountAddress, hintTeacherAccountAddress, addressError, "The address can be at most 50 characters.");
+            MarkError(fldTeacherAccountLevel, hintTeacherAccountLevel, levelError, "Choose your teaching level.");
+            if (nameError || ageError || addressError || levelError) return;
+
+            bool saved;
+            try
+            {
+                saved = TeacherAccountData.UpdateProfile(name, age, address, level);
+            }
+            catch (SqlException)
+            {
+                Master.ShowToast("Could not update your details. Please try again.");
+                return;
+            }
+
+            if (!saved)
+            {
+                Master.ShowToast("Your account could not be found.");
+                return;
+            }
+
+            // the sidebar and greeting read the name from the session; reload the page so they show the new one
+            Session["UserName"] = name;
+            Response.Redirect("~/TeacherAccount.aspx?saved=1");
+        }
+
+        private static void MarkError(HtmlGenericControl field, HtmlGenericControl hint, bool error, string message)
+        {
+            string css = (field.Attributes["class"] ?? "").Replace(" has-error", "");
+            field.Attributes["class"] = error ? css + " has-error" : css;
+            hint.InnerText = error ? message : "";
         }
 
         protected void mdlTeacherDeleteAccount_Confirmed(object sender, EventArgs e)

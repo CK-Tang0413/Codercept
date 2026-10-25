@@ -15,13 +15,15 @@
         <h2>Personal Details</h2>
         <div class="account-card">
             <div class="account-grid">
-                <label class="portal-form-field">
+                <label id="fldTeacherAccountName" runat="server" class="portal-form-field">
                     <span>Full Name</span>
-                    <asp:TextBox ID="txtTeacherAccountName" runat="server"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherAccountName" runat="server" ValidateRequestMode="Disabled" autocomplete="off"></asp:TextBox>
+                    <small id="hintTeacherAccountName" runat="server"></small>
                 </label>
-                <label class="portal-form-field">
+                <label id="fldTeacherAccountAge" runat="server" class="portal-form-field">
                     <span>Age</span>
-                    <asp:TextBox ID="txtTeacherAccountAge" runat="server"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherAccountAge" runat="server" autocomplete="off"></asp:TextBox>
+                    <small id="hintTeacherAccountAge" runat="server"></small>
                 </label>
                 <label class="portal-form-field">
                     <span>Email Address</span>
@@ -36,17 +38,19 @@
                     <span>Occupation / Role</span>
                     <input type="text" value="Teacher" disabled="disabled" />
                 </label>
-                <label class="portal-form-field">
+                <label id="fldTeacherAccountLevel" runat="server" class="portal-form-field">
                     <span>Teaching Level</span>
                     <asp:DropDownList ID="ddlTeacherAccountLevel" runat="server" aria-label="Teaching level">
                         <asp:ListItem>Beginner</asp:ListItem>
                         <asp:ListItem>Intermediate</asp:ListItem>
                         <asp:ListItem>Advanced</asp:ListItem>
                     </asp:DropDownList>
+                    <small id="hintTeacherAccountLevel" runat="server"></small>
                 </label>
-                <label class="portal-form-field address-field">
+                <label id="fldTeacherAccountAddress" runat="server" class="portal-form-field address-field">
                     <span>Address</span>
-                    <asp:TextBox ID="txtTeacherAccountAddress" runat="server" TextMode="MultiLine" Rows="4"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherAccountAddress" runat="server" TextMode="MultiLine" Rows="4" ValidateRequestMode="Disabled" autocomplete="off"></asp:TextBox>
+                    <small id="hintTeacherAccountAddress" runat="server"></small>
                 </label>
             </div>
         </div>
