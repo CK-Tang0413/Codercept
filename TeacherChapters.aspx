@@ -3,6 +3,7 @@
 <%@ Register Src="~/TeacherCourseSelector.ascx" TagPrefix="uc" TagName="CourseSelector" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
 <%@ Register Src="~/TeacherConfirmModal.ascx" TagPrefix="uc" TagName="ConfirmModal" %>
+<%@ Register Src="~/TeacherMediaDropzone.ascx" TagPrefix="uc" TagName="MediaDropzone" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
 </asp:Content>
@@ -49,7 +50,7 @@
                 <div class="chapter-items" data-tp-chapter-list data-tp-sortable="[data-tp-chapter-pick]">
                     <% for (int i = 0; i < Chapters.Count; i++) { TeacherChapter c = Chapters[i]; %>
                     <div class="chapter-item<%= c.Id == Active.Id ? " is-active" : "" %>" role="button" tabindex="0" data-tp-chapter-pick="<%= c.Id %>"
-                        data-number="<%= i + 1 %>" data-title="<%: c.Title %>" data-description="<%: c.Description %>" data-duration="<%: TeacherSampleData.HoursOf(c.Duration) %>" data-created="<%: c.Created %>" data-updated="<%: c.Updated %>">
+                        data-number="<%= i + 1 %>" data-title="<%: c.Title %>" data-description="<%: c.Description %>" data-duration="<%: TeacherSampleData.HoursOf(c.Duration) %>" data-created="<%: c.Created %>" data-updated="<%: c.Updated %>" data-media="<%: c.MediaLink %>">
                         <span class="drag-handle" title="Drag to reorder"><%= TeacherIcons.Svg("grip", 17) %></span>
                         <span class="chapter-number"><%= i + 1 %></span>
                         <span class="chapter-item-title"><%: c.Title %></span>
@@ -69,8 +70,8 @@
                         <div>
                             <span>CHAPTER <span data-tp-ch-number><%= ActiveNumber %></span></span>
                             <div id="fldTeacherChapterTitle" runat="server" class="tp-inline-field">
-                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" ValidateRequestMode="Disabled" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title" data-tp-ch-title></asp:TextBox>
-                                <small id="hintTeacherChapterTitle" runat="server" data-err="Enter a title with at least 4 characters."></small>
+                                <asp:TextBox ID="txtTeacherChapterTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" CssClass="tp-heading-input" autocomplete="off" aria-label="Chapter title" data-tp-ch-title></asp:TextBox>
+                                <small id="hintTeacherChapterTitle" runat="server" data-err="Enter a title of 4 to 50 characters."></small>
                             </div>
                         </div>
                     </div>
@@ -79,13 +80,24 @@
                         <asp:TextBox ID="txtTeacherChapterDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="5" autocomplete="off" data-tp-ch-description></asp:TextBox>
                         <small>Summarise this chapter's learning goals and key concepts.</small>
                     </label>
+                    <div class="form-field">
+                        <span>File</span>
+                        <div class="current-media" data-tp-media-row hidden>
+                            <a href="#" target="_blank" rel="noopener" data-tp-media-link></a>
+                            <button type="button" class="button button--ghost" data-tp-media-toggle>Remove file</button>
+                            <small data-tp-media-note hidden>The file will be removed when you click Update details.</small>
+                        </div>
+                        <uc:MediaDropzone ID="dzTeacherChapterFile" runat="server" Compact="true" />
+                        <small>Choosing a new file replaces the current one.</small>
+                        <input type="hidden" id="hfTeacherChapterMediaRemove" runat="server" value="" data-tp-media-remove-input />
+                    </div>
                     <div class="chapter-meta-grid">
                         <div class="detail-item">
                             <span class="detail-item-icon"><%= TeacherIcons.Svg("clock", 17) %></span>
                             <div id="fldTeacherChapterDuration" runat="server" class="tp-inline-field">
                                 <span>Duration (hours)</span>
                                 <asp:TextBox ID="txtTeacherChapterDuration" runat="server" TextMode="Number" min="0.5" step="0.5" autocomplete="off" aria-label="Duration in hours" data-tp-ch-duration></asp:TextBox>
-                                <small id="hintTeacherChapterDuration" runat="server" data-err="Enter a duration greater than 0."></small>
+                                <small id="hintTeacherChapterDuration" runat="server" data-err="Enter a duration between 0.5 and 1000 hours."></small>
                             </div>
                         </div>
                         <div class="detail-item">

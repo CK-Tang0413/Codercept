@@ -517,6 +517,11 @@ Id = 3,
         public string Updated { get; set; }
         /// <summary>The quiz or assessment at the end of the chapter (a chapter has either one, or none: null).</summary>
         public TeacherChapterTestInfo Test { get; set; }
+        /// <summary>The course the chapter belongs to and its title (filled by TeacherChapterData.GetChapter only).</summary>
+        public int CourseId { get; set; }
+        public string CourseTitle { get; set; }
+        /// <summary>Relative path of the chapter's uploaded file (Chapter.ChapterMediaLink), or null.</summary>
+        public string MediaLink { get; set; }
         /// <summary>The chapter's subchapters in order (filled by TeacherChapterData; the sample chapters leave it empty).</summary>
         public List<TeacherContentItem> Contents { get; set; } = new List<TeacherContentItem>();
     }
@@ -539,6 +544,11 @@ Id = 3,
         /// <summary>always "subchapter"</summary>
         public string Type { get; set; }
         public string Title { get; set; }
+        public string Description { get; set; }
+        /// <summary>SubChapter.SubChapterDuration, in minutes</summary>
+        public int Minutes { get; set; }
+        /// <summary>Relative path of the uploaded file (SubChapter.SubChapterMediaLink), or null.</summary>
+        public string MediaLink { get; set; }
     }
 
     public class TeacherAssessment

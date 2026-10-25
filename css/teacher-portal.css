@@ -7519,3 +7519,26 @@
   color: #047857;
   background: #d1fae5;
 }
+
+/* Manage Chapters: the chapter's stored file (view / remove) above the upload box */
+.tp-app .current-media {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 8px;
+}
+
+.tp-app .current-media[hidden],
+.tp-app .current-media small[hidden] {
+    display: none;
+}
+
+.tp-app .current-media > a {
+    font-weight: 600;
+}
+
+.tp-app .current-media.is-removing > a {
+    text-decoration: line-through;
+    opacity: 0.6;
+}

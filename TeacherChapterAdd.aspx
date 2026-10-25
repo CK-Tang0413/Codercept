@@ -43,10 +43,10 @@
                 <uc:StepHeading ID="shTeacherDetails" runat="server" Step="1" Title="Fill in details" />
                 <article class="form-card content-form-card">
                     <div class="form-fields">
-                        <label class="form-field">
+                        <label id="fldTeacherContentTitle" runat="server" class="form-field">
                             <span>Title <b>*</b></span>
                             <asp:TextBox ID="txtTeacherContentTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off"></asp:TextBox>
-                            <small>Use a clear title that describes this content.</small>
+                            <small id="hintTeacherContentTitle" runat="server" data-ok="Use a clear title that describes this content." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this content.</small>
                         </label>
                         <div class="form-field">
                             <span>Add file</span>

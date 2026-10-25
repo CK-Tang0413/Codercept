@@ -51,6 +51,15 @@ namespace Codercept
         protected global::Codercept.TeacherStepHeading shTeacherDetails;
 
         /// <summary>
+        /// fldTeacherContentTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherContentTitle;
+
+        /// <summary>
         /// txtTeacherContentTitle control.
         /// </summary>
         /// <remarks>
@@ -58,6 +67,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtTeacherContentTitle;
+
+        /// <summary>
+        /// hintTeacherContentTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherContentTitle;
 
         /// <summary>
         /// dzTeacherContentFile control.

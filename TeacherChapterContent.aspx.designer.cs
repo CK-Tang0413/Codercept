@@ -24,6 +24,15 @@ namespace Codercept
         protected global::Codercept.TeacherBreadcrumb bcTeacherChapter;
 
         /// <summary>
+        /// hfTeacherSubchapterId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherSubchapterId;
+
+        /// <summary>
         /// hfTeacherContentOrder control.
         /// </summary>
         /// <remarks>
@@ -31,6 +40,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherContentOrder;
+
+        /// <summary>
+        /// fldTeacherSubchapterTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherSubchapterTitle;
 
         /// <summary>
         /// txtTeacherSubchapterTitle control.
@@ -42,6 +60,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtTeacherSubchapterTitle;
 
         /// <summary>
+        /// hintTeacherSubchapterTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherSubchapterTitle;
+
+        /// <summary>
         /// dzTeacherSubchapterMedia control.
         /// </summary>
         /// <remarks>
@@ -51,6 +78,15 @@ namespace Codercept
         protected global::Codercept.TeacherMediaDropzone dzTeacherSubchapterMedia;
 
         /// <summary>
+        /// hfTeacherSubchapterMediaRemove control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherSubchapterMediaRemove;
+
+        /// <summary>
         /// reTeacherSubchapterDescription control.
         /// </summary>
         /// <remarks>
@@ -58,6 +94,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::Codercept.TeacherRichEditor reTeacherSubchapterDescription;
+
+        /// <summary>
+        /// txtTeacherSubchapterDuration control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtTeacherSubchapterDuration;
 
         /// <summary>
         /// btnTeacherUpdateSubchapter control.

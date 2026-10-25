@@ -7,7 +7,7 @@ namespace Codercept
     {
         public bool Compact { get; set; }
 
-        /// <summary>The uploaded file, if any. TODO (backend): validate type/size (25 MB) and store it.</summary>
+        /// <summary>The uploaded file, if any. The page passes it to TeacherMediaStore.Save, which checks the type and size and stores it.</summary>
         public HttpPostedFile PostedFile
         {
             get { return fuTeacherMedia.HasFile ? fuTeacherMedia.PostedFile : null; }

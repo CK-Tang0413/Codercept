@@ -11,6 +11,12 @@ namespace Codercept
         }
 
         private string kind = "chapter";
+
+        // the course a new chapter is added to (kind = chapter): one of the signed-in teacher's courses
+        private TeacherCourse course;
+
+        // the chapter a new subchapter is added to (kind = subchapter): one of the signed-in teacher's chapters
+        private TeacherChapter parent;
         protected KindLabels Labels;
 
         // Shown instead of the form when the chapter already has a quiz or an assessment
@@ -62,21 +68,26 @@ namespace Codercept
             // ?chapter=<ChapterId>: the chapter this subchapter / quiz / assessment is added to (the first chapter when absent)
             int chapterId;
             int.TryParse(Request.QueryString["chapter"], out chapterId);
-            TeacherChapter chapter = TeacherSampleData.GetChapter(chapterId) ?? TeacherSampleData.GetChapters()[0];
+            if (kind == "subchapter")
+            {
+                parent = TeacherChapterData.GetChapter(chapterId);
+                if (parent == null) Response.Redirect("~/TeacherChapters.aspx");
+            }
+            TeacherChapter chapter = parent ?? TeacherSampleData.GetChapter(chapterId) ?? TeacherSampleData.GetChapters()[0];
             int shownNumber;
             if (!int.TryParse(Request.QueryString["n"], out shownNumber) || shownNumber <= 0) shownNumber = chapter.Number;
             if (kind == "chapter")
             {
                 // a new chapter belongs to the course in ?course=<CourseId> (the teacher's first course when absent)
-                TeacherCourse course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
+                course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
                 if (course == null) Response.Redirect("~/TeacherChapters.aspx");
                 bcTeacherChapter.CourseTitle = course.Title;
                 bcTeacherChapter.ChapterTitle = "New chapter";
             }
             else
             {
-                bcTeacherChapter.CourseTitle = TeacherSampleData.ChapterCourseTitle;
-                bcTeacherChapter.ChapterTitle = "Chapter " + shownNumber + " - " + chapter.Title;
+                bcTeacherChapter.CourseTitle = parent != null ? parent.CourseTitle : TeacherSampleData.ChapterCourseTitle;
+                bcTeacherChapter.ChapterTitle = "Chapter " + (parent != null ? parent.Number : shownNumber) + " - " + chapter.Title;
             }
 
             // A chapter has either one quiz or one assessment: if it already has one, offer to edit it instead of adding another
@@ -115,10 +126,92 @@ namespace Codercept
 
         protected void btnTeacherCreateContent_Click(object sender, EventArgs e)
         {
-            // TODO (backend): INSERT the new chapter / SubChapter / Quiz / Assessment with the posted values:
-            //   txtTeacherContentTitle, dzTeacherContentFile.PostedFile, reTeacherContentDescription.Text, txtTeacherContentDuration,
-            //   and for quizzes/assessments the questions posted as tpq{n}_text / _marks / _a{m} / _correct.
-            Master.ShowToast(Labels.Title + " created");
+            if (kind == "quiz" || kind == "assessment")
+            {
+                // TODO (step 3.4): INSERT the new Quiz / Assessment with the posted values:
+                //   txtTeacherContentTitle, dzTeacherContentFile.PostedFile, reTeacherContentDescription.Text,
+                //   and the questions posted as tpq{n}_text / _marks / _a{m} / _correct.
+                Master.ShowToast("Adding a " + Labels.Noun + " is added in a later step, so nothing was saved.");
+                return;
+            }
+
+            string title = txtTeacherContentTitle.Text.Trim();
+            bool titleError = title.Length < 4 || title.Length > 50;
+            fldTeacherContentTitle.Attributes["class"] = titleError ? "form-field has-error" : "form-field";
+            hintTeacherContentTitle.InnerText = hintTeacherContentTitle.Attributes[titleError ? "data-err" : "data-ok"];
+            if (titleError) return;
+
+            string description = reTeacherContentDescription.Text.Trim();
+            if (description.Length == 0)
+            {
+                Master.ShowToast("Enter a description.");
+                return;
+            }
+
+            // a chapter's duration is in hours (0.5 to 1000); a subchapter's is in whole minutes (1 to 600)
+            decimal hours = 0;
+            int minutes = 0;
+            if (kind == "chapter")
+            {
+                if (!decimal.TryParse(txtTeacherContentDuration.Text, System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out hours) || hours < 0.5m || hours > 1000)
+                {
+                    Master.ShowToast("Enter a duration between 0.5 and 1000 hours.");
+                    return;
+                }
+            }
+            else if (!int.TryParse(txtTeacherContentDuration.Text, System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out minutes) || minutes < 1 || minutes > TeacherSubChapterData.MaxMinutes)
+            {
+                Master.ShowToast("Enter a duration between 1 and " + TeacherSubChapterData.MaxMinutes + " minutes.");
+                return;
+            }
+
+            // the file is saved first so a refused file stops everything; if the row cannot be added the file is removed again
+            int courseId = kind == "chapter" ? course.Id : parent.CourseId;
+            string mediaLink = null;
+            if (dzTeacherContentFile.PostedFile != null)
+            {
+                string error;
+                mediaLink = TeacherMediaStore.Save(dzTeacherContentFile.PostedFile, courseId, out error);
+                if (mediaLink == null)
+                {
+                    Master.ShowToast(error);
+                    return;
+                }
+            }
+
+            int newId;
+            bool duplicate = false;
+            try
+            {
+                if (kind == "chapter")
+                {
+                    duplicate = TeacherChapterData.TitleExists(course.Id, title, 0);
+                    newId = TeacherChapterData.CreateChapter(course.Id, title, description, hours, mediaLink);
+                }
+                else
+                {
+                    newId = TeacherSubChapterData.CreateSubChapter(parent.Id, title, description, minutes, mediaLink);
+                }
+            }
+            catch
+            {
+                if (mediaLink != null) TeacherMediaStore.Delete(mediaLink);
+                throw;
+            }
+            if (newId == 0)
+            {
+                if (mediaLink != null) TeacherMediaStore.Delete(mediaLink);
+                Response.Redirect("~/TeacherChapters.aspx");
+            }
+
+            // back to where the new item is listed, with it selected
+            if (kind == "chapter")
+            {
+                Response.Redirect("~/TeacherChapters.aspx?chapter=" + newId + "&created=" + (duplicate ? "dup" : "1"));
+            }
+            Response.Redirect("~/TeacherChapterContent.aspx?chapter=" + parent.Id + "&sub=" + newId + "&created=1");
         }
     }
 }

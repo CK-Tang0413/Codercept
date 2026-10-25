@@ -28,10 +28,15 @@
                 <span>CHAPTER CONTENT</span>
                 <strong><%= Contents.Count %> subchapter<%= Contents.Count == 1 ? "" : "s" %></strong>
             </div>
+            <%-- Picking a subchapter does not reload the page: TeacherPortal.js copies the item's data-* values into the editor and sets
+                 hfTeacherSubchapterId, which Update / Delete post. Dragging only changes hfTeacherContentOrder (SubChapterIds in order),
+                 saved together with Update details. --%>
+            <input type="hidden" id="hfTeacherSubchapterId" runat="server" value="" data-tp-content-input />
             <input type="hidden" id="hfTeacherContentOrder" runat="server" value="" data-tp-content-order />
             <div class="content-reorder-items" data-tp-content-list data-tp-sortable="[data-tp-content-item]">
                 <% for (int i = 0; i < Contents.Count; i++) { TeacherContentItem item = Contents[i]; %>
-                <button type="button" class="content-reorder-item<%= i == 0 ? " is-active" : "" %>" data-tp-content-item data-id="<%= item.Id %>">
+                <button type="button" class="content-reorder-item<%= item.Id == Active.Id ? " is-active" : "" %>" data-tp-content-item data-id="<%= item.Id %>"
+                    data-title="<%: item.Title %>" data-description="<%: item.Description %>" data-minutes="<%= item.Minutes %>" data-media="<%: item.MediaLink %>">
                     <span class="drag-handle"><%= TeacherIcons.Svg("grip", 17) %></span>
                     <span class="content-type-icon content-type-icon--subchapter"><%= TeacherIcons.Svg("book", 16) %></span>
                     <span>
@@ -52,23 +57,38 @@
                 <article class="chapter-detail-card">
                     <div class="chapter-card-header">
                         <div>
-                            <span>SUBCHAPTER 1</span>
-                            <h3><%: Contents[0].Title %></h3>
+                            <span>SUBCHAPTER <span data-tp-sub-number><%= ActiveNumber %></span></span>
+                            <h3 data-tp-sub-heading><%: Active.Title %></h3>
                         </div>
                         <span class="card-heading-icon"><%= TeacherIcons.Svg("book", 18) %></span>
                     </div>
                     <div class="editor-fields">
-                        <label class="form-field">
+                        <label id="fldTeacherSubchapterTitle" runat="server" class="form-field" data-tp-sub-title-field>
                             <span>Title <b>*</b></span>
-                            <asp:TextBox ID="txtTeacherSubchapterTitle" runat="server" ValidateRequestMode="Disabled" autocomplete="off"></asp:TextBox>
+                            <asp:TextBox ID="txtTeacherSubchapterTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off" data-tp-sub-title></asp:TextBox>
+                            <small id="hintTeacherSubchapterTitle" runat="server" data-ok="Use a clear title that describes this lesson." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this lesson.</small>
                         </label>
                         <div class="form-field">
                             <span>Media</span>
+                            <div class="current-media" data-tp-media-row hidden>
+                                <a href="#" target="_blank" rel="noopener" data-tp-media-link></a>
+                                <button type="button" class="button button--ghost" data-tp-media-toggle>Remove file</button>
+                                <small data-tp-media-note hidden>The file will be removed when you click Update details.</small>
+                            </div>
                             <uc:MediaDropzone ID="dzTeacherSubchapterMedia" runat="server" />
+                            <small>Choosing a new file replaces the current one.</small>
+                            <input type="hidden" id="hfTeacherSubchapterMediaRemove" runat="server" value="" data-tp-media-remove-input />
                         </div>
-                        <div class="form-field">
+                        <div class="form-field" data-tp-sub-description>
                             <span>Description <b>*</b></span>
                             <uc:RichEditor ID="reTeacherSubchapterDescription" runat="server" />
+                        </div>
+                        <div class="form-field duration-field">
+                            <span>Duration <b>*</b></span>
+                            <div class="suffix-input">
+                                <asp:TextBox ID="txtTeacherSubchapterDuration" runat="server" TextMode="Number" min="1" max="600" placeholder="0" data-tp-sub-duration></asp:TextBox>
+                                <span>minutes</span>
+                            </div>
                         </div>
                     </div>
                     <div class="chapter-detail-actions">

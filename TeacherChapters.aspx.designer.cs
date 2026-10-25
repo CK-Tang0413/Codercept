@@ -114,6 +114,24 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtTeacherChapterDescription;
 
         /// <summary>
+        /// dzTeacherChapterFile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::Codercept.TeacherMediaDropzone dzTeacherChapterFile;
+
+        /// <summary>
+        /// hfTeacherChapterMediaRemove control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherChapterMediaRemove;
+
+        /// <summary>
         /// btnTeacherUpdateChapter control.
         /// </summary>
         /// <remarks>

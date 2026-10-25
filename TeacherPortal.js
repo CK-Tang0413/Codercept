@@ -696,12 +696,49 @@
         });
     })();
 
+    /* ------------------------------------------------------------------ [media] the stored file of the shown chapter / subchapter */
+    // A link to the current file and a "Remove file" toggle (posted in data-tp-media-remove-input); show(path) is called whenever
+    // another item is picked. Returns null on pages without the field.
+    function initMediaField() {
+        var row = qs("[data-tp-media-row]");
+        if (!row) return null;
+        var removeInput = qs("[data-tp-media-remove-input]");
+        var toggle = qs("[data-tp-media-toggle]", row);
+        var note = qs("[data-tp-media-note]", row);
+        var link = qs("[data-tp-media-link]", row);
+
+        row.addEventListener("click", function (e) {
+            if (!(e.target instanceof Element) || !e.target.closest("[data-tp-media-toggle]")) return;
+            var removing = row.classList.toggle("is-removing");
+            removeInput.value = removing ? "1" : "";
+            toggle.textContent = removing ? "Keep file" : "Remove file";
+            note.hidden = !removing;
+        });
+
+        return {
+            show: function (path) {
+                row.hidden = !path;
+                row.classList.remove("is-removing");
+                note.hidden = true;
+                toggle.textContent = "Remove file";
+                removeInput.value = "";
+                link.setAttribute("href", path || "#");
+                link.textContent = path ? "View current file (" + path.split(".").pop().toLowerCase() + ")" : "";
+                // a file chosen while another item was shown must not be uploaded for this one
+                var chosen = qs("[data-tp-dropzone-input]");
+                if (chosen && chosen.value) { chosen.value = ""; chosen.dispatchEvent(new Event("change")); }
+            }
+        };
+    }
+
     /* ------------------------------------------------------------------ [chapters] chapter list: pick (posts the page) + up/down order */
     function initChapterList(list) {
         var picked = qs("[data-tp-chapter-input]");
         var orderInput = qs("[data-tp-chapter-order]");
 
         function items() { return qsa("[data-tp-chapter-pick]", list); }
+
+        var media = initMediaField();
 
         // The number shown for a chapter is its position in the list, so moving a chapter renumbers the whole list
         function showActiveNumber() {
@@ -743,6 +780,7 @@
             qs("[data-tp-ch-duration]").value = item.getAttribute("data-duration");
             qs("[data-tp-ch-created]").textContent = item.getAttribute("data-created");
             qs("[data-tp-ch-updated]").textContent = item.getAttribute("data-updated");
+            if (media) media.show(item.getAttribute("data-media"));
 
             // a different chapter starts without the previous chapter's validation messages
             qsa(".tp-inline-field.has-error").forEach(function (f) { f.classList.remove("has-error"); });
@@ -771,28 +809,71 @@
             var item = e.target instanceof Element ? e.target.closest("[data-tp-chapter-pick]") : null;
             if (item && e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(item); }
         });
+        var current = items().filter(function (i) { return i.classList.contains("is-active"); })[0];
+        if (current && media) media.show(current.getAttribute("data-media"));
         refresh();
     }
 
-    /* ------------------------------------------------------------------ [content list] highlight only (as in the prototype) */
+    /* ------------------------------------------------------------------ [content list] pick (loads the editor, no reload) + drag order */
     function initContentList(list) {
         var orderInput = qs("[data-tp-content-order]");
+        var picked = qs("[data-tp-content-input]");
+        var media = initMediaField();
+
+        function items() { return qsa("[data-tp-content-item]", list); }
+
+        // The number shown for a subchapter is its position in the list, so moving one renumbers the whole list
+        function showActive() {
+            var all = items();
+            var active = all.filter(function (i) { return i.classList.contains("is-active"); })[0];
+            if (!active) return;
+            qsa("[data-tp-sub-number]").forEach(function (el) { el.textContent = String(all.indexOf(active) + 1); });
+            qsa("[data-tp-sub-heading]").forEach(function (el) { el.textContent = active.getAttribute("data-title"); });
+            var deleteName = qs("[data-tp-sub-delete-name]");
+            if (deleteName) deleteName.textContent = active.getAttribute("data-title");
+        }
 
         function renumber() {
-            var items = qsa("[data-tp-content-item]", list);
-            items.forEach(function (item, i) {
+            var all = items();
+            all.forEach(function (item, i) {
                 var label = qs("small", item);
                 label.textContent = "SUBCHAPTER " + (i + 1);
             });
-            if (orderInput) orderInput.value = items.map(function (item) { return item.getAttribute("data-id"); }).join(",");
+            if (orderInput) orderInput.value = all.map(function (item) { return item.getAttribute("data-id"); }).join(",");
+            showActive();
+        }
+
+        // Picking a subchapter only swaps the editor's values: no page reload, so the scroll position stays put
+        function pick(item) {
+            items().forEach(function (b) { b.classList.toggle("is-active", b === item); });
+            if (picked) picked.value = item.getAttribute("data-id");
+
+            var title = qs("[data-tp-sub-title]");
+            if (!title) return; // no editor on this page
+            title.value = item.getAttribute("data-title");
+            var description = qs("[data-tp-sub-description] textarea");
+            if (description) description.value = item.getAttribute("data-description");
+            qs("[data-tp-sub-duration]").value = item.getAttribute("data-minutes");
+            if (media) media.show(item.getAttribute("data-media"));
+
+            // a different subchapter starts without the previous one's validation message
+            var field = qs("[data-tp-sub-title-field]");
+            if (field) {
+                field.classList.remove("has-error");
+                var hint = qs("small", field);
+                hint.textContent = hint.getAttribute("data-ok");
+            }
+            showActive();
         }
 
         list.addEventListener("tp-reorder", renumber);
         list.addEventListener("click", function (e) {
             var item = e.target instanceof Element ? e.target.closest("[data-tp-content-item]") : null;
-            if (!item) return;
-            qsa("[data-tp-content-item]", list).forEach(function (b) { b.classList.toggle("is-active", b === item); });
+            if (item) pick(item);
         });
+
+        var current = items().filter(function (i) { return i.classList.contains("is-active"); })[0];
+        if (current && media) media.show(current.getAttribute("data-media"));
     }
 
     /* ------------------------------------------------------------------ [dropzone] click or drop a file */
