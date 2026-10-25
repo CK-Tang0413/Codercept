@@ -238,7 +238,7 @@ namespace Codercept
             }
         }
 
-        private static void Section(XGraphics gfx, string title, XFont font, XBrush brush, XPen pen, double y)
+        internal static void Section(XGraphics gfx, string title, XFont font, XBrush brush, XPen pen, double y)
         {
             Section(gfx, title, font, brush, pen, y, Left, Right);
         }
@@ -249,7 +249,7 @@ namespace Codercept
             gfx.DrawLine(pen, x1, y + 18, x2, y + 18);
         }
 
-        private static void Cell(XGraphics gfx, double x, double y, double w, double h, string label, string value,
+        internal static void Cell(XGraphics gfx, double x, double y, double w, double h, string label, string value,
             XFont labelFont, XFont valueFont, XBrush labelBrush, XBrush valueBrush, XPen border)
         {
             gfx.DrawRoundedRectangle(border, null, x, y, w, h, 6, 6);

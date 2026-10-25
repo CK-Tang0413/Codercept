@@ -515,6 +515,9 @@
     <Compile Include="TeacherCourseSelector.ascx.designer.cs">
       <DependentUpon>TeacherCourseSelector.ascx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherCourseStatsPdf.ashx.cs">
+      <DependentUpon>TeacherCourseStatsPdf.ashx</DependentUpon>
+    </Compile>
     <Compile Include="TeacherCourseStats.aspx.cs">
       <DependentUpon>TeacherCourseStats.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -696,6 +699,7 @@
     <Content Include="TeacherSite.master" />
     <Content Include="secrets.config" />
     <Content Include="TeacherLearnerReportPdf.ashx" />
+    <Content Include="TeacherCourseStatsPdf.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

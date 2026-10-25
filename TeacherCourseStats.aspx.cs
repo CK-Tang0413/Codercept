@@ -34,14 +34,23 @@ namespace Codercept
 
         protected void btnTeacherSaveCourseStatsPdf_Click(object sender, EventArgs e)
         {
-            // TODO (backend): generate and stream the course statistics PDF
-            Master.ShowToast("Course statistics PDF is ready");
+            DownloadPdf("course");
         }
 
         protected void btnTeacherSavePerformanceStatsPdf_Click(object sender, EventArgs e)
         {
-            // TODO (backend): generate and stream the performance statistics PDF
-            Master.ShowToast("Performance statistics PDF is ready");
+            DownloadPdf("performance");
+        }
+
+        /// <summary>Sends the chosen course's PDF as a download (the same PDF the handler serves; it checks the course belongs to the teacher).</summary>
+        private void DownloadPdf(string type)
+        {
+            if (!selTeacherCourse.SelectionIsValid)
+            {
+                Master.ShowToast("That course could not be found.");
+                return;
+            }
+            Response.Redirect("TeacherCourseStatsPdf.ashx?download=1&type=" + type + "&course=" + selTeacherCourse.SelectedId);
         }
     }
 }
