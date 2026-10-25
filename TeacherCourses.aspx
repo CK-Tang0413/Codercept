@@ -98,15 +98,15 @@
                 <div class="compact-stat-list">
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
-                        <div><span>Total chapters</span><strong>12</strong></div>
+                        <div><span>Total chapters</span><strong><%: ChapterCount %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("chapters", 17) %></span>
-                        <div><span>Subchapters</span><strong>26</strong></div>
+                        <div><span>Subchapters</span><strong><%: SubchapterCount %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("question", 17) %></span>
-                        <div><span>Quizzes &amp; assessments</span><strong>12</strong></div>
+                        <div><span>Quizzes &amp; assessments</span><strong><%: TestCount %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("users", 17) %></span>

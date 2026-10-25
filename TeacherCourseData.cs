@@ -86,6 +86,38 @@ namespace Codercept
         }
 
         /// <summary>
+        /// How many chapters, subchapters and quizzes + assessments the course has. Joined to Course so that only the
+        /// signed-in teacher's own course is counted; any other CourseId gives zeros.
+        /// </summary>
+        public static void GetStructureCounts(int courseId, out int chapters, out int subchapters, out int tests)
+        {
+            chapters = 0; subchapters = 0; tests = 0;
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT (SELECT COUNT(*) FROM Chapter ch WHERE ch.CourseId = c.CourseId), " +
+                    "       (SELECT COUNT(*) FROM SubChapter sc INNER JOIN Chapter ch ON ch.ChapterId = sc.ChapterId WHERE ch.CourseId = c.CourseId), " +
+                    "       (SELECT COUNT(*) FROM Quiz q INNER JOIN Chapter ch ON ch.ChapterId = q.ChapterId WHERE ch.CourseId = c.CourseId) + " +
+                    "       (SELECT COUNT(*) FROM Assessment a INNER JOIN Chapter ch ON ch.ChapterId = a.ChapterId WHERE ch.CourseId = c.CourseId) " +
+                    "FROM Course c WHERE c.CourseId = @CourseId AND c.TeacherId = @TeacherId", con))
+                {
+                    cmd.Parameters.AddWithValue("@CourseId", courseId);
+                    cmd.Parameters.AddWithValue("@TeacherId", TeacherDb.GetTeacherId());
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            chapters = reader.GetInt32(0);
+                            subchapters = reader.GetInt32(1);
+                            tests = reader.GetInt32(2);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// The course for a ?course= value out of this teacher's courses: the first one when the value is absent,
         /// null when it is present but not one of this teacher's courses (or when the teacher has no courses).
         /// </summary>

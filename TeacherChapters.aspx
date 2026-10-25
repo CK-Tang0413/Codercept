@@ -50,7 +50,7 @@
                 <div class="chapter-items" data-tp-chapter-list data-tp-sortable="[data-tp-chapter-pick]">
                     <% for (int i = 0; i < Chapters.Count; i++) { TeacherChapter c = Chapters[i]; %>
                     <div class="chapter-item<%= c.Id == Active.Id ? " is-active" : "" %>" role="button" tabindex="0" data-tp-chapter-pick="<%= c.Id %>"
-                        data-number="<%= i + 1 %>" data-title="<%: c.Title %>" data-description="<%: c.Description %>" data-duration="<%: TeacherSampleData.HoursOf(c.Duration) %>" data-created="<%: c.Created %>" data-updated="<%: c.Updated %>" data-media="<%: c.MediaLink %>">
+                        data-number="<%= i + 1 %>" data-title="<%: c.Title %>" data-description="<%: c.Description %>" data-duration="<%: TeacherChapterData.HoursOf(c.Duration) %>" data-created="<%: c.Created %>" data-updated="<%: c.Updated %>" data-media="<%: c.MediaLink %>">
                         <span class="drag-handle" title="Drag to reorder"><%= TeacherIcons.Svg("grip", 17) %></span>
                         <span class="chapter-number"><%= i + 1 %></span>
                         <span class="chapter-item-title"><%: c.Title %></span>

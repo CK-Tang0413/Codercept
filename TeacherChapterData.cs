@@ -457,6 +457,12 @@ namespace Codercept
             return text + (text == "1" ? " hour" : " hours");
         }
 
+        /// <summary>"2.5 hours" -> "2.5" (for the duration text box).</summary>
+        public static string HoursOf(string duration)
+        {
+            return (duration ?? "").Replace("hours", "").Replace("hour", "").Trim();
+        }
+
         private static string FormatDate(DateTime value)
         {
             return value.ToString("d MMMM yyyy", CultureInfo.InvariantCulture);

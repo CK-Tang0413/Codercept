@@ -9,6 +9,7 @@ namespace Codercept
     public partial class TeacherCourses : System.Web.UI.Page
     {
         protected TeacherCourse Selected;
+        protected int ChapterCount, SubchapterCount, TestCount;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -40,6 +41,7 @@ namespace Codercept
         protected void Page_PreRender(object sender, EventArgs e)
         {
             Selected = selTeacherCourse.SelectedCourse;
+            TeacherCourseData.GetStructureCounts(Selected.Id, out ChapterCount, out SubchapterCount, out TestCount);
 
             // Load the form from the course only when the page first loads or a different course was just picked
             if (!IsPostBack || selTeacherCourse.SelectionChanged)

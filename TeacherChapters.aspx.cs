@@ -107,7 +107,7 @@ namespace Codercept
             {
                 txtTeacherChapterTitle.Text = Active.Title;
                 txtTeacherChapterDescription.Text = Active.Description;
-                txtTeacherChapterDuration.Text = TeacherSampleData.HoursOf(Active.Duration);
+                txtTeacherChapterDuration.Text = TeacherChapterData.HoursOf(Active.Duration);
             }
 
             mdlTeacherDeleteChapter.BodyHtml = "This will permanently delete <strong data-tp-ch-delete-name>Chapter " + ActiveNumber + " - " + Server.HtmlEncode(Active.Title)
