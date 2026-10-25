@@ -26,6 +26,14 @@ namespace Codercept
             MobileDiscussion = hfTeacherForumMobile.Value == "1";
         }
 
+        /// <summary>Reads the posts again after a change, keeping the same post selected.</summary>
+        private void ReloadPosts()
+        {
+            int id = SelectedPost == null ? 0 : SelectedPost.Id;
+            Posts = TeacherForumData.GetPosts();
+            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
+        }
+
         private void HandleAction(string action)
         {
             if (string.IsNullOrEmpty(action) || SelectedPost == null) return;
@@ -33,23 +41,50 @@ namespace Codercept
 
             if (parts[0] == "reply")
             {
-                if (txtTeacherReply.Text.Trim().Length == 0) return;
-                // TODO (Phase 5, step 5.3): INSERT INTO Post_Reply for SelectedPost.Id (ParentThreadId = hfTeacherReplyingTo)
-                Master.ShowToast("Replying is added in a later step, so nothing was saved.");
+                string body = txtTeacherReply.Text.Trim();
+                if (body.Length == 0) return;
+
+                // the post is the one named by the page, and only when it is one of this teacher's own: never "the first post" as a fallback
+                int postId;
+                if (!int.TryParse(hfTeacherForumPost.Value, out postId) || !Posts.Any(p => p.Id == postId))
+                {
+                    Master.ShowToast("Choose a post first, so nothing was saved.");
+                    return;
+                }
+                int parent;
+                int? parentId = int.TryParse(hfTeacherReplyingTo.Value, out parent) && parent > 0 ? parent : (int?)null;
+
+                ForumReplyResult result = TeacherForumData.AddReply(postId, body, parentId);
+                if (result == ForumReplyResult.Saved)
+                {
+                    txtTeacherReply.Text = "";
+                    hfTeacherReplyingTo.Value = "";
+                    SelectedPost = Posts.First(p => p.Id == postId);
+                    ReloadPosts();
+                }
+                else if (result == ForumReplyResult.TooLong)
+                {
+                    Master.ShowToast("A reply can be at most " + TeacherForumData.MaxReplyLength + " characters, so nothing was saved.");
+                }
+                else
+                {
+                    Master.ShowToast("That post or comment could not be found, so nothing was saved.");
+                }
                 return;
             }
 
-            int postId, commentId;
-            if (parts.Length != 3 || !int.TryParse(parts[1], out postId) || !int.TryParse(parts[2], out commentId)) return;
-            TeacherForumPost post = Posts.FirstOrDefault(p => p.Id == postId);
+            int pinPostId, commentId;
+            if (parts.Length != 3 || !int.TryParse(parts[1], out pinPostId) || !int.TryParse(parts[2], out commentId)) return;
+            TeacherForumPost post = Posts.FirstOrDefault(p => p.Id == pinPostId);
             TeacherForumComment comment = post == null ? null : post.Comments.FirstOrDefault(c => c.Id == commentId);
             if (comment == null) return;
             SelectedPost = post;
 
             if (parts[0] == "pin")
             {
-                // TODO (Phase 5, step 5.3): UPDATE Post_Reply SET IsPinned / DatePinned for this reply of a post the teacher can see
-                Master.ShowToast("Pinning is added in a later step, so nothing was saved.");
+                // saved in SQL only for a reply of a post this teacher can see; the page then shows the new state
+                if (TeacherForumData.TogglePin(post.Id, comment.Id) == null) Master.ShowToast("That comment could not be found, so nothing was saved.");
+                else ReloadPosts();
             }
             else if (parts[0] == "flag")
             {

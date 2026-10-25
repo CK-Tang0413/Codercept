@@ -6,6 +6,15 @@ using System.Text.RegularExpressions;
 
 namespace Codercept
 {
+    /// <summary>What happened when a teacher replied to a forum post.</summary>
+    public enum ForumReplyResult
+    {
+        Saved,
+        /// <summary>The post is not one this teacher can see, or the reply it answers is not on that post.</summary>
+        NotFound,
+        TooLong
+    }
+
     /// <summary>
     /// Database queries for the teacher forum. A forum post has no course, so which posts a teacher sees is decided here, in SQL:
     /// the posts the teacher wrote, and the posts of learners who are enrolled (LearnerProgress) in one of the teacher's courses
@@ -26,6 +35,9 @@ namespace Codercept
 
         /// <summary>Forum.Tags is NVARCHAR(255): all the tags joined with commas must fit.</summary>
         public const int MaxTagsLength = 255;
+
+        /// <summary>The longest reply a teacher can write.</summary>
+        public const int MaxReplyLength = 2000;
 
         /// <summary>The longest excerpt shown on a post card.</summary>
         private const int ExcerptLength = 110;
@@ -118,6 +130,58 @@ namespace Codercept
                 cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                 con.Open();
                 return (int)cmd.ExecuteScalar();
+            }
+        }
+
+        /// <summary>
+        /// Saves the signed-in teacher's reply to a post (Post_Reply.TeacherId; IsPinned starts as 'No'). One statement does the whole check:
+        /// the row is only inserted when the post is one the teacher can see, and, for a reply to a reply, when parentThreadId is a reply of
+        /// that same post. So a forged post or reply id inserts nothing.
+        /// </summary>
+        public static ForumReplyResult AddReply(int postId, string body, int? parentThreadId)
+        {
+            body = (body ?? "").Trim();
+            if (body.Length == 0) return ForumReplyResult.NotFound;
+            if (body.Length > MaxReplyLength) return ForumReplyResult.TooLong;
+
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "INSERT INTO Post_Reply (ReplyComment, IsPinned, DatePinned, PostId, LearnerId, TeacherId, TA_Id, ParentThreadId) " +
+                "SELECT @Body, 'No', NULL, f.PostId, NULL, @TeacherId, NULL, @ParentThreadId FROM Forum f " +
+                "WHERE f.PostId = @PostId AND " + Visible + " " +
+                "AND (@ParentThreadId IS NULL OR EXISTS (SELECT 1 FROM Post_Reply p WHERE p.ThreadId = @ParentThreadId AND p.PostId = f.PostId))", con))
+            {
+                cmd.Parameters.AddWithValue("@Body", body);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                cmd.Parameters.AddWithValue("@ParentThreadId", parentThreadId.HasValue ? (object)parentThreadId.Value : DBNull.Value);
+                con.Open();
+                return cmd.ExecuteNonQuery() == 1 ? ForumReplyResult.Saved : ForumReplyResult.NotFound;
+            }
+        }
+
+        /// <summary>
+        /// Pins a reply, or unpins it when it is pinned (IsPinned 'Yes' / 'No'; DatePinned is set when pinning and cleared when unpinning).
+        /// Returns whether it is pinned now, or null when the reply is not a reply of that post or the post is not one this teacher can see.
+        /// </summary>
+        public static bool? TogglePin(int postId, int threadId)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "UPDATE r SET IsPinned = CASE WHEN r.IsPinned = 'Yes' THEN 'No' ELSE 'Yes' END, " +
+                "DatePinned = CASE WHEN r.IsPinned = 'Yes' THEN NULL ELSE GETDATE() END " +
+                "OUTPUT INSERTED.IsPinned " +
+                "FROM Post_Reply r INNER JOIN Forum f ON f.PostId = r.PostId " +
+                "WHERE r.ThreadId = @ThreadId AND r.PostId = @PostId AND " + Visible, con))
+            {
+                cmd.Parameters.AddWithValue("@ThreadId", threadId);
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                object now = cmd.ExecuteScalar();
+                return now == null ? (bool?)null : (string)now == "Yes";
             }
         }
 
