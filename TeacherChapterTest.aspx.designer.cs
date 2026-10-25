@@ -24,6 +24,15 @@ namespace Codercept
         protected global::Codercept.TeacherBreadcrumb bcTeacherChapter;
 
         /// <summary>
+        /// pnlTeacherLocked control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTeacherLocked;
+
+        /// <summary>
         /// shTeacherDetails control.
         /// </summary>
         /// <remarks>
@@ -69,6 +78,15 @@ namespace Codercept
         protected global::Codercept.TeacherMediaDropzone dzTeacherTestFile;
 
         /// <summary>
+        /// hfTeacherTestMediaRemove control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherTestMediaRemove;
+
+        /// <summary>
         /// reTeacherTestDescription control.
         /// </summary>
         /// <remarks>
@@ -76,6 +94,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::Codercept.TeacherRichEditor reTeacherTestDescription;
+
+        /// <summary>
+        /// divTeacherQuestions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divTeacherQuestions;
 
         /// <summary>
         /// rptTeacherTestQuestions control.

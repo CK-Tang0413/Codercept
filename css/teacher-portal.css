@@ -7542,3 +7542,8 @@
     text-decoration: line-through;
     opacity: 0.6;
 }
+
+/* Quiz / assessment that learners have attempted: the questions are shown but cannot be edited */
+.tp-app .form-question-stack[inert] {
+    opacity: 0.7;
+}

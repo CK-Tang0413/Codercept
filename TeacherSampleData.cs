@@ -623,7 +623,7 @@ Id = 3,
                 string prefix = "tpq" + n + "_";
                 int id, marks, correct;
                 int.TryParse(form[prefix + "id"], out id);
-                if (!int.TryParse(form[prefix + "marks"], out marks) || marks < 1) marks = 1;
+                if (!int.TryParse(form[prefix + "marks"], out marks)) marks = 0; // refused by TeacherTestData.Validate (1 to 100)
                 if (!int.TryParse(form[prefix + "correct"], out correct)) correct = -1;
 
                 TeacherQuestion question = new TeacherQuestion

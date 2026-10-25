@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Codercept
@@ -15,7 +16,7 @@ namespace Codercept
         // the course a new chapter is added to (kind = chapter): one of the signed-in teacher's courses
         private TeacherCourse course;
 
-        // the chapter a new subchapter is added to (kind = subchapter): one of the signed-in teacher's chapters
+        // the chapter a new subchapter, quiz or assessment is added to: one of the signed-in teacher's chapters
         private TeacherChapter parent;
         protected KindLabels Labels;
 
@@ -26,6 +27,12 @@ namespace Codercept
         protected bool HasQuestions
         {
             get { return kind == "quiz" || kind == "assessment"; }
+        }
+
+        /// <summary>quiz | assessment: how the question cards are drawn.</summary>
+        protected string QuestionMode
+        {
+            get { return kind; }
         }
 
         /// <summary>A chapter's duration is in hours (as on Manage Chapters); a subchapter's is in minutes.</summary>
@@ -64,18 +71,6 @@ namespace Codercept
                 default: Labels = new KindLabels { Title = "Add Chapter", Noun = "chapter", Hint = "Create a new chapter for this course." }; break;
             }
 
-            // TODO (backend): real course/chapter titles
-            // ?chapter=<ChapterId>: the chapter this subchapter / quiz / assessment is added to (the first chapter when absent)
-            int chapterId;
-            int.TryParse(Request.QueryString["chapter"], out chapterId);
-            if (kind == "subchapter")
-            {
-                parent = TeacherChapterData.GetChapter(chapterId);
-                if (parent == null) Response.Redirect("~/TeacherChapters.aspx");
-            }
-            TeacherChapter chapter = parent ?? TeacherSampleData.GetChapter(chapterId) ?? TeacherSampleData.GetChapters()[0];
-            int shownNumber;
-            if (!int.TryParse(Request.QueryString["n"], out shownNumber) || shownNumber <= 0) shownNumber = chapter.Number;
             if (kind == "chapter")
             {
                 // a new chapter belongs to the course in ?course=<CourseId> (the teacher's first course when absent)
@@ -86,21 +81,26 @@ namespace Codercept
             }
             else
             {
-                bcTeacherChapter.CourseTitle = parent != null ? parent.CourseTitle : TeacherSampleData.ChapterCourseTitle;
-                bcTeacherChapter.ChapterTitle = "Chapter " + (parent != null ? parent.Number : shownNumber) + " - " + chapter.Title;
+                // ?chapter=<ChapterId>: a chapter of the signed-in teacher's, otherwise back to Manage Chapters
+                int chapterId;
+                int.TryParse(Request.QueryString["chapter"], out chapterId);
+                parent = TeacherChapterData.GetChapter(chapterId);
+                if (parent == null) Response.Redirect("~/TeacherChapters.aspx");
+                bcTeacherChapter.CourseTitle = parent.CourseTitle;
+                bcTeacherChapter.ChapterTitle = "Chapter " + parent.Number + " - " + parent.Title;
             }
 
             // A chapter has either one quiz or one assessment: if it already has one, offer to edit it instead of adding another
-            bool alreadyHasTest = (kind == "quiz" || kind == "assessment") && chapter.Test != null;
+            bool alreadyHasTest = HasQuestions && parent.Test != null;
             pnlTeacherExists.Visible = alreadyHasTest;
             pnlTeacherForm.Visible = !alreadyHasTest;
             if (alreadyHasTest)
             {
-                ExistingType = chapter.Test.Type;
-                ExistingTitle = "Chapter " + shownNumber + " already has " + (chapter.Test.Type == "quiz" ? "a quiz" : "an assessment");
-                ExistingText = "\"" + chapter.Test.Title + "\". A chapter can have either one quiz or one assessment, so edit the existing one, "
+                ExistingType = parent.Test.Type;
+                ExistingTitle = "Chapter " + parent.Number + " already has " + (parent.Test.Type == "quiz" ? "a quiz" : "an assessment");
+                ExistingText = "\"" + parent.Test.Title + "\". A chapter can have either one quiz or one assessment, so edit the existing one, "
                     + "or delete it first if you want the other kind.";
-                EditUrl = "TeacherChapterTest.aspx?chapter=" + chapter.Id + "&n=" + shownNumber;
+                EditUrl = "TeacherChapterTest.aspx?chapter=" + parent.Id;
             }
 
             shTeacherDetails.Subtitle = "Add the essential information for this " + Labels.Noun + ".";
@@ -116,8 +116,14 @@ namespace Codercept
             phTeacherQuestions.Visible = hasQuestions;
             if (hasQuestions)
             {
-                qcTeacherFirstQuestion.Mode = kind;
                 qcTeacherNewQuestion.Mode = kind;
+
+                // The question cards are plain HTML fields (see TeacherQuestionCard.ascx), rebuilt on every request: after a postback
+                // from what was posted (so a refused save loses nothing), otherwise one empty question to start from.
+                rptTeacherQuestions.DataSource = IsPostBack
+                    ? TeacherQuestion.ReadPosted(Request.Unvalidated.Form, 1)
+                    : new List<TeacherQuestion> { TeacherQuestion.Blank() };
+                rptTeacherQuestions.DataBind();
             }
 
             btnTeacherCreateContent.Text = "<svg aria-hidden=\"true\" class=\"icon\" fill=\"none\" height=\"17\" viewBox=\"0 0 24 24\" width=\"17\"><path d='M12 5v14M5 12h14' /></svg><span>Create "
@@ -126,15 +132,6 @@ namespace Codercept
 
         protected void btnTeacherCreateContent_Click(object sender, EventArgs e)
         {
-            if (kind == "quiz" || kind == "assessment")
-            {
-                // TODO (step 3.4): INSERT the new Quiz / Assessment with the posted values:
-                //   txtTeacherContentTitle, dzTeacherContentFile.PostedFile, reTeacherContentDescription.Text,
-                //   and the questions posted as tpq{n}_text / _marks / _a{m} / _correct.
-                Master.ShowToast("Adding a " + Labels.Noun + " is added in a later step, so nothing was saved.");
-                return;
-            }
-
             string title = txtTeacherContentTitle.Text.Trim();
             bool titleError = title.Length < 4 || title.Length > 50;
             fldTeacherContentTitle.Attributes["class"] = titleError ? "form-field has-error" : "form-field";
@@ -142,16 +139,33 @@ namespace Codercept
             if (titleError) return;
 
             string description = reTeacherContentDescription.Text.Trim();
-            if (description.Length == 0)
+            if (description.Length == 0 && !HasQuestions)
             {
                 Master.ShowToast("Enter a description.");
                 return;
             }
 
-            // a chapter's duration is in hours (0.5 to 1000); a subchapter's is in whole minutes (1 to 600)
+            // a quiz or assessment is saved with its questions: check them first
+            List<TeacherQuestion> questions = null;
+            if (HasQuestions)
+            {
+                questions = TeacherQuestion.ReadPosted(Request.Unvalidated.Form, 1);
+                string problem = TeacherTestData.Validate(kind, questions);
+                if (problem != null)
+                {
+                    Master.ShowToast(problem);
+                    return;
+                }
+            }
+
+            // a chapter's duration is in hours (0.5 to 1000); a subchapter's is in whole minutes (1 to 600); a test has none
             decimal hours = 0;
             int minutes = 0;
-            if (kind == "chapter")
+            if (HasQuestions)
+            {
+                // no duration
+            }
+            else if (kind == "chapter")
             {
                 if (!decimal.TryParse(txtTeacherContentDuration.Text, System.Globalization.NumberStyles.Number,
                     System.Globalization.CultureInfo.InvariantCulture, out hours) || hours < 0.5m || hours > 1000)
@@ -190,9 +204,19 @@ namespace Codercept
                     duplicate = TeacherChapterData.TitleExists(course.Id, title, 0);
                     newId = TeacherChapterData.CreateChapter(course.Id, title, description, hours, mediaLink);
                 }
-                else
+                else if (kind == "subchapter")
                 {
                     newId = TeacherSubChapterData.CreateSubChapter(parent.Id, title, description, minutes, mediaLink);
+                }
+                else
+                {
+                    TeacherTestData.CreateResult created = TeacherTestData.CreateTest(parent.Id, kind, title, description, mediaLink, questions, out newId);
+                    if (created == TeacherTestData.CreateResult.AlreadyHasTest)
+                    {
+                        // somebody added one in the meantime: show the "already has" page instead
+                        if (mediaLink != null) TeacherMediaStore.Delete(mediaLink);
+                        Response.Redirect("~/TeacherChapterAdd.aspx?kind=" + kind + "&chapter=" + parent.Id);
+                    }
                 }
             }
             catch
@@ -211,7 +235,11 @@ namespace Codercept
             {
                 Response.Redirect("~/TeacherChapters.aspx?chapter=" + newId + "&created=" + (duplicate ? "dup" : "1"));
             }
-            Response.Redirect("~/TeacherChapterContent.aspx?chapter=" + parent.Id + "&sub=" + newId + "&created=1");
+            if (kind == "subchapter")
+            {
+                Response.Redirect("~/TeacherChapterContent.aspx?chapter=" + parent.Id + "&sub=" + newId + "&created=1");
+            }
+            Response.Redirect("~/TeacherChapters.aspx?chapter=" + parent.Id + "&testcreated=" + kind);
         }
     }
 }

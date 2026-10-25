@@ -541,6 +541,7 @@
     <Compile Include="TeacherDashboardData.cs" />
     <Compile Include="TeacherMediaStore.cs" />
     <Compile Include="TeacherSubChapterData.cs" />
+    <Compile Include="TeacherTestData.cs" />
     <Compile Include="TeacherDb.cs" />
     <Compile Include="TeacherExams.aspx.cs">
       <DependentUpon>TeacherExams.aspx</DependentUpon>

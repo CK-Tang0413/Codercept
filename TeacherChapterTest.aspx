@@ -21,6 +21,19 @@
         </div>
     </div>
 
+    <%-- Learners have attempted it: the questions are shown but cannot be changed, and it cannot be deleted --%>
+    <asp:Panel ID="pnlTeacherLocked" runat="server" Visible="false">
+        <article class="form-card content-form-card">
+            <div class="form-card-heading">
+                <span class="form-card-icon"><%= TeacherIcons.Svg("info", 20) %></span>
+                <div>
+                    <h2>Learners have attempted this <%: Noun.ToLowerInvariant() %></h2>
+                    <p>Its questions can no longer be changed, so learners' answers and marks stay correct. You can still edit the title, description and file.</p>
+                </div>
+            </div>
+        </article>
+    </asp:Panel>
+
     <div class="stepped-form">
         <section>
             <uc:StepHeading ID="shTeacherDetails" runat="server" Step="1" Title="Fill in details" />
@@ -29,11 +42,18 @@
                     <label id="fldTeacherTestTitle" runat="server" class="form-field">
                         <span>Title <b>*</b></span>
                         <asp:TextBox ID="txtTeacherTestTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off"></asp:TextBox>
-                        <small id="hintTeacherTestTitle" runat="server" data-ok="Use a clear title that describes this content." data-err="Enter a title with at least 4 characters.">Use a clear title that describes this content.</small>
+                        <small id="hintTeacherTestTitle" runat="server" data-ok="Use a clear title that describes this content." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this content.</small>
                     </label>
                     <div class="form-field">
-                        <span>Add file</span>
+                        <span>File</span>
+                        <div class="current-media" data-tp-media-row data-media="<%: MediaLink %>" hidden>
+                            <a href="#" target="_blank" rel="noopener" data-tp-media-link></a>
+                            <button type="button" class="button button--ghost" data-tp-media-toggle>Remove file</button>
+                            <small data-tp-media-note hidden>The file will be removed when you click Save changes.</small>
+                        </div>
                         <uc:MediaDropzone ID="dzTeacherTestFile" runat="server" Compact="true" />
+                        <small>Choosing a new file replaces the current one.</small>
+                        <input type="hidden" id="hfTeacherTestMediaRemove" runat="server" value="" data-tp-media-remove-input />
                     </div>
                     <div class="form-field">
                         <span>Description</span>
@@ -46,7 +66,7 @@
 
         <section>
             <uc:StepHeading runat="server" Step="2" Title="Questions &amp; answers" Subtitle="Set marks, add answer choices, and identify the correct answer." />
-            <div class="form-question-stack" data-tp-questions>
+            <div id="divTeacherQuestions" runat="server" class="form-question-stack" data-tp-questions>
                 <asp:Repeater ID="rptTeacherTestQuestions" runat="server">
                     <ItemTemplate>
                         <uc:QuestionCard runat="server" Mode='<%# Mode %>' Number='<%# Container.ItemIndex + 1 %>' Question='<%# Container.DataItem %>' />

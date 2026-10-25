@@ -1325,6 +1325,12 @@
         initDomainInputs(root);
         qsa("[data-tp-cardlist]", root).forEach(initCardList);
         qsa("[data-tp-questions]", root).forEach(initQuestions);
+        // a page that edits one item (the quiz / assessment page): its file row carries the stored path in data-media
+        var soloMedia = qs("[data-tp-media-row][data-media]", root);
+        if (soloMedia) {
+            var soloField = initMediaField();
+            if (soloField) soloField.show(soloMedia.getAttribute("data-media"));
+        }
         qsa("[data-tp-chapter-list]", root).forEach(initChapterList);
         qsa("[data-tp-content-list]", root).forEach(initContentList);
         qsa("[data-tp-dropzone]", root).forEach(initDropzone);

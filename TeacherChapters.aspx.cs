@@ -58,6 +58,8 @@ namespace Codercept
                 if (notice == "1") Master.ShowToast("Chapter created");
                 else if (notice == "dup") Master.ShowToast("Chapter created. Another chapter in this course has the same title.");
                 if (Request.QueryString["chapterdeleted"] == "1") Master.ShowToast("Chapter deleted");
+                if (Request.QueryString["testcreated"] == "quiz") Master.ShowToast("Quiz created");
+                if (Request.QueryString["testcreated"] == "assessment") Master.ShowToast("Assessment created");
                 if (Request.QueryString["testdeleted"] == "1") Master.ShowToast("Quiz or assessment deleted");
             }
 

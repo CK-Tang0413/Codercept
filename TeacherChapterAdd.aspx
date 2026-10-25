@@ -53,7 +53,7 @@
                             <uc:MediaDropzone ID="dzTeacherContentFile" runat="server" Compact="true" />
                         </div>
                         <div class="form-field">
-                            <span>Description <b>*</b></span>
+                            <span>Description<% if (!HasQuestions) { %> <b>*</b><% } %></span>
                             <uc:RichEditor ID="reTeacherContentDescription" runat="server" />
                             <small>Explain what learners will cover in this section.</small>
                         </div>
@@ -72,7 +72,11 @@
                 <section>
                     <uc:StepHeading runat="server" Step="2" Title="Add questions &amp; answers" Subtitle="Set marks, add answer choices, and identify the correct answer." />
                     <div class="form-question-stack" data-tp-questions>
-                        <uc:QuestionCard ID="qcTeacherFirstQuestion" runat="server" Number="1" />
+                        <asp:Repeater ID="rptTeacherQuestions" runat="server">
+                            <ItemTemplate>
+                                <uc:QuestionCard runat="server" Mode='<%# QuestionMode %>' Number='<%# Container.ItemIndex + 1 %>' Question='<%# Container.DataItem %>' />
+                            </ItemTemplate>
+                        </asp:Repeater>
                         <button type="button" class="add-question-row" data-tp-q-add data-tp-q-anchor><%= TeacherIcons.Svg("plus", 16) %>Add question</button>
                         <template data-tp-q-template>
                             <uc:QuestionCard ID="qcTeacherNewQuestion" runat="server" Number="1" />
