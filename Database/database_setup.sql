@@ -418,6 +418,7 @@ CREATE TABLE [dbo].[LearnerProgress] (
     [LearnerId] INT NOT NULL,
     [CourseId]  INT NOT NULL,
     [ChapNum]   INT NULL,
+    [EnrolledDate] DATETIME NOT NULL DEFAULT GETDATE(), -- when the learner joined the course
     CONSTRAINT [PK_LearnerCourse] PRIMARY KEY CLUSTERED ([LearnerId] ASC, [CourseId] ASC),
     CONSTRAINT [FK_LearnerCourse_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
     CONSTRAINT [FK_LearnerCourse_Course] FOREIGN KEY ([CourseId]) REFERENCES [dbo].[Course] ([CourseId])
@@ -567,8 +568,9 @@ DECLARE @PyChapter1 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [Course
 DECLARE @PyChapter2 INT = (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = @PythonCourse AND [ChapterNum] = 2);
 DECLARE @QuizId INT, @AssessmentId INT, @PyExamId INT, @CExamId INT, @QuestionId INT, @AttemptId INT;
 
-INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum])
-VALUES (@KylanId, @PythonCourse, 2), (@KylanId, @JavaCourse, 1), (@WanId, @PythonCourse, 1), (@WanId, @CCourse, 1);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate])
+VALUES (@KylanId, @PythonCourse, 2, DATEADD(DAY, -35, GETDATE())), (@KylanId, @JavaCourse, 1, DATEADD(DAY, -20, GETDATE())),
+       (@WanId, @PythonCourse, 1, DATEADD(DAY, -30, GETDATE())), (@WanId, @CCourse, 1, DATEADD(DAY, -12, GETDATE()));
 
 -- Python: subchapters, a quiz at the end of chapter 2, an assessment at the end of chapter 1 (a chapter has a quiz OR an assessment, never both), and the final exam
 INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [SubChapterDuration], [ChapterId], [TeacherId])

@@ -24,6 +24,11 @@
     <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherLearners" runat="server" Step="2" Title="Manage enrolled learners" />
         <input type="hidden" id="hfTeacherLearnerId" runat="server" value="" />
+        <% if (Learner == null) { %>
+        <article class="chapter-detail-card">
+            <p class="summary-empty">No learners are enrolled in this course yet.</p>
+        </article>
+        <% } else { %>
         <div class="learner-master-detail">
             <aside class="learner-list-panel">
                 <div class="learner-list-top">
@@ -64,7 +69,7 @@
                             <h2><%: Learner.Name %></h2>
                             <p><%: Learner.Email %></p>
                         </div>
-                        <span class="badge badge--success">Active</span>
+                        <span class="badge badge--<%= Learner.Status == "Active" ? "success" : "warning" %>"><%: Learner.Status %></span>
                     </div>
 
                     <section class="profile-section">
@@ -73,9 +78,9 @@
                             <h3>Demographic info</h3>
                         </div>
                         <div class="demographic-grid">
-                            <div><span>Age</span><strong><%: Learner.Age %></strong></div>
-                            <div><span>Gender</span><strong><%: Learner.Gender %></strong></div>
-                            <div><span>Level</span><strong><%: Learner.Level %></strong></div>
+                            <div><span>Age</span><%= Plain(Learner.Age) %></div>
+                            <div><span>Gender</span><%= Plain(Learner.Gender) %></div>
+                            <div><span>Level</span><%= Plain(Learner.Level) %></div>
                         </div>
                     </section>
 
@@ -86,7 +91,7 @@
                         </div>
                         <div class="learner-progress-block">
                             <div class="completion-copy">
-                                <span>Current chapter &middot; <%: Learner.Chapter %></span>
+                                <span>Current chapter &middot; <%: Learner.Chapter == "-" ? "Not started" : Learner.Chapter %></span>
                                 <strong><%= Learner.Progress %>%</strong>
                             </div>
                             <div class="learner-progress-track"><span style="width: <%= Learner.Progress %>%"></span></div>
@@ -125,14 +130,14 @@
 
                 <aside class="learner-actions">
                     <span>ACTIONS</span>
-                    <%-- TODO (backend): pass course and learner ids to the grading page --%>
-                    <a class="button button--primary" href="TeacherGradeAssessments.aspx"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
+                    <a class="button button--primary" href="TeacherGradeAssessments.aspx?course=<%= selTeacherCourse.SelectedCourse.Id %>"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
                     <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= Learner.Id %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
                     <div></div>
                     <button type="button" class="button button--danger" data-tp-open-modal="tpRemoveLearnerModal"><%= TeacherIcons.Svg("trash", 17) %><span>Remove learner</span></button>
                 </aside>
             </div>
         </div>
+        <% } %>
     </section>
 </asp:Content>
 

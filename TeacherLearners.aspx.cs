@@ -9,25 +9,27 @@ namespace Codercept
     {
         private List<TeacherLearner> learners;
 
-        /// <summary>TODO (backend): learners enrolled in selTeacherCourse.SelectedCourse.</summary>
+        /// <summary>The learners enrolled in the chosen course (only this teacher's courses return anything).</summary>
         protected List<TeacherLearner> Learners
         {
             get
             {
-                if (learners == null) learners = TeacherSampleData.GetLearners();
+                if (learners == null) learners = TeacherLearnerData.GetLearners(selTeacherCourse.SelectedCourse.Id);
                 return learners;
             }
         }
 
-        /// <summary>The learner picked in the list (hfTeacherLearnerId holds the LearnerId); the first learner until one is picked.</summary>
+        /// <summary>
+        /// The learner picked in the list (hfTeacherLearnerId holds the LearnerId); the first learner until one is picked or when the id is
+        /// not one of this course's learners. Null when nobody is enrolled.
+        /// </summary>
         protected TeacherLearner Learner
         {
             get
             {
                 int id;
                 int.TryParse(hfTeacherLearnerId.Value, out id);
-                // TODO (backend): only learners enrolled in a course of the signed-in teacher
-                return Learners.FirstOrDefault(l => l.Id == id) ?? Learners[0];
+                return Learners.FirstOrDefault(l => l.Id == id) ?? Learners.FirstOrDefault();
             }
         }
 
@@ -40,8 +42,16 @@ namespace Codercept
         protected void Page_PreRender(object sender, EventArgs e)
         {
             shTeacherLearners.Subtitle = "View learner progress and performance in " + selTeacherCourse.SelectedCourse.Title + ".";
+            if (Learner == null) return; // nobody enrolled: the page shows a message instead
             mdlTeacherRemoveLearner.BodyHtml = "<strong>" + Server.HtmlEncode(Learner.Name) + "</strong> will be removed from this course. "
                 + "Their submitted work and progress history will no longer appear in this learner list.";
+        }
+
+        /// <summary>A plain value of the profile; "-" (not known) shows as "Not available yet".</summary>
+        protected string Plain(string value)
+        {
+            if (value == "-") return "<span class=\"not-available\">Not available yet</span>";
+            return "<strong>" + HttpUtility.HtmlEncode(value) + "</strong>";
         }
 
         /// <summary>One "icon / label / value" row of the profile. "-" means no data yet.</summary>

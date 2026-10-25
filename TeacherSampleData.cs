@@ -80,46 +80,6 @@ namespace Codercept
             };
         }
 
-        private const string ForumPostsKey = "TeacherForumPosts";
-
-        /// <summary>
-        /// Forum posts with their discussions. TODO (backend): Forum / Post_Reply tables. Until then the list lives in the
-        /// session so replies, pins and new posts survive postbacks; mutate the returned objects directly.
-        /// </summary>
-        public static List<TeacherForumPost> GetForumPosts()
-        {
-            HttpContext ctx = HttpContext.Current;
-            List<TeacherForumPost> posts = (ctx != null && ctx.Session != null) ? ctx.Session[ForumPostsKey] as List<TeacherForumPost> : null;
-            if (posts != null) return posts;
-
-            posts = new List<TeacherForumPost>
-            {
-                new TeacherForumPost
-                {
-                    Id = 1, Title = "What is String in Python?",
-                    Excerpt = "I am currently going through the Python for Beginners module and I'm a bit confused about Strings...",
-                    Tags = new List<string> { "Python", "Fundamental" },
-                    Comments = new List<TeacherForumComment>
-                    {
-                        new TeacherForumComment { Id = 1, Name = "Kylan Shane", Initials = "K", Role = "LEARNER", Body = "String is just a sequence of characters. They are strictly immutable." },
-                        new TeacherForumComment { Id = 2, Name = "Mr. Elaveenthan", Initials = "M", Role = "TEACHER", Pinned = true, Body = "Kylan is correct! Because they are immutable, if you want to 'modify' a string, you actually create a brand new string." }
-                    }
-                },
-                new TeacherForumPost
-                {
-                    Id = 2, Title = "Error setting up Visual Studio for C++",
-                    Excerpt = "Every time I try to compile my first Hello World program, it throws an error...",
-                    Tags = new List<string> { "C++", "Environment", "Error" },
-                    Comments = new List<TeacherForumComment>
-                    {
-                        new TeacherForumComment { Id = 3, Name = "Alicia Tan", Initials = "A", Role = "LEARNER", Body = "Check that the Desktop development with C++ workload is installed in Visual Studio Installer." }
-                    }
-                }
-            };
-            if (ctx != null && ctx.Session != null) ctx.Session[ForumPostsKey] = posts;
-            return posts;
-        }
-
         public static List<TeacherExamRule> GetExamRules()
         {
             return new List<TeacherExamRule>
@@ -192,6 +152,8 @@ namespace Codercept
         public string Score { get; set; }
         public string Grade { get; set; }
         public string Average { get; set; }
+        /// <summary>Learner.AccStatus, for example Active.</summary>
+        public string Status { get; set; }
     }
 
     public class TeacherChapter
