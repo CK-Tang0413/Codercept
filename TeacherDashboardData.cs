@@ -34,6 +34,8 @@ namespace Codercept
             }
 
             int pending = TeacherCourseData.GetPendingCounts().Values.Sum();
+            int unreadPosts, unreadToday;
+            TeacherForumData.CountUnread(out unreadPosts, out unreadToday);
 
             return new List<TeacherStat>
             {
@@ -45,8 +47,11 @@ namespace Codercept
                     Hint = pending > 0 ? "Needs your attention" : "You're all caught up",
                     Badge = pending > 0 ? "Action needed" : null
                 },
-                // TODO (Phase 5, forum): sample numbers until the forum is read from the database
-                new TeacherStat { Label = "Unread forum posts", Value = "9", Hint = "3 new today", Icon = "message", Tone = "rose" }
+                new TeacherStat
+                {
+                    Label = "Unread forum posts", Value = unreadPosts.ToString(), Icon = "message", Tone = "rose",
+                    Hint = unreadPosts == 0 ? "You're all caught up" : unreadToday > 0 ? unreadToday + " new today" : "Open the forum to catch up"
+                }
             };
         }
 

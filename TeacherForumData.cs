@@ -185,6 +185,55 @@ namespace Codercept
             }
         }
 
+        /// <summary>
+        /// Records that the signed-in teacher has seen these posts (ForumRead rows), skipping the ones already recorded. Only learners' posts
+        /// are recorded, and only those the teacher can see (the same Visible check as everywhere), so a forged id records nothing. The
+        /// "not recorded yet" check is locked so that two requests at once cannot both insert the same row.
+        /// </summary>
+        public static void MarkRead(IEnumerable<int> postIds)
+        {
+            List<int> ids = postIds.Distinct().ToList();
+            if (ids.Count == 0) return;
+            int teacherId = TeacherDb.GetTeacherId();
+
+            string[] names = ids.Select((id, i) => "@Post" + i).ToArray();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "INSERT INTO ForumRead (PostId, TeacherId, DateRead) SELECT f.PostId, @TeacherId, GETDATE() FROM Forum f " +
+                "WHERE f.TeacherId IS NULL AND f.PostId IN (" + string.Join(", ", names) + ") AND " + Visible + " " +
+                "AND NOT EXISTS (SELECT 1 FROM ForumRead fr WITH (UPDLOCK, HOLDLOCK) WHERE fr.PostId = f.PostId AND fr.TeacherId = @TeacherId)", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                for (int i = 0; i < ids.Count; i++) cmd.Parameters.AddWithValue(names[i], ids[i]);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// How many learner posts the signed-in teacher can see but has not opened yet (no ForumRead row; their own posts never count),
+        /// and how many of those were posted today.
+        /// </summary>
+        public static void CountUnread(out int unread, out int today)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT COUNT(*), ISNULL(SUM(CASE WHEN CAST(f.DatePosted AS DATE) = CAST(GETDATE() AS DATE) THEN 1 ELSE 0 END), 0) FROM Forum f " +
+                "WHERE f.TeacherId IS NULL AND " + Visible + " " +
+                "AND NOT EXISTS (SELECT 1 FROM ForumRead fr WHERE fr.PostId = f.PostId AND fr.TeacherId = @TeacherId)", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    reader.Read();
+                    unread = reader.GetInt32(0);
+                    today = reader.GetInt32(1);
+                }
+            }
+        }
+
         /// <summary>The post text on one line, cut to about ExcerptLength characters.</summary>
         private static string ExcerptOf(string content)
         {

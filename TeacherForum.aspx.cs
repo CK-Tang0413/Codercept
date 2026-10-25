@@ -14,6 +14,8 @@ namespace Codercept
         {
             // only the posts this teacher may see (their own, and those of learners enrolled in their courses)
             Posts = TeacherForumData.GetPosts();
+            // the teacher is looking at these posts now, so they stop counting as unread on the dashboard
+            TeacherForumData.MarkRead(Posts.Select(p => p.Id));
 
             int id;
             int.TryParse(hfTeacherForumPost.Value, out id);
