@@ -1,6 +1,7 @@
 <%@ Page Title="Edit Exam - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherExamEdit.aspx.cs" Inherits="Codercept.TeacherExamEdit" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
+<%@ Register Src="~/TeacherRichEditor.ascx" TagPrefix="uc" TagName="RichEditor" %>
 <%@ Register Src="~/TeacherQuestionCard.ascx" TagPrefix="uc" TagName="QuestionCard" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
@@ -19,6 +20,14 @@
         <i class="code-symbol code-symbol--two">01</i>
     </div>
 
+    <%-- Learners have attempted the exam: its settings and questions are shown but cannot be changed --%>
+    <asp:Panel ID="pnlTeacherExamLocked" runat="server" Visible="false">
+        <div class="exam-new-note">
+            <%= TeacherIcons.Svg("info", 17) %>
+            <p>Learners have attempted this exam, so its pass mark and questions can no longer be changed. This keeps every learner's answers and marks fair. You can still edit the title, description, time limit and rules.</p>
+        </div>
+    </asp:Panel>
+
     <% if (!ExamExists) { %>
     <div class="exam-new-note">
         <%= TeacherIcons.Svg("info", 17) %>
@@ -27,10 +36,28 @@
     <% } %>
 
     <section class="flow-section exam-flow-section">
-        <uc:StepHeading runat="server" Step="1" Title="Configure exam rules and restrictions" Subtitle="Define passing criteria, language, and the restrictions learners must follow." />
+        <uc:StepHeading runat="server" Step="1" Title="Fill in exam details" Subtitle="Give the exam a title and, if you like, a short description for learners." />
+        <article class="form-card content-form-card">
+            <div class="form-fields">
+                <label id="fldTeacherExamTitle" runat="server" class="form-field">
+                    <span>Title <b>*</b></span>
+                    <asp:TextBox ID="txtTeacherExamTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off" placeholder="Enter exam title"></asp:TextBox>
+                    <small id="hintTeacherExamTitle" runat="server" data-ok="Use a clear title that describes this exam." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this exam.</small>
+                </label>
+                <div class="form-field">
+                    <span>Description</span>
+                    <uc:RichEditor ID="reTeacherExamDescription" runat="server" />
+                    <small>Optional. Explain what the exam covers.</small>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="flow-section exam-flow-section">
+        <uc:StepHeading runat="server" Step="2" Title="Configure exam rules and restrictions" Subtitle="Define passing criteria, language, and the restrictions learners must follow." />
         <article class="exam-rules-card">
             <div class="exam-primary-rules">
-                <div class="exam-stepper-field">
+                <div id="divTeacherPassMark" runat="server" class="exam-stepper-field">
                     <div>
                         <span>Min marks to pass</span>
                         <small>Required score as a percentage</small>
@@ -84,8 +111,8 @@
         </article>
     </section>
 
-    <section class="flow-section exam-flow-section">
-        <uc:StepHeading runat="server" Step="2" Title="Manage exam questions" Subtitle="Add, reorder, and configure the questions learners will answer." />
+    <section id="secTeacherExamQuestions" runat="server" class="flow-section exam-flow-section">
+        <uc:StepHeading runat="server" Step="3" Title="Manage exam questions" Subtitle="Add, reorder, and configure the questions learners will answer." />
         <div class="exam-question-stack" data-tp-questions>
             <asp:Repeater ID="rptTeacherExamQuestions" runat="server">
                 <ItemTemplate>

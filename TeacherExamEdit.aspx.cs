@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Script.Serialization;
 
 namespace Codercept
 {
@@ -13,16 +12,40 @@ namespace Codercept
         /// <summary>False when the course has no exam yet: the page then creates it.</summary>
         protected bool ExamExists;
 
+        private TeacherExam exam;
+
+        /// <summary>
+        /// Learners have attempted the exam: its pass mark and questions are shown but can no longer change, so every learner is judged the
+        /// same way. The title, description, time limit and rules can still be edited.
+        /// </summary>
+        private bool Locked
+        {
+            get { return exam != null && exam.HasAttempts; }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // No ?course= means the first course; an id that is not this teacher's course goes back to the exam list
             Course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
             if (Course == null) Response.Redirect("~/TeacherExams.aspx");
-            ExamExists = TeacherCourseData.GetCourseIdsWithExam().Contains(Course.Id);
+            exam = TeacherExamData.GetExam(Course.Id);
+            ExamExists = exam != null;
 
-            // TODO (backend): load the exam's pass mark, time limit and rules for this course (Exam table)
+            // Rule 1 = strict syntax checking, rule 2 = use of libraries: from the stored exam, or the defaults for a new one
             Rules = TeacherSampleData.GetExamRules();
-            if (IsPostBack)
+            if (exam != null) ApplyRules(exam.StrictSyntax, exam.AllowLibraries);
+
+            if (!IsPostBack)
+            {
+                if (exam != null)
+                {
+                    txtTeacherExamTitle.Text = exam.Title;
+                    reTeacherExamDescription.Text = exam.Description;
+                    hfTeacherMinMarks.Value = exam.PassMark.ToString();
+                    hfTeacherTimeLimit.Value = exam.TimeLimitMinutes.ToString();
+                }
+            }
+            else
             {
                 foreach (TeacherExamRule rule in Rules)
                 {
@@ -31,11 +54,19 @@ namespace Codercept
                 }
             }
 
+            // Attempted: the pass mark and the questions are shown but read-only (the server refuses changes to them too)
+            pnlTeacherExamLocked.Visible = Locked;
+            if (Locked)
+            {
+                hfTeacherMinMarks.Value = exam.PassMark.ToString(); // whatever was posted, the box shows the stored pass mark
+                divTeacherPassMark.Attributes["inert"] = "inert";
+                secTeacherExamQuestions.Attributes["inert"] = "inert";
+            }
+
             // The question cards are plain HTML fields (see TeacherQuestionCard.ascx), so they are rebuilt on every request:
-            // after a postback from what was posted (nothing the teacher arranged is lost), otherwise from the saved questions.
+            // after a postback from what was posted (nothing the teacher arranged is lost), otherwise from the stored questions.
             // A course without an exam starts with no questions.
-            // TODO (backend): load this exam's questions (Question + MCQ_Option)
-            BindQuestions(IsPostBack ? ReadPostedQuestions() : StoredQuestions());
+            BindQuestions(IsPostBack && !Locked ? ReadPostedQuestions() : StoredQuestions());
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
@@ -44,9 +75,18 @@ namespace Codercept
                 + (ExamExists ? "Save exam details" : "Create exam") + "</span>";
         }
 
+        private void ApplyRules(bool strictSyntax, bool allowLibraries)
+        {
+            foreach (TeacherExamRule rule in Rules)
+            {
+                if (rule.Id == 1) rule.On = strictSyntax;
+                if (rule.Id == 2) rule.On = allowLibraries;
+            }
+        }
+
         private List<TeacherQuestion> StoredQuestions()
         {
-            return ExamExists ? TeacherSampleData.GetExamQuestions(Course.Id) : new List<TeacherQuestion>();
+            return exam != null ? exam.Questions : new List<TeacherQuestion>();
         }
 
         private void BindQuestions(List<TeacherQuestion> questions)
@@ -55,48 +95,85 @@ namespace Codercept
             rptTeacherExamQuestions.DataBind();
         }
 
-        /// <summary>The questions as posted (page order); new ones get ids after the highest saved id.</summary>
+        /// <summary>The questions as posted (page order); new ones get ids above every stored question's, so they are never mistaken for a stored one.</summary>
         private List<TeacherQuestion> ReadPostedQuestions()
         {
-            List<TeacherQuestion> existing = StoredQuestions();
-            return TeacherQuestion.ReadPosted(Request.Unvalidated.Form, existing.Count == 0 ? 1 : existing.Max(q => q.Id) + 1);
+            List<TeacherQuestion> stored = StoredQuestions();
+            return TeacherQuestion.ReadPosted(Request.Unvalidated.Form, stored.Count == 0 ? 1 : stored.Max(q => q.Id) + 1);
         }
 
         protected void btnTeacherSaveExam_Click(object sender, EventArgs e)
         {
-            List<TeacherQuestion> questions = ReadPostedQuestions();
-            if (questions.Count == 0)
+            string title = txtTeacherExamTitle.Text.Trim();
+            bool titleError = title.Length < 4 || title.Length > 50;
+            fldTeacherExamTitle.Attributes["class"] = titleError ? "form-field has-error" : "form-field";
+            hintTeacherExamTitle.InnerText = hintTeacherExamTitle.Attributes[titleError ? "data-err" : "data-ok"];
+            if (titleError) return;
+            string description = reTeacherExamDescription.Text.Trim();
+
+            // The pass mark and the questions can only change while nobody has attempted the exam
+            List<TeacherQuestion> questions = null;
+            int passMark;
+            if (Locked)
             {
-                Master.ShowToast("Add at least one question before saving the exam.");
-                return;
+                passMark = exam.PassMark;
             }
-            if (questions.Any(q => q.Text.Length == 0))
+            else
             {
-                Master.ShowToast("Every question needs some text.");
+                questions = ReadPostedQuestions();
+                string problem = TeacherTestData.Validate("exam", questions);
+                if (problem != null)
+                {
+                    Master.ShowToast(problem);
+                    return;
+                }
+
+                // The pass mark is a percentage (the page's stepper keeps it in range)
+                if (!int.TryParse(hfTeacherMinMarks.Value, out passMark) || passMark < TeacherExamData.MinPassMark || passMark > TeacherExamData.MaxPassMark)
+                {
+                    Master.ShowToast("The pass mark must be between " + TeacherExamData.MinPassMark + "% and " + TeacherExamData.MaxPassMark + "%.");
+                    return;
+                }
+            }
+
+            // The time limit is in minutes
+            int timeLimit;
+            if (!int.TryParse(hfTeacherTimeLimit.Value, out timeLimit) || timeLimit < TeacherExamData.MinTimeLimit || timeLimit > TeacherExamData.MaxTimeLimit)
+            {
+                Master.ShowToast("The time limit must be between " + TeacherExamData.MinTimeLimit + " and " + TeacherExamData.MaxTimeLimit + " minutes.");
                 return;
             }
 
-            // The pass mark is a percentage, the time limit is in minutes (the page's steppers keep them in range)
-            int passMark, timeLimit;
-            if (!int.TryParse(hfTeacherMinMarks.Value, out passMark) || passMark < 1 || passMark > 100) passMark = 50;
-            if (!int.TryParse(hfTeacherTimeLimit.Value, out timeLimit) || timeLimit < 5 || timeLimit > 300) timeLimit = 60;
-            hfTeacherMinMarks.Value = passMark.ToString();
-            hfTeacherTimeLimit.Value = timeLimit.ToString();
+            bool strictSyntax = Rules.First(r => r.Id == 1).On;
+            bool allowLibraries = Rules.First(r => r.Id == 2).On;
 
-            // TODO (backend): INSERT the Exam row when the course has none, otherwise UPDATE it (check the course belongs to the
-            //   signed-in teacher). Posted fields: hfTeacherMinMarks (pass mark %), hfTeacherTimeLimit (minutes),
-            //   tpRule<RuleId> ("1"/"0": 1 = strict syntax checking, 2 = use of libraries), and per question n (1-based, page order):
-            //   tpq{n}_id (QuestionId, 0 = new), tpq{n}_text, tpq{n}_marks, tpq{n}_type, tpq{n}_a{m} (answers, in order),
-            //   tpq{n}_correct (index of the correct answer), tpq{n}_accepted, tpq{n}_model, tpq{n}_guide
-            // Until then the arranged questions are kept in the session (TeacherSampleData.SaveExamQuestions).
             bool created = !ExamExists;
-            TeacherSampleData.SaveExamQuestions(Course.Id, questions);
             if (created)
             {
-                TeacherSampleData.MarkExamCreated(Course.Id);
-                ExamExists = true;
+                int examId;
+                TeacherExamData.CreateResult result = TeacherExamData.CreateExam(Course.Id, title, description, passMark, timeLimit, strictSyntax, allowLibraries, questions, out examId);
+                if (result == TeacherExamData.CreateResult.NotFound) Response.Redirect("~/TeacherExams.aspx");
+                if (result == TeacherExamData.CreateResult.AlreadyExists)
+                {
+                    Master.ShowToast("This course already has an exam. Reload the page to edit it.");
+                    return;
+                }
             }
-            BindQuestions(questions); // show the saved order and text straight away
+            else
+            {
+                TeacherExamData.SaveResult result = TeacherExamData.UpdateExam(Course.Id, title, description, passMark, timeLimit, strictSyntax, allowLibraries, questions);
+                if (result == TeacherExamData.SaveResult.NotFound) Response.Redirect("~/TeacherExams.aspx");
+                if (result == TeacherExamData.SaveResult.Locked)
+                {
+                    Master.ShowToast("Learners have attempted this exam in the meantime, so its pass mark and questions can no longer be changed. Reload the page.");
+                    return;
+                }
+            }
+
+            // show what is stored now
+            exam = TeacherExamData.GetExam(Course.Id);
+            ExamExists = true;
+            BindQuestions(exam.Questions);
             Master.ShowToast(created ? "Exam created" : "Exam details saved");
         }
     }

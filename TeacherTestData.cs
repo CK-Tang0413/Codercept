@@ -100,6 +100,18 @@ namespace Codercept
             return null;
         }
 
+        /// <summary>The questions of an exam (same table and rules as a quiz's or assessment's).</summary>
+        internal static List<TeacherQuestion> ReadExamQuestions(SqlConnection con, int examId)
+        {
+            return ReadQuestions(con, new Names { Id = "ExamId" }, examId);
+        }
+
+        /// <summary>Makes an exam's stored questions match the posted, already validated list (see SaveQuestions).</summary>
+        internal static void SaveExamQuestions(SqlConnection con, SqlTransaction tx, int examId, int teacherId, List<TeacherQuestion> questions)
+        {
+            SaveQuestions(con, tx, new Names { Id = "ExamId" }, examId, teacherId, questions);
+        }
+
         private static List<TeacherQuestion> ReadQuestions(SqlConnection con, Names n, int testId)
         {
             List<TeacherQuestion> list = new List<TeacherQuestion>();

@@ -330,9 +330,6 @@ namespace Codercept
                     while (reader.Read()) ids.Add(reader.GetInt32(0));
                 }
             }
-
-            // TODO (Phase 3): remove, once creating an exam inserts an Exam row
-            ids.UnionWith(TeacherSampleData.GetCreatedExamCourseIds());
             return ids;
         }
 
