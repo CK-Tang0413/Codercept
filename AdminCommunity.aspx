@@ -693,9 +693,7 @@
                     }
                 });
             });
-                </script>
-            </main>
-        </div>
+            </script>
     </form>
 </body>
 </html>

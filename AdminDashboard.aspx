@@ -192,7 +192,7 @@
                 <!-- Pending Approvals Section -->
                 <div class="section-header">
                     <div class="section-title title-with-dot">Pending Approvals (3)</div>
-                    <a href="#" class="section-link">View all &rsaquo;</a>
+                    <a href="AdminUserManagement.aspx" class="section-link">View all &rsaquo;</a>
                 </div>
     
                 <div class="approvals-list">
@@ -265,7 +265,7 @@
                 <!-- Pinned Announcements Section -->
                 <div class="section-header">
                     <div class="section-title">Pinned Announcements</div>
-                    <a href="#" class="section-link">Manage &rarr;</a>
+                    <a href="AdminCommunity.aspx" class="section-link">Manage &rarr;</a>
                 </div>
     
                 <div class="announcements-list">

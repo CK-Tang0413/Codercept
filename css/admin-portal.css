@@ -98,20 +98,6 @@ html, body {
     overflow: hidden;
 }
 
-.list-header {
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 16px 24px;
-}
-
-.list-row {
-    border-bottom: 1px solid var(--border-color);
-    padding: 16px 24px;
-    align-items: center;
-}
-
 .list-row:last-child {
     border-bottom: none;
 }
@@ -181,15 +167,15 @@ html, body {
     cursor: pointer;
 }
 
-    .nav-item:hover {
-        background-color: var(--bg-panel);
-        color: var(--text-primary);
-    }
+.nav-item:hover {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+}
 
-    .nav-item.active {
-        background-color: var(--accent-purple-bg);
-        color: var(--accent-purple);
-    }
+.nav-item.active {
+    background-color: var(--accent-purple-bg);
+    color: var(--accent-purple);
+}
 
 .sidebar-bottom {
     padding: 20px 16px;

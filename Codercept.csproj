@@ -171,6 +171,7 @@
     <Content Include="AdminCommunity.aspx" />
     <Content Include="AdminCourses.aspx" />
     <Content Include="AdminDashboard.aspx" />
+    <Content Include="AdminReviewApplication.aspx" />
     <Content Include="AdminSidebar.ascx" />
     <Content Include="AdminUserManagement.aspx" />
     <Content Include="App_Data\Codercept_db.mdf" />
@@ -304,6 +305,13 @@
     </Compile>
     <Compile Include="AdminDashboard.aspx.designer.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminReviewApplication.aspx.cs">
+      <DependentUpon>AdminReviewApplication.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminReviewApplication.aspx.designer.cs">
+      <DependentUpon>AdminReviewApplication.aspx</DependentUpon>
     </Compile>
     <Compile Include="AdminSidebar.ascx.cs">
       <DependentUpon>AdminSidebar.ascx</DependentUpon>
