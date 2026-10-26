@@ -1678,6 +1678,28 @@
   margin-top: 24px;
 }
 
+.tp-app .moderate-modal {
+  width: min(100%, 480px);
+  text-align: left;
+}
+
+.tp-app .moderate-modal .portal-form-field {
+  margin-top: 16px;
+}
+
+.tp-app .moderate-modal textarea {
+  min-height: 96px;
+}
+
+.tp-app .moderate-note {
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.tp-app .moderate-modal .modal-actions {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .tp-app .back-link {
   display: inline-flex;
   align-items: center;
@@ -6238,9 +6260,32 @@
   font-size: 14px;
 }
 
+.tp-app .post-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 21px;
+}
+
+.tp-app .post-action {
+  min-height: 38px;
+  padding: 0 19px;
+  border: 1px solid #ddd6ee;
+  border-radius: 999px;
+  color: #6b7280;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tp-app .post-action:hover {
+  color: #7c3aed;
+  border-color: #a78bfa;
+}
+
 .tp-app .comment-count {
   min-height: 38px;
-  margin-top: 21px;
   padding: 0 19px;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -6394,49 +6439,22 @@
   font-size: 14px;
 }
 
+.tp-app .reply-reference {
+  display: block;
+  margin-bottom: 10px;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tp-app .reply-id {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
 .tp-app .comment-actions button:hover {
   color: #7c3aed;
-}
-
-.tp-app .flag-popover {
-  position: absolute;
-  z-index: 8;
-  right: 12px;
-  bottom: 34px;
-  width: 210px;
-  padding: 14px;
-  border: 1px solid #e9e5f5;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(76, 29, 149, 0.16);
-}
-
-.tp-app .flag-popover strong {
-  color: #111827;
-  font-size: 14px;
-}
-
-.tp-app .flag-popover p {
-  margin-top: 3px;
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.tp-app .flag-popover > div {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 11px;
-}
-
-.tp-app .flag-popover button {
-  color: #6b7280;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.tp-app .flag-popover button:last-child {
-  color: #dc2626;
 }
 
 .tp-app .reply-area {
@@ -6446,11 +6464,32 @@
 }
 
 .tp-app .replying-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin: 0 0 7px 12px;
   color: #7c3aed;
   font-size: 13px;
   font-weight: 600;
+}
+
+.tp-app .replying-label[hidden] {
+  display: none;
+}
+
+.tp-app .replying-cancel {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  color: #6b7280;
+}
+
+.tp-app .replying-cancel:hover {
+  color: #7c3aed;
+  background: #f3e8ff;
 }
 
 .tp-app .reply-composer {

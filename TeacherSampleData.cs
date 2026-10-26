@@ -512,6 +512,8 @@ namespace Codercept
         public string Role { get; set; }
         public string Body { get; set; }
         public bool Pinned { get; set; }
+        /// <summary>The Id of the reply this one answers (Post_Reply.ParentThreadId); null for a reply to the post itself.</summary>
+        public int? ParentId { get; set; }
     }
 
     public class TeacherForumPost
