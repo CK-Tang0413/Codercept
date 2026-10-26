@@ -12,23 +12,33 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // TODO (backend): load the forum posts and their Post_Reply rows
-            Posts = TeacherSampleData.GetForumPosts();
+            // only the posts this teacher may see (their own, and those of learners enrolled in their courses)
+            Posts = TeacherForumData.GetPosts();
+            // the teacher is looking at these posts now, so they stop counting as unread on the dashboard
+            TeacherForumData.MarkRead(Posts.Select(p => p.Id));
 
             int id;
             int.TryParse(hfTeacherForumPost.Value, out id);
-            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts[0];
+            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
 
             if (IsPostBack) HandleAction(Request.Form["tpForumAction"]);
             else ShowPublishedToast();
 
-            hfTeacherForumPost.Value = SelectedPost.Id.ToString();
+            hfTeacherForumPost.Value = SelectedPost == null ? "" : SelectedPost.Id.ToString();
             MobileDiscussion = hfTeacherForumMobile.Value == "1";
+        }
+
+        /// <summary>Reads the posts again after a change, keeping the same post selected.</summary>
+        private void ReloadPosts()
+        {
+            int id = SelectedPost == null ? 0 : SelectedPost.Id;
+            Posts = TeacherForumData.GetPosts();
+            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
         }
 
         private void HandleAction(string action)
         {
-            if (string.IsNullOrEmpty(action)) return;
+            if (string.IsNullOrEmpty(action) || SelectedPost == null) return;
             string[] parts = action.Split(':');
 
             if (parts[0] == "reply")
@@ -36,37 +46,52 @@ namespace Codercept
                 string body = txtTeacherReply.Text.Trim();
                 if (body.Length == 0) return;
 
-                // TODO (backend): INSERT INTO Post_Reply (PostId = SelectedPost.Id, UserId = Session["UserId"], Body = body,
-                //   ParentReplyId from hfTeacherReplyingTo)
-                SelectedPost.Comments.Add(new TeacherForumComment
+                // the post is the one named by the page, and only when it is one of this teacher's own: never "the first post" as a fallback
+                int postId;
+                if (!int.TryParse(hfTeacherForumPost.Value, out postId) || !Posts.Any(p => p.Id == postId))
                 {
-                    Id = Posts.SelectMany(p => p.Comments).Max(c => c.Id) + 1,
-                    Name = Master.UserName,
-                    Initials = Master.UserInitial,
-                    Role = "TEACHER",
-                    Body = body
-                });
-                txtTeacherReply.Text = "";
-                hfTeacherReplyingTo.Value = "";
+                    Master.ShowToast("Choose a post first, so nothing was saved.");
+                    return;
+                }
+                int parent;
+                int? parentId = int.TryParse(hfTeacherReplyingTo.Value, out parent) && parent > 0 ? parent : (int?)null;
+
+                ForumReplyResult result = TeacherForumData.AddReply(postId, body, parentId);
+                if (result == ForumReplyResult.Saved)
+                {
+                    txtTeacherReply.Text = "";
+                    hfTeacherReplyingTo.Value = "";
+                    SelectedPost = Posts.First(p => p.Id == postId);
+                    ReloadPosts();
+                }
+                else if (result == ForumReplyResult.TooLong)
+                {
+                    Master.ShowToast("A reply can be at most " + TeacherForumData.MaxReplyLength + " characters, so nothing was saved.");
+                }
+                else
+                {
+                    Master.ShowToast("That post or comment could not be found, so nothing was saved.");
+                }
                 return;
             }
 
-            int postId, commentId;
-            if (parts.Length != 3 || !int.TryParse(parts[1], out postId) || !int.TryParse(parts[2], out commentId)) return;
-            TeacherForumPost post = Posts.FirstOrDefault(p => p.Id == postId);
+            int pinPostId, commentId;
+            if (parts.Length != 3 || !int.TryParse(parts[1], out pinPostId) || !int.TryParse(parts[2], out commentId)) return;
+            TeacherForumPost post = Posts.FirstOrDefault(p => p.Id == pinPostId);
             TeacherForumComment comment = post == null ? null : post.Comments.FirstOrDefault(c => c.Id == commentId);
             if (comment == null) return;
             SelectedPost = post;
 
             if (parts[0] == "pin")
             {
-                // TODO (backend): UPDATE Post_Reply SET IsPinned = ~IsPinned WHERE ReplyId = commentId
-                comment.Pinned = !comment.Pinned;
+                // saved in SQL only for a reply of a post this teacher can see; the page then shows the new state
+                if (TeacherForumData.TogglePin(post.Id, comment.Id) == null) Master.ShowToast("That comment could not be found, so nothing was saved.");
+                else ReloadPosts();
             }
             else if (parts[0] == "flag")
             {
-                // TODO (backend): record the flag for moderators (Post_Reply.IsFlagged / a flag table)
-                Master.ShowToast("Comment flagged for review");
+                // flagging needs the moderation feature (teaching assistants), which is not built yet
+                Master.ShowToast("Flagging comes with moderation, so nothing was saved.");
             }
         }
 

@@ -885,6 +885,14 @@
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
+.tp-app .course-thumbnail--c {
+  background: linear-gradient(135deg, #0ea5e9, #1e40af);
+}
+
+.tp-app .course-thumbnail--other {
+  background: linear-gradient(135deg, #64748b, #334155);
+}
+
 .tp-app .code-symbol {
   position: absolute;
   color: rgba(255, 255, 255, 0.17);
@@ -1407,6 +1415,16 @@
 .tp-app .mini-language--typescript,
 .tp-app .language-dot--typescript {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.tp-app .mini-language--c,
+.tp-app .language-dot--c {
+  background: linear-gradient(135deg, #0ea5e9, #1e40af);
+}
+
+.tp-app .mini-language--other,
+.tp-app .language-dot--other {
+  background: linear-gradient(135deg, #64748b, #334155);
 }
 
 .tp-app .card-heading-icon,
@@ -6575,6 +6593,28 @@
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
+.tp-app .portal-form-field select {
+  width: 100%;
+  height: 54px;
+  padding: 0 16px;
+  border: 1px solid #ddd6ee;
+  border-radius: 12px;
+  color: #111827;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.tp-app .portal-form-field select:focus {
+  border: 1.5px solid #7c3aed;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.tp-app .account-grid .portal-form-field {
+  align-content: start;
+}
+
 .tp-app .portal-form-field input:disabled {
   color: #9ca3af;
   background: #f3f2f7;
@@ -7275,4 +7315,289 @@
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* The two add-buttons share a narrow panel: let their label wrap inside the button instead of overflowing it */
+.tp-app .chapter-list-actions .button {
+  gap: 6px;
+  padding: 8px 9px;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
+.tp-app .chapter-list-actions .button .icon {
+  flex: 0 0 auto;
+}
+
+/* Steppers: the number can be typed over, the arrows can be held down */
+.tp-app .large-stepper {
+  grid-template-columns: 34px minmax(35px, 1fr) auto 34px;
+}
+
+.tp-app .large-stepper > span {
+  padding-right: 8px;
+}
+
+.tp-app .marks-stepper strong {
+  width: 32px;
+}
+
+.tp-app [data-tp-step] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tp-app [data-tp-step-value] {
+  min-width: 1ch;
+  border-radius: 4px;
+  outline: none;
+  cursor: text;
+}
+
+.tp-app [data-tp-step-value]:focus {
+  background: var(--indigo-tint);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.tp-app .large-stepper [data-tp-step-value] {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
+  border-radius: 0;
+}
+
+/* Domain tag input (Manage Courses) */
+.tp-app .detail-item--wide {
+  grid-column: 1 / -1;
+}
+
+.tp-app .tp-domain-box {
+  display: flex;
+  min-height: 36px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  cursor: text;
+}
+
+.tp-app .tp-domain-box:focus-within {
+  border-color: var(--indigo);
+  outline: 3px solid rgba(124, 58, 237, 0.14);
+}
+
+.tp-app .tp-inline-field.has-error .tp-domain-box {
+  border-color: var(--danger);
+}
+
+.tp-app .tp-domain-tags {
+  display: contents;
+}
+
+.tp-app .tp-domain-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  color: #5b21b6;
+  background: #ede9fe;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tp-app .tp-domain-tag button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tp-app .tp-domain-tag button:hover {
+  background: rgba(91, 33, 182, 0.16);
+}
+
+.tp-app .tp-domain-box input {
+  width: auto;
+  min-width: 140px;
+  min-height: 28px;
+  flex: 1 1 140px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 15px;
+}
+
+.tp-app .tp-domain-box input:focus {
+  outline: 0;
+}
+
+/* The domain field inside the Create course form looks like the other labels */
+.tp-app .form-field > .tp-inline-field {
+  gap: 7px;
+}
+
+.tp-app .form-field > .tp-inline-field > span {
+  color: var(--body);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Manage Chapters: per-chapter subchapters and quiz / assessment cards */
+.tp-app .chapter-extra {
+  display: contents;
+}
+
+.tp-app .chapter-extra[hidden] {
+  display: none;
+}
+
+.tp-app .content-summary-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.tp-app .summary-icon--assessment {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.tp-app .summary-empty {
+  margin: 0 0 19px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tp-app .content-summary-card .chapter-detail-actions {
+  flex-wrap: wrap;
+}
+
+/* A lone add-button (Manage Subchapters, Manage Chapters) uses the whole row and keeps its label on one line */
+.tp-app .chapter-list-actions > .button:only-child {
+  grid-column: 1 / -1;
+  white-space: nowrap;
+}
+
+/* The subchapter editor card already has its own padding: no extra space above its heading */
+.tp-app .subcontent-editors .chapter-detail-card > .chapter-card-header {
+  padding-top: 0;
+}
+
+/* Exam page: pass mark, time limit and the read-only course language */
+.tp-app .exam-primary-rules .exam-language-field {
+  grid-column: 1 / -1;
+}
+
+.tp-app .language-select--static {
+  gap: 10px;
+  background: #f8fafc;
+}
+
+.tp-app .language-select--static strong {
+  color: var(--heading);
+  font-size: 14px;
+}
+
+.tp-app .exam-new-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding: 13px 16px;
+  border: 1px solid #ddd6fe;
+  border-radius: 11px;
+  color: var(--body);
+  background: var(--indigo-tint);
+}
+
+.tp-app .exam-new-note .icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--indigo);
+}
+
+.tp-app .exam-new-note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Grading: chapter assessments get their own colour next to exams and quizzes */
+.tp-app .assessment-type-icon.is-assessment {
+  color: #047857;
+  background: #d1fae5;
+}
+
+/* Manage Chapters: the chapter's stored file (view / remove) above the upload box */
+.tp-app .current-media {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 8px;
+}
+
+.tp-app .current-media[hidden],
+.tp-app .current-media small[hidden] {
+    display: none;
+}
+
+.tp-app .current-media > a {
+    font-weight: 600;
+}
+
+.tp-app .current-media.is-removing > a {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Quiz / assessment that learners have attempted: the questions are shown but cannot be edited */
+.tp-app .form-question-stack[inert] {
+    opacity: 0.7;
+}
+
+/* Grade assessments: only the chosen exam / quiz / assessment's submissions are listed */
+.tp-app .submission-menu button[hidden],
+.tp-app [data-tp-needs-submission][hidden] {
+    display: none;
+}
+
+/* Grade assessments: the exam / quiz / assessment groups stack inside one card (whatever mix the course has) and each group's
+   tiles flow into as many columns as fit, so there is never an empty cell */
+.tp-app .assessment-groups {
+    display: block;
+    background: var(--white);
+}
+
+.tp-app .assessment-group + .assessment-group {
+    border-top: 1px solid var(--border);
+}
+
+.tp-app .assessment-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* Grade assessments: a learner's answer keeps its line breaks, and code is shown in a code font */
+.tp-app .learner-answer-block blockquote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tp-app .learner-answer-block blockquote.is-code {
+  font-family: Consolas, "Courier New", monospace;
+  font-style: normal;
 }

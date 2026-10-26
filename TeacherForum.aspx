@@ -10,6 +10,7 @@
     <div class="forum-screen<%= MobileDiscussion ? " show-discussion" : "" %>" data-tp-forum>
         <input type="hidden" id="hfTeacherForumPost" runat="server" data-tp-forum-selected />
         <input type="hidden" id="hfTeacherForumMobile" runat="server" value="0" data-tp-forum-mobile />
+        <%-- the Id of the comment being replied to (empty = a reply to the post itself) --%>
         <input type="hidden" id="hfTeacherReplyingTo" runat="server" data-tp-forum-replying />
 
         <div class="forum-heading">
@@ -17,6 +18,11 @@
             <a class="button button--primary" href="TeacherForumAdd.aspx"><span>Add new post</span></a>
         </div>
 
+        <% if (Posts.Count == 0) { %>
+        <article class="chapter-detail-card">
+            <p class="summary-empty">There are no forum posts yet. Posts by learners in your courses appear here, and you can start a discussion with "Add new post".</p>
+        </article>
+        <% } else { %>
         <div class="forum-layout">
             <section class="post-list" aria-label="Forum posts">
                 <% foreach (TeacherForumPost post in Posts) { bool sel = post.Id == SelectedPost.Id; %>
@@ -49,7 +55,7 @@
                                 </div>
                                 <p><% if (c.Pinned) { %><span class="pin-mark" aria-label="Pinned"></span><% } %><%: c.Body %></p>
                                 <div class="comment-actions">
-                                    <button type="button" data-tp-forum-reply="<%: c.Name %>">Reply</button>
+                                    <button type="button" data-tp-forum-reply="<%= c.Id %>" data-name="<%: c.Name %>">Reply</button>
                                     <button type="submit" name="tpForumAction" value="pin:<%= post.Id %>:<%= c.Id %>"><%= c.Pinned ? "Unpin" : "Pin" %></button>
                                     <button type="button" data-tp-forum-flag>Flag</button>
                                 </div>
@@ -70,12 +76,13 @@
                 <div class="reply-area">
                     <span class="replying-label" data-tp-forum-replying-label hidden></span>
                     <div class="reply-composer">
-                        <asp:TextBox ID="txtTeacherReply" runat="server" placeholder="Write a reply..." aria-label="Write a reply" autocomplete="off" data-tp-forum-reply-input></asp:TextBox>
+                        <asp:TextBox ID="txtTeacherReply" runat="server" ValidateRequestMode="Disabled" placeholder="Write a reply..." aria-label="Write a reply" autocomplete="off" data-tp-forum-reply-input></asp:TextBox>
                         <button type="submit" name="tpForumAction" value="reply" aria-label="Send reply" data-tp-forum-send><%= TeacherIcons.Svg("send", 21) %></button>
                     </div>
                 </div>
             </section>
         </div>
+        <% } %>
 
         <a class="mobile-add-post" href="TeacherForumAdd.aspx" aria-label="Add new post"><%= TeacherIcons.Svg("plus", 23) %></a>
     </div>

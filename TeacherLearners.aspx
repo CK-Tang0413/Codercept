@@ -21,9 +21,17 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" />
     </section>
 
-    <section class="flow-section">
+    <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherLearners" runat="server" Step="2" Title="Manage enrolled learners" />
-        <input type="hidden" id="hfTeacherLearnerIndex" runat="server" value="0" />
+        <input type="hidden" id="hfTeacherLearnerId" runat="server" value="" />
+        <% if (Learner == null) { %>
+        <article class="chapter-detail-card">
+            <p class="summary-empty">No learners are enrolled in this course yet.</p>
+            <div class="chapter-detail-actions">
+                <button type="button" class="button button--primary" data-tp-open-modal="tpAddLearnerModal"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></button>
+            </div>
+        </article>
+        <% } else { %>
         <div class="learner-master-detail">
             <aside class="learner-list-panel">
                 <div class="learner-list-top">
@@ -31,7 +39,7 @@
                         <span>ENROLLED LEARNERS</span>
                         <strong><%= Learners.Count %> learners</strong>
                     </div>
-                    <asp:LinkButton ID="btnTeacherAddLearner" runat="server" CssClass="button button--primary" OnClick="btnTeacherAddLearner_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></asp:LinkButton>
+                    <button type="button" class="button button--primary" data-tp-open-modal="tpAddLearnerModal"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></button>
                 </div>
                 <div class="learner-search">
                     <label class="input-wrap">
@@ -42,7 +50,7 @@
                 </div>
                 <div class="learner-items">
                     <% for (int i = 0; i < Learners.Count; i++) { TeacherLearner l = Learners[i]; %>
-                    <button type="submit" name="tpLearnerPick" value="<%= i %>" class="learner-item<%= i == SelectedLearnerIndex ? " is-selected" : "" %>"
+                    <button type="submit" data-tp-partial name="tpLearnerPick" value="<%= l.Id %>" class="learner-item<%= l.Id == Learner.Id ? " is-selected" : "" %>"
                         data-tp-learner-item data-search="<%: (l.Name + " " + l.Email).ToLower() %>">
                         <span class="avatar avatar--<%= l.Tone %> avatar--sm" aria-hidden="true"><%: l.Initials %></span>
                         <span>
@@ -64,7 +72,7 @@
                             <h2><%: Learner.Name %></h2>
                             <p><%: Learner.Email %></p>
                         </div>
-                        <span class="badge badge--success">Active</span>
+                        <span class="badge badge--<%= Learner.Status == "Active" ? "success" : "warning" %>"><%: Learner.Status %></span>
                     </div>
 
                     <section class="profile-section">
@@ -73,9 +81,9 @@
                             <h3>Demographic info</h3>
                         </div>
                         <div class="demographic-grid">
-                            <div><span>Age</span><strong><%: Learner.Age %></strong></div>
-                            <div><span>Gender</span><strong><%: Learner.Gender %></strong></div>
-                            <div><span>Level</span><strong><%: Learner.Level %></strong></div>
+                            <div><span>Age</span><%= Plain(Learner.Age) %></div>
+                            <div><span>Gender</span><%= Plain(Learner.Gender) %></div>
+                            <div><span>Level</span><%= Plain(Learner.Level) %></div>
                         </div>
                     </section>
 
@@ -86,7 +94,7 @@
                         </div>
                         <div class="learner-progress-block">
                             <div class="completion-copy">
-                                <span>Current chapter &middot; <%: Learner.Chapter %></span>
+                                <span>Current chapter &middot; <%: Learner.Chapter == "-" ? "Not started" : Learner.Chapter %></span>
                                 <strong><%= Learner.Progress %>%</strong>
                             </div>
                             <div class="learner-progress-track"><span style="width: <%= Learner.Progress %>%"></span></div>
@@ -125,17 +133,34 @@
 
                 <aside class="learner-actions">
                     <span>ACTIONS</span>
-                    <%-- TODO (backend): pass course and learner ids to the grading page --%>
-                    <a class="button button--primary" href="TeacherGradeAssessments.aspx"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
-                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= SelectedLearnerIndex %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
+                    <a class="button button--primary" href="TeacherGradeAssessments.aspx?course=<%= selTeacherCourse.SelectedCourse.Id %>"><%= TeacherIcons.Svg("grade", 17) %><span>Grade quiz/exam</span></a>
+                    <a class="button button--secondary" href="TeacherLearnerReport.aspx?learner=<%= Learner.Id %>&course=<%= selTeacherCourse.SelectedCourse.Id %>"><%= TeacherIcons.Svg("download", 17) %><span>Download report</span></a>
                     <div></div>
                     <button type="button" class="button button--danger" data-tp-open-modal="tpRemoveLearnerModal"><%= TeacherIcons.Svg("trash", 17) %><span>Remove learner</span></button>
                 </aside>
             </div>
         </div>
+        <% } %>
     </section>
 </asp:Content>
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
+    <%-- Add learner: the teacher types the learner's email. It is reopened with the error when the add was refused. --%>
+    <div class="modal-backdrop" role="presentation" id="tpAddLearnerModal" data-tp-modal data-tp-region="tpAddLearnerModal"<%= ReopenAddLearner ? "" : " hidden" %>>
+        <asp:Panel ID="pnlTeacherAddLearner" runat="server" CssClass="modal" DefaultButton="btnTeacherAddLearner" role="dialog" aria-modal="true" aria-labelledby="tpAddLearnerModalTitle">
+            <span class="modal-success-icon"><%= TeacherIcons.Svg("users", 22) %></span>
+            <h2 id="tpAddLearnerModalTitle">Add learner</h2>
+            <p>Enter the email address of the learner's Codercept account to enrol them in <strong><%: CourseTitle %></strong>.</p>
+            <label id="fldTeacherAddLearner" runat="server" class="portal-form-field">
+                <span>Learner email</span>
+                <asp:TextBox ID="txtTeacherAddLearnerEmail" runat="server" MaxLength="50" autocomplete="off" data-tp-autofocus data-tp-clear-on-close></asp:TextBox>
+                <small id="hintTeacherAddLearner" runat="server"></small>
+            </label>
+            <div class="modal-actions">
+                <button type="button" class="button button--ghost" data-tp-close-modal><span>Cancel</span></button>
+                <asp:LinkButton ID="btnTeacherAddLearner" runat="server" CssClass="button button--primary" OnClick="btnTeacherAddLearner_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 5v14M5 12h14' /></svg><span>Add learner</span></asp:LinkButton>
+            </div>
+        </asp:Panel>
+    </div>
     <uc:ConfirmModal ID="mdlTeacherRemoveLearner" runat="server" ModalId="tpRemoveLearnerModal" TitleText="Remove learner?" IconName="users" ConfirmText="Remove learner" OnConfirmed="mdlTeacherRemoveLearner_Confirmed" />
 </asp:Content>

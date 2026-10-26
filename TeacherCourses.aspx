@@ -3,6 +3,7 @@
 <%@ Register Src="~/TeacherCourseSelector.ascx" TagPrefix="uc" TagName="CourseSelector" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
 <%@ Register Src="~/TeacherConfirmModal.ascx" TagPrefix="uc" TagName="ConfirmModal" %>
+<%@ Register Src="~/TeacherDomainInput.ascx" TagPrefix="uc" TagName="DomainInput" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
 </asp:Content>
@@ -22,7 +23,7 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" />
     </section>
 
-    <section class="flow-section" aria-labelledby="edit-course-heading">
+    <section class="flow-section" aria-labelledby="edit-course-heading" data-tp-region="details">
         <uc:StepHeading runat="server" Step="2" Title="View / Edit course details" Subtitle="Review course information, learning progress, and quick actions." />
         <div class="course-detail-layout">
             <article class="detail-card course-edit-card">
@@ -31,22 +32,23 @@
                     <div>
                         <span>Selected course</span>
                         <div id="fldTeacherEditTitle" runat="server" class="tp-inline-field">
-                            <asp:TextBox ID="txtTeacherCourseTitle" runat="server" CssClass="tp-heading-input" autocomplete="off" aria-label="Course title"></asp:TextBox>
+                            <asp:TextBox ID="txtTeacherCourseTitle" runat="server" ValidateRequestMode="Disabled" CssClass="tp-heading-input" autocomplete="off" aria-label="Course title"></asp:TextBox>
                             <small id="hintTeacherEditTitle" runat="server" data-ok="" data-err="Enter a title with at least 4 characters."></small>
                         </div>
                     </div>
                 </div>
                 <label class="form-field">
                     <span>Description</span>
-                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" TextMode="MultiLine" Rows="5" autocomplete="off"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherCourseDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="5" autocomplete="off"></asp:TextBox>
                     <small>Give learners a clear overview of what they will learn.</small>
                 </label>
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("code", 17) %></span>
-                        <div class="tp-inline-field">
+                        <div id="fldTeacherEditLanguage" runat="server" class="tp-inline-field">
                             <span>Language</span>
                             <asp:DropDownList ID="ddlTeacherCourseLanguage" runat="server" aria-label="Programming language" autocomplete="off"></asp:DropDownList>
+                            <small id="hintTeacherEditLanguage" runat="server" data-ok="" data-err="Select the programming language taught in this course."></small>
                         </div>
                     </div>
                     <div class="detail-item">
@@ -60,6 +62,10 @@
                             </asp:DropDownList>
                         </div>
                     </div>
+                    <div class="detail-item detail-item--wide">
+                        <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
+                        <uc:DomainInput ID="ctlTeacherDomains" runat="server" />
+                    </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("clock", 17) %></span>
                         <div id="fldTeacherEditDuration" runat="server" class="tp-inline-field">
@@ -72,7 +78,7 @@
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
                         <div><span>Date Created</span><strong><%: Selected.Date %></strong></div>
                     </div>
-                    <div class="detail-item">
+                    <div class="detail-item detail-item--wide">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("calendar", 17) %></span>
                         <div><span>Date Updated</span><strong><%: Selected.Updated %></strong></div>
                     </div>
@@ -81,7 +87,6 @@
             </article>
 
             <article class="detail-card course-stats-card">
-                <%-- TODO (backend): statistics below are sample values for the selected course --%>
                 <div class="card-heading simple">
                     <div>
                         <span>Course overview</span>
@@ -92,41 +97,45 @@
                 <div class="compact-stat-list">
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
-                        <div><span>Total chapters</span><strong>12</strong></div>
+                        <div><span>Total chapters</span><strong><%: Figures.Chapters %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("chapters", 17) %></span>
-                        <div><span>Subchapters/quizzes</span><strong>38</strong></div>
+                        <div><span>Subchapters</span><strong><%: Figures.Subchapters %></strong></div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-item-icon"><%= TeacherIcons.Svg("question", 17) %></span>
+                        <div><span>Quizzes &amp; assessments</span><strong><%: Figures.Tests %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("users", 17) %></span>
-                        <div><span>Learners attended</span><strong>84</strong></div>
+                        <div><span>Learners attended</span><strong><%: Figures.Attended %></strong></div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-item-icon"><%= TeacherIcons.Svg("award", 17) %></span>
-                        <div><span>Learners completed</span><strong>62</strong></div>
+                        <div><span>Learners completed</span><strong><%: Figures.Completed %></strong></div>
                     </div>
                 </div>
                 <div class="completion-block">
                     <div class="completion-copy">
                         <span>Completion rate</span>
-                        <strong>74%</strong>
+                        <strong><%= Figures.CompletionRate %>%</strong>
                     </div>
-                    <div class="progress-track"><span></span></div>
-                    <p>62 of 84 learners completed this course</p>
+                    <div class="progress-track"><span style="width: <%= Figures.CompletionRate %>%"></span></div>
+                    <p><%: Figures.Completed %> of <%: Figures.Attended %> <%= Figures.Attended == 1 ? "learner" : "learners" %> completed this course</p>
                 </div>
                 <div class="stacked-actions">
-                    <a class="button button--secondary" href="TeacherCourseStats.aspx"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>
-                    <a class="button button--ghost" href="TeacherLearners.aspx"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
+                    <a class="button button--secondary" href="TeacherCourseStats.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("chart", 17) %><span>View more statistics</span></a>
+                    <a class="button button--ghost" href="TeacherLearners.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
                 </div>
             </article>
         </div>
 
         <div class="bottom-action-bar">
             <div class="action-bar-group">
-                <a class="button button--secondary" href="TeacherChapters.aspx"><%= TeacherIcons.Svg("layers", 17) %><span>Manage chapters/subchapters</span></a>
-                <a class="button button--secondary" href="TeacherExams.aspx"><%= TeacherIcons.Svg("exams", 17) %><span>Manage exam</span></a>
-                <a class="button button--secondary" href="TeacherGrading.aspx"><%= TeacherIcons.Svg("grade", 17) %><span>Grade assessments</span></a>
+                <a class="button button--secondary" href="TeacherChapters.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("layers", 17) %><span>Manage chapters/subchapters</span></a>
+                <a class="button button--secondary" href="TeacherExamEdit.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("exams", 17) %><span>Manage exam</span></a>
+                <a class="button button--secondary" href="TeacherGradeAssessments.aspx?course=<%: Selected.Id %>"><%= TeacherIcons.Svg("grade", 17) %><span>Grade assessments</span></a>
             </div>
             <div class="danger-action">
                 <button type="button" class="button button--danger" data-tp-open-modal="tpDeleteCourseModal"><%= TeacherIcons.Svg("trash", 17) %><span>Delete course</span></button>

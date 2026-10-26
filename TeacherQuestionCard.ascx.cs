@@ -18,7 +18,8 @@ namespace Codercept
             set { question = value; }
         }
 
-        protected bool IsExam { get { return Mode == "exam"; } }
+        /// <summary>Exam and assessment questions can be MCQ, fill-in-the-blank or coding; quiz questions are MCQ only.</summary>
+        protected bool HasTypes { get { return Mode == "exam" || Mode == "assessment"; } }
 
         protected string HeaderLabel
         {

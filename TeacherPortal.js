@@ -48,6 +48,16 @@
     function closeModal(modal) {
         if (!modal) return;
         modal.hidden = true;
+        // a field marked data-tp-clear-on-close starts empty the next time the dialog is opened (and loses its error message)
+        qsa("[data-tp-clear-on-close]", modal).forEach(function (field) {
+            field.value = "";
+            var wrap = field.closest(".portal-form-field");
+            if (wrap) {
+                wrap.classList.remove("has-error");
+                var hint = qs("small", wrap);
+                if (hint) hint.textContent = "";
+            }
+        });
         if (lastTrigger && lastTrigger.focus) lastTrigger.focus();
     }
 
@@ -259,6 +269,7 @@
             title.value = desc.value = dur.value = "";
             lang.selectedIndex = 0;
             diff.value = "Easy";
+            qsa("[data-tp-domains]", root).forEach(function (f) { f.dispatchEvent(new Event("tp-domains-clear")); });
             submitted = false;
             update();
         });
@@ -359,20 +370,128 @@
     /* ------------------------------------------------------------------ [stepper] + [toggle] */
     function changed(el) { el.dispatchEvent(new CustomEvent("tp-change", { bubbles: true })); }
 
+    /* ------------------------------------------------------------------ [stepper] marks / number steppers
+       - arrow buttons: press once to step by 1; hold to keep going (slowly at first, then faster)
+       - the number between the arrows can be typed over; it is kept between the stepper's data-min and data-max
+       The value lives in the stepper's hidden [data-tp-step-input]; every change raises "tp-change". */
+    function stepLimits(root) {
+        return {
+            min: root.hasAttribute("data-min") ? parseInt(root.getAttribute("data-min"), 10) : -Infinity,
+            max: root.hasAttribute("data-max") ? parseInt(root.getAttribute("data-max"), 10) : Infinity
+        };
+    }
+
+    function setStepValue(root, value, showText) {
+        var lim = stepLimits(root);
+        value = Math.min(lim.max, Math.max(lim.min, value));
+        qs("[data-tp-step-input]", root).value = value;
+        if (showText) qs("[data-tp-step-value]", root).textContent = value;
+        changed(root);
+        return value;
+    }
+
+    function stepBy(root, delta) {
+        var current = parseInt(qs("[data-tp-step-input]", root).value, 10) || 0;
+        var next = setStepValue(root, current + delta, true);
+        return next !== current;
+    }
+
+    (function () {
+        var timer = null;
+
+        function stop() {
+            window.clearTimeout(timer);
+            timer = null;
+        }
+
+        document.addEventListener("pointerdown", function (e) {
+            var step = e.target instanceof Element ? e.target.closest("[data-tp-step]") : null;
+            if (!step || (e.pointerType === "mouse" && e.button !== 0)) return;
+            var root = step.closest("[data-tp-stepper]");
+            var delta = parseInt(step.getAttribute("data-tp-step"), 10);
+            stop();
+            // leave a number being typed: commit it before stepping
+            var typing = document.activeElement;
+            if (typing && typing.hasAttribute("data-tp-step-value")) typing.blur();
+
+            var repeats = 0;
+            function tick() {
+                var moved = stepBy(root, delta);
+                repeats++;
+                if (!moved) { stop(); return; }
+                // a short pause after the first step, then steady steps that speed up after about a second
+                timer = window.setTimeout(tick, repeats === 1 ? 380 : (repeats > 12 ? 40 : 90));
+            }
+            tick();
+        });
+
+        ["pointerup", "pointercancel", "dragstart"].forEach(function (name) {
+            document.addEventListener(name, stop, true);
+        });
+        window.addEventListener("blur", stop);
+        document.addEventListener("contextmenu", function (e) {
+            if (e.target instanceof Element && e.target.closest("[data-tp-step]")) e.preventDefault();
+        });
+
+        function stepperOf(el) { return el.closest("[data-tp-stepper]"); }
+
+        // ----- typing in the number
+        document.addEventListener("focusin", function (e) {
+            var el = e.target instanceof Element ? e.target.closest("[data-tp-step-value]") : null;
+            if (!el) return;
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        });
+
+        document.addEventListener("keydown", function (e) {
+            var el = e.target instanceof Element ? e.target.closest("[data-tp-step-value]") : null;
+            if (!el) return;
+            if (e.key === "Enter") { e.preventDefault(); el.blur(); return; }
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); stepBy(stepperOf(el), e.key === "ArrowUp" ? 1 : -1); return; }
+            var allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Home", "End", "Tab", "Escape"];
+            if (allowed.indexOf(e.key) !== -1 || e.ctrlKey || e.metaKey) return;
+            if (!/^[0-9]$/.test(e.key)) e.preventDefault();
+        });
+
+        document.addEventListener("paste", function (e) {
+            var el = e.target instanceof Element ? e.target.closest("[data-tp-step-value]") : null;
+            if (!el) return;
+            e.preventDefault();
+            var text = ((e.clipboardData || window.clipboardData).getData("text") || "").replace(/[^0-9]/g, "");
+            if (text) document.execCommand("insertText", false, text);
+        });
+
+        document.addEventListener("input", function (e) {
+            var el = e.target instanceof Element ? e.target.closest("[data-tp-step-value]") : null;
+            if (!el) return;
+            var digits = el.textContent.replace(/[^0-9]/g, "").slice(0, 4);
+            if (digits !== el.textContent) el.textContent = digits;
+            // the totals follow while typing; the box itself is tidied up on leaving it
+            if (digits) setStepValue(stepperOf(el), parseInt(digits, 10), false);
+        });
+
+        document.addEventListener("focusout", function (e) {
+            var el = e.target instanceof Element ? e.target.closest("[data-tp-step-value]") : null;
+            if (!el) return;
+            var root = stepperOf(el);
+            var typed = parseInt(el.textContent, 10);
+            var value = isNaN(typed) ? (parseInt(qs("[data-tp-step-input]", root).value, 10) || 0) : typed;
+            setStepValue(root, value, true);
+        });
+    })();
+
     document.addEventListener("click", function (e) {
         var t = e.target;
         if (!(t instanceof Element)) return;
 
+        // A mouse or touch press is handled on pointerdown (so it can repeat while held); this click is the keyboard
+        // (Enter / Space on a focused arrow button), which reports detail 0
         var step = t.closest("[data-tp-step]");
         if (step) {
-            var root = step.closest("[data-tp-stepper]");
-            var min = root.hasAttribute("data-min") ? parseInt(root.getAttribute("data-min"), 10) : -Infinity;
-            var max = root.hasAttribute("data-max") ? parseInt(root.getAttribute("data-max"), 10) : Infinity;
-            var input = qs("[data-tp-step-input]", root);
-            var value = Math.min(max, Math.max(min, (parseInt(input.value, 10) || 0) + parseInt(step.getAttribute("data-tp-step"), 10)));
-            input.value = value;
-            qs("[data-tp-step-value]", root).textContent = value;
-            changed(root);
+            if (e.detail === 0) stepBy(step.closest("[data-tp-stepper]"), parseInt(step.getAttribute("data-tp-step"), 10));
             return;
         }
 
@@ -587,6 +706,41 @@
         });
     })();
 
+    /* ------------------------------------------------------------------ [media] the stored file of the shown chapter / subchapter */
+    // A link to the current file and a "Remove file" toggle (posted in data-tp-media-remove-input); show(path) is called whenever
+    // another item is picked. Returns null on pages without the field.
+    function initMediaField() {
+        var row = qs("[data-tp-media-row]");
+        if (!row) return null;
+        var removeInput = qs("[data-tp-media-remove-input]");
+        var toggle = qs("[data-tp-media-toggle]", row);
+        var note = qs("[data-tp-media-note]", row);
+        var link = qs("[data-tp-media-link]", row);
+
+        row.addEventListener("click", function (e) {
+            if (!(e.target instanceof Element) || !e.target.closest("[data-tp-media-toggle]")) return;
+            var removing = row.classList.toggle("is-removing");
+            removeInput.value = removing ? "1" : "";
+            toggle.textContent = removing ? "Keep file" : "Remove file";
+            note.hidden = !removing;
+        });
+
+        return {
+            show: function (path) {
+                row.hidden = !path;
+                row.classList.remove("is-removing");
+                note.hidden = true;
+                toggle.textContent = "Remove file";
+                removeInput.value = "";
+                link.setAttribute("href", path || "#");
+                link.textContent = path ? "View current file (" + path.split(".").pop().toLowerCase() + ")" : "";
+                // a file chosen while another item was shown must not be uploaded for this one
+                var chosen = qs("[data-tp-dropzone-input]");
+                if (chosen && chosen.value) { chosen.value = ""; chosen.dispatchEvent(new Event("change")); }
+            }
+        };
+    }
+
     /* ------------------------------------------------------------------ [chapters] chapter list: pick (posts the page) + up/down order */
     function initChapterList(list) {
         var picked = qs("[data-tp-chapter-input]");
@@ -594,19 +748,54 @@
 
         function items() { return qsa("[data-tp-chapter-pick]", list); }
 
+        var media = initMediaField();
+
+        // The number shown for a chapter is its position in the list, so moving a chapter renumbers the whole list
+        function showActiveNumber() {
+            var active = items().filter(function (i) { return i.classList.contains("is-active"); })[0];
+            if (!active) return;
+            var number = active.getAttribute("data-number");
+            qsa("[data-tp-ch-number]").forEach(function (el) { el.textContent = number; });
+            // links to the chapter's pages carry its id and the number it currently shows (its position in the list)
+            qsa("[data-tp-ch-link]").forEach(function (a) {
+                a.setAttribute("href", a.getAttribute("data-tp-ch-link") + active.getAttribute("data-tp-chapter-pick") + "&n=" + number);
+            });
+            var deleteName = qs("[data-tp-ch-delete-name]");
+            if (deleteName) deleteName.textContent = "Chapter " + number + " - " + active.getAttribute("data-title");
+            // each chapter has its own subchapters / quiz-or-assessment cards; only the active chapter's are shown
+            qsa("[data-tp-ch-extra]").forEach(function (block) {
+                block.hidden = block.getAttribute("data-tp-ch-extra") !== active.getAttribute("data-tp-chapter-pick");
+            });
+        }
+
         function refresh() {
             var all = items();
             all.forEach(function (item, i) {
                 qs("[data-tp-ch-up]", item).disabled = i === 0;
                 qs("[data-tp-ch-down]", item).disabled = i === all.length - 1;
+                item.setAttribute("data-number", String(i + 1));
+                qs(".chapter-number", item).textContent = String(i + 1);
             });
             if (orderInput) orderInput.value = all.map(function (item) { return item.getAttribute("data-tp-chapter-pick"); }).join(",");
+            showActiveNumber();
         }
 
+        // Picking a chapter only swaps the details panel: no page reload, so the scroll position stays put
         function pick(item) {
             picked.value = item.getAttribute("data-tp-chapter-pick");
+            items().forEach(function (i) { i.classList.toggle("is-active", i === item); });
+
+            qs("[data-tp-ch-title]").value = item.getAttribute("data-title");
+            qs("[data-tp-ch-description]").value = item.getAttribute("data-description");
+            qs("[data-tp-ch-duration]").value = item.getAttribute("data-duration");
+            qs("[data-tp-ch-created]").textContent = item.getAttribute("data-created");
+            qs("[data-tp-ch-updated]").textContent = item.getAttribute("data-updated");
+            if (media) media.show(item.getAttribute("data-media"));
+
+            // a different chapter starts without the previous chapter's validation messages
+            qsa(".tp-inline-field.has-error").forEach(function (f) { f.classList.remove("has-error"); });
+            qsa(".tp-inline-field small").forEach(function (s) { s.textContent = ""; });
             refresh();
-            document.forms[0].submit();
         }
 
         list.addEventListener("click", function (e) {
@@ -630,28 +819,71 @@
             var item = e.target instanceof Element ? e.target.closest("[data-tp-chapter-pick]") : null;
             if (item && e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(item); }
         });
+        var current = items().filter(function (i) { return i.classList.contains("is-active"); })[0];
+        if (current && media) media.show(current.getAttribute("data-media"));
         refresh();
     }
 
-    /* ------------------------------------------------------------------ [content list] highlight only (as in the prototype) */
+    /* ------------------------------------------------------------------ [content list] pick (loads the editor, no reload) + drag order */
     function initContentList(list) {
         var orderInput = qs("[data-tp-content-order]");
+        var picked = qs("[data-tp-content-input]");
+        var media = initMediaField();
+
+        function items() { return qsa("[data-tp-content-item]", list); }
+
+        // The number shown for a subchapter is its position in the list, so moving one renumbers the whole list
+        function showActive() {
+            var all = items();
+            var active = all.filter(function (i) { return i.classList.contains("is-active"); })[0];
+            if (!active) return;
+            qsa("[data-tp-sub-number]").forEach(function (el) { el.textContent = String(all.indexOf(active) + 1); });
+            qsa("[data-tp-sub-heading]").forEach(function (el) { el.textContent = active.getAttribute("data-title"); });
+            var deleteName = qs("[data-tp-sub-delete-name]");
+            if (deleteName) deleteName.textContent = active.getAttribute("data-title");
+        }
 
         function renumber() {
-            var items = qsa("[data-tp-content-item]", list);
-            items.forEach(function (item, i) {
+            var all = items();
+            all.forEach(function (item, i) {
                 var label = qs("small", item);
-                label.textContent = (item.getAttribute("data-type") === "quiz" ? "QUIZ " : "SUBCHAPTER ") + (i + 1);
+                label.textContent = "SUBCHAPTER " + (i + 1);
             });
-            if (orderInput) orderInput.value = items.map(function (item) { return item.getAttribute("data-id"); }).join(",");
+            if (orderInput) orderInput.value = all.map(function (item) { return item.getAttribute("data-id"); }).join(",");
+            showActive();
+        }
+
+        // Picking a subchapter only swaps the editor's values: no page reload, so the scroll position stays put
+        function pick(item) {
+            items().forEach(function (b) { b.classList.toggle("is-active", b === item); });
+            if (picked) picked.value = item.getAttribute("data-id");
+
+            var title = qs("[data-tp-sub-title]");
+            if (!title) return; // no editor on this page
+            title.value = item.getAttribute("data-title");
+            var description = qs("[data-tp-sub-description] textarea");
+            if (description) description.value = item.getAttribute("data-description");
+            qs("[data-tp-sub-duration]").value = item.getAttribute("data-minutes");
+            if (media) media.show(item.getAttribute("data-media"));
+
+            // a different subchapter starts without the previous one's validation message
+            var field = qs("[data-tp-sub-title-field]");
+            if (field) {
+                field.classList.remove("has-error");
+                var hint = qs("small", field);
+                hint.textContent = hint.getAttribute("data-ok");
+            }
+            showActive();
         }
 
         list.addEventListener("tp-reorder", renumber);
         list.addEventListener("click", function (e) {
             var item = e.target instanceof Element ? e.target.closest("[data-tp-content-item]") : null;
-            if (!item) return;
-            qsa("[data-tp-content-item]", list).forEach(function (b) { b.classList.toggle("is-active", b === item); });
+            if (item) pick(item);
         });
+
+        var current = items().filter(function (i) { return i.classList.contains("is-active"); })[0];
+        if (current && media) media.show(current.getAttribute("data-media"));
     }
 
     /* ------------------------------------------------------------------ [dropzone] click or drop a file */
@@ -685,7 +917,7 @@
         var menu = qs("[data-tp-submission-menu]", root);
         var options = qsa("[data-tp-submission]", root);
         var statusClass = { "Graded": "is-graded", "In progress": "is-progress", "Not graded": "is-ungraded" };
-        var assessment = { title: "", questions: "", pending: 0 };
+        var assessment = { key: "", type: "", title: "", questions: "", marks: "", pending: 0 };
 
         function esc(text) {
             var d = document.createElement("div");
@@ -693,12 +925,35 @@
             return d.innerHTML;
         }
 
+        // the submissions of the chosen exam / quiz / assessment (every submission of the course is in the page)
+        function visibleOptions() {
+            return options.filter(function (o) { return o.getAttribute("data-test") === assessment.key; });
+        }
+
         function current() {
-            return options[parseInt(learnerInput.value, 10)] || options[0];
+            var list = visibleOptions();
+            return list.filter(function (o) { return o.getAttribute("data-tp-submission") === learnerInput.value; })[0] || list[0] || null;
         }
 
         function render() {
+            options.forEach(function (o) { o.hidden = o.getAttribute("data-test") !== assessment.key; });
             var opt = current();
+
+            // nobody has submitted it yet: say so, and hide the marking panel and the total bar
+            qsa("[data-tp-needs-submission]", root).forEach(function (el) { el.hidden = !opt; });
+            if (!opt) {
+                learnerInput.value = "";
+                qs("[data-tp-grade-subtitle]", root).textContent = "";
+                menu.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.innerHTML = "<span><strong>No submissions yet</strong><small>No learner has submitted this " + esc(assessment.type) + "</small></span>"
+                    + qs("[data-tp-down-icon]", root).innerHTML;
+                return;
+            }
+            learnerInput.value = opt.getAttribute("data-tp-submission");
+            // only the question cards of the chosen submission are shown
+            qsa("[data-tp-marking]", root).forEach(function (card) { card.hidden = card.getAttribute("data-tp-marking") !== learnerInput.value; });
+
             var name = opt.getAttribute("data-name");
             var submitted = opt.getAttribute("data-submitted");
             var avatar = '<span class="avatar avatar--' + opt.getAttribute("data-tone") + ' avatar--sm" aria-hidden="true">' + esc(opt.getAttribute("data-initials")) + "</span>";
@@ -722,36 +977,54 @@
             qs("[data-tp-grade-subtitle]", root).textContent = "Reviewing " + name + "'s answers for " + assessment.title + ".";
             var confirmName = qs("[data-tp-confirm-learner]");
             if (confirmName) confirmName.textContent = name;
+            updateTotal();
         }
 
         function selectTile(tile) {
             assessment = {
+                key: tile.getAttribute("data-key"),
+                type: tile.getAttribute("data-key").split(":")[0],
                 title: tile.getAttribute("data-title"),
                 questions: tile.getAttribute("data-questions"),
+                marks: tile.getAttribute("data-marks"),
                 pending: parseInt(tile.getAttribute("data-pending"), 10)
             };
-            assessmentInput.value = assessment.title;
+            assessmentInput.value = assessment.key;
             tiles.forEach(function (t) {
                 var on = t === tile;
                 t.classList.toggle("is-selected", on);
                 qs("[data-tp-tile-check]", t).hidden = !on;
             });
+            // the summary shows the same icon as the chosen tile (exam, quiz or assessment)
+            var sumIcon = qs("[data-tp-sum-icon]", root);
+            var tileIcon = qs(".assessment-type-icon", tile);
+            if (sumIcon && tileIcon) {
+                sumIcon.innerHTML = tileIcon.innerHTML;
+                qsa("svg", sumIcon).forEach(function (svg) { svg.setAttribute("width", "21"); svg.setAttribute("height", "21"); });
+            }
             qs("[data-tp-sum-title]", root).textContent = assessment.title;
-            qs("[data-tp-sum-text]", root).innerHTML = assessment.questions + " questions &middot; 100 total marks";
+            qs("[data-tp-sum-text]", root).innerHTML = assessment.questions + (assessment.questions === "1" ? " question" : " questions") + " &middot; " + assessment.marks + " total marks";
             var badge = qs("[data-tp-sum-badge]", root);
             badge.textContent = assessment.pending + " pending";
             badge.className = "badge badge--" + (assessment.pending ? "warning" : "success");
-            qs("[data-tp-grade-qcount]", root).textContent = assessment.questions;
+            qs("[data-tp-grade-qcount]", root).textContent = assessment.questions + (assessment.questions === "1" ? " question" : " questions");
             render();
         }
 
         function updateTotal() {
+            // the chosen submission's marks: automatic ones (multiple choice) plus the ones typed into the steppers, out of the test's total
             var total = 0;
-            qsa("[data-tp-grade-marks]", root).forEach(function (input) { total += parseInt(input.value, 10) || 0; });
-            qs("[data-tp-grade-total]", root).textContent = total + " / 100";
-            qs("[data-tp-grade-bar]", root).style.width = Math.min(100, total) + "%";
+            var max = parseInt(assessment.marks, 10) || 0;
+            qsa("[data-tp-marking]", root).forEach(function (card) {
+                if (card.getAttribute("data-tp-marking") !== learnerInput.value) return;
+                total += parseInt(card.getAttribute("data-tp-auto-marks"), 10) || 0;
+                var input = qs("[data-tp-grade-marks]", card);
+                if (input) total += parseInt(input.value, 10) || 0;
+            });
+            qs("[data-tp-grade-total]", root).textContent = total + " / " + max;
+            qs("[data-tp-grade-bar]", root).style.width = (max > 0 ? Math.min(100, Math.round(total * 100 / max)) : 0) + "%";
             var confirmTotal = qs("[data-tp-confirm-total]");
-            if (confirmTotal) confirmTotal.textContent = total + " / 100";
+            if (confirmTotal) confirmTotal.textContent = total + " / " + max;
         }
 
         tiles.forEach(function (tile) { tile.addEventListener("click", function () { selectTile(tile); }); });
@@ -760,9 +1033,9 @@
             menu.hidden = !menu.hidden;
             trigger.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
         });
-        options.forEach(function (o, i) {
+        options.forEach(function (o) {
             o.addEventListener("click", function () {
-                learnerInput.value = i;
+                learnerInput.value = o.getAttribute("data-tp-submission");
                 menu.hidden = true;
                 trigger.setAttribute("aria-expanded", "false");
                 render();
@@ -775,13 +1048,13 @@
             if (e.target instanceof Element && e.target.closest('[data-tp-open-modal="tpConfirmGradeModal"]')) { updateTotal(); render(); }
         }, true);
 
-        selectTile(tiles.filter(function (t) { return t.getAttribute("data-title") === assessmentInput.value; })[0] || tiles[0]);
+        selectTile(tiles.filter(function (t) { return t.getAttribute("data-key") === assessmentInput.value; })[0] || tiles[0]);
         updateTotal();
     }
 
     /* ------------------------------------------------------------------ [edit fields] language dot + segmented control (edit forms) */
-    function initEditFields() {
-        qsa("[data-tp-langselect]").forEach(function (select) {
+    function initEditFields(root) {
+        qsa("[data-tp-langselect]", root).forEach(function (select) {
             var dot = qs("[data-tp-langdot]", select.closest(".language-select"));
             var map = {};
             try { map = JSON.parse(select.getAttribute("data-tp-lang-map") || "{}"); } catch (err) { /* ignore */ }
@@ -795,7 +1068,7 @@
             sync();
         });
 
-        qsa("[data-tp-seg-group]").forEach(function (group) {
+        qsa("[data-tp-seg-group]", root).forEach(function (group) {
             var value = qs("[data-tp-seg-value]", group);
             var buttons = qsa("[data-tp-seg]", group);
             function sync() {
@@ -808,10 +1081,88 @@
         });
     }
 
+    /* ------------------------------------------------------------------ [domains] tag input (TeacherDomainInput.ascx)
+       Domains are shown as tags. Type a name and press Enter (or comma, or leave the box) to add it; pick an existing one
+       from the suggestions; click x (or Backspace in the empty box) to remove one. The list travels to the server as a
+       JSON array in a hidden field, and the server checks it again. */
+    function initDomainInputs(root) {
+        qsa("[data-tp-domains]", root).forEach(function (field) {
+            var store = qs("[data-tp-domains-value]", field);
+            var tagBox = qs("[data-tp-domains-tags]", field);
+            var text = qs("[data-tp-domains-text]", field);
+            var box = qs("[data-tp-domains-box]", field);
+            var hint = qs("small", field);
+            var max = parseInt(field.getAttribute("data-max"), 10) || 5;
+            var allowed = /^[A-Za-z0-9][A-Za-z0-9 &+#.\/-]{0,49}$/;
+            var list = [];
+            try { list = JSON.parse(store.value || "[]"); } catch (err) { list = []; }
+
+            function error(message) {
+                field.classList.toggle("has-error", !!message);
+                if (hint) hint.textContent = message || "";
+            }
+
+            function render() {
+                store.value = JSON.stringify(list);
+                tagBox.textContent = "";
+                list.forEach(function (name, i) {
+                    var tag = document.createElement("span");
+                    tag.className = "tp-domain-tag";
+                    tag.appendChild(document.createTextNode(name));
+                    var remove = document.createElement("button");
+                    remove.type = "button";
+                    remove.setAttribute("aria-label", "Remove " + name);
+                    remove.textContent = "\u00d7";
+                    remove.addEventListener("click", function () { list.splice(i, 1); error(""); render(); text.focus(); });
+                    tag.appendChild(remove);
+                    tagBox.appendChild(tag);
+                });
+            }
+
+            // true when the typed text was added (or was empty / already there)
+            function commit() {
+                var name = text.value.replace(/\s+/g, " ").trim();
+                if (!name) return true;
+                if (!allowed.test(name)) { error("Use letters, numbers and & + # . / - only (up to 50 characters)."); return false; }
+                var exists = list.some(function (d) { return d.toLowerCase() === name.toLowerCase(); });
+                if (!exists) {
+                    if (list.length >= max) { error("You can add up to " + max + " domains."); return false; }
+                    list.push(name);
+                }
+                text.value = "";
+                error("");
+                render();
+                return true;
+            }
+
+            text.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
+                else if (e.key === "Backspace" && !text.value && list.length) { list.pop(); error(""); render(); }
+            });
+            // choosing a suggestion from the list fills the box without typing
+            text.addEventListener("input", function (e) {
+                // a comma (typed or pasted in a list such as "a, b, c") ends a domain
+                if (text.value.indexOf(",") !== -1) {
+                    var parts = text.value.split(",");
+                    var rest = parts.pop();
+                    parts.forEach(function (part) { text.value = part; commit(); });
+                    text.value = rest;
+                    return;
+                }
+                if (e.inputType === "insertReplacementText" || (!e.inputType && text.value)) commit();
+            });
+            text.addEventListener("blur", commit);
+            // the page's "Clear all fields" button empties the tags too
+            field.addEventListener("tp-domains-clear", function () { list = []; text.value = ""; error(""); render(); });
+            box.addEventListener("click", function (e) { if (e.target === box) text.focus(); });
+            render();
+        });
+    }
+
     /* ------------------------------------------------------------------ [learners] search filter */
-    function initLearnerSearch() {
-        qsa("[data-tp-learner-search]").forEach(function (input) {
-            var items = qsa("[data-tp-learner-item]");
+    function initLearnerSearch(root) {
+        qsa("[data-tp-learner-search]", root).forEach(function (input) {
+            var items = qsa("[data-tp-learner-item]", root);
             input.addEventListener("input", function () {
                 var q = input.value.toLowerCase();
                 items.forEach(function (item) { item.hidden = (item.getAttribute("data-search") || "").indexOf(q) === -1; });
@@ -849,6 +1200,7 @@
         var replyingLabel = qs("[data-tp-forum-replying-label]", root);
         var replyInput = qs("[data-tp-forum-reply-input]", root);
         var title = qs("[data-tp-forum-title]", root);
+        if (!title) return; // no posts yet: nothing to wire up
 
         function closeFlags() { qsa("[data-tp-forum-flag-pop]", root).forEach(function (p) { p.hidden = true; }); }
 
@@ -861,12 +1213,13 @@
             qsa("[data-tp-forum-thread]", root).forEach(function (t) { t.hidden = t.getAttribute("data-tp-forum-thread") !== id; });
             selected.value = id;
             closeFlags();
-            setReplying("");
+            setReplying("", "");
             if (openOnMobile) { root.classList.add("show-discussion"); mobile.value = "1"; }
         }
 
-        function setReplying(name) {
-            replying.value = name;
+        // id = the Id of the comment being answered (kept in the hidden field), name = who wrote it (shown in the label)
+        function setReplying(id, name) {
+            replying.value = id;
             replyingLabel.hidden = !name;
             replyingLabel.textContent = name ? "Replying to " + name : "";
         }
@@ -881,7 +1234,7 @@
             if (t.closest("[data-tp-forum-back]")) { root.classList.remove("show-discussion"); mobile.value = "0"; return; }
 
             var reply = t.closest("[data-tp-forum-reply]");
-            if (reply) { setReplying(reply.getAttribute("data-tp-forum-reply")); replyInput.focus(); return; }
+            if (reply) { setReplying(reply.getAttribute("data-tp-forum-reply"), reply.getAttribute("data-name")); replyInput.focus(); return; }
 
             var flag = t.closest("[data-tp-forum-flag]");
             if (flag) {
@@ -937,24 +1290,104 @@
         sync();
     }
 
-    function init() {
-        initEditFields();
-        initLearnerSearch();
-        qsa("[data-tp-cardlist]").forEach(initCardList);
-        qsa("[data-tp-questions]").forEach(initQuestions);
-        qsa("[data-tp-chapter-list]").forEach(initChapterList);
-        qsa("[data-tp-content-list]").forEach(initContentList);
-        qsa("[data-tp-dropzone]").forEach(initDropzone);
-        qsa("[data-tp-grading]").forEach(initGrading);
-        qsa("[data-tp-forum]").forEach(initForum);
-        qsa("[data-tp-tag-source]").forEach(initTagPreview);
-        qsa("[data-tp-delete-email]").forEach(initDeleteAccount);
-        qsa("[data-tp-zoom]").forEach(initZoom);
-        qsa("[data-tp-selector]").forEach(initSelector);
-        qsa("[data-tp-course-form]").forEach(initCourseForm);
+    /* ------------------------------------------------------------------ [partial] post in the background, swap only the page's regions
+       A <button type="submit" data-tp-partial> (course tile, learner row) normally reloads the whole page. Here the same post
+       is sent with fetch, and only the sections marked data-tp-region are replaced, so the scroll position and the course
+       selector (search, filter, paging) stay as they are. If anything goes wrong it falls back to the normal full post. */
+    var partialBusy = false;
+
+    function fullSubmit(button) {
+        button.setAttribute("data-tp-full", "1");
+        var form = button.form || document.forms[0];
+        if (form.requestSubmit) form.requestSubmit(button);
+        else button.click();
     }
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    function copyField(doc, name) {
+        var from = doc.getElementById(name), to = document.getElementById(name);
+        if (from && to) to.value = from.value;
+    }
+
+    function partialSubmit(button) {
+        var form = button.form || document.forms[0];
+        var data = new FormData(form);
+        if (button.name) data.append(button.name, button.value);
+        partialBusy = true;
+
+        fetch(form.getAttribute("action") || window.location.href, { method: "POST", body: data, credentials: "same-origin" })
+            .then(function (response) {
+                if (!response.ok) throw new Error("status " + response.status);
+                return response.text();
+            })
+            .then(function (html) {
+                var doc = new DOMParser().parseFromString(html, "text/html");
+                var pairs = qsa("[data-tp-region]").map(function (region) {
+                    return [region, qs('[data-tp-region="' + region.getAttribute("data-tp-region") + '"]', doc)];
+                });
+                if (!pairs.length || pairs.some(function (p) { return !p[1]; })) throw new Error("no matching regions");
+
+                // keep ASP.NET's own hidden fields in step with the new page, so the next post is accepted
+                ["__VIEWSTATE", "__VIEWSTATEGENERATOR", "__EVENTVALIDATION"].forEach(function (n) { copyField(doc, n); });
+
+                // the course selector stays on the page: only move its "selected" mark
+                qsa("[data-tp-course-tile]").forEach(function (tile) {
+                    var next = qs('[data-tp-course-tile][data-id="' + tile.getAttribute("data-id") + '"]', doc);
+                    if (!next) return;
+                    tile.classList.toggle("is-selected", next.classList.contains("is-selected"));
+                    tile.setAttribute("aria-pressed", next.getAttribute("aria-pressed"));
+                    var row = qs(".select-course-title-row", tile), nextRow = qs(".select-course-title-row", next);
+                    if (row && nextRow) row.innerHTML = nextRow.innerHTML;
+                });
+                var selId = qs('[data-tp-selector] input[id$="hfTeacherSelId"]');
+                var newSelId = qs('[data-tp-selector] input[id$="hfTeacherSelId"]', doc);
+                if (selId && newSelId) selId.value = newSelId.value;
+
+                pairs.forEach(function (p) {
+                    var fresh = document.importNode(p[1], true);
+                    p[0].parentNode.replaceChild(fresh, p[0]);
+                    init(fresh);
+                });
+                partialBusy = false;
+            })
+            .catch(function () {
+                partialBusy = false;
+                fullSubmit(button);
+            });
+    }
+
+    document.addEventListener("click", function (e) {
+        var button = e.target instanceof Element ? e.target.closest("[data-tp-partial]") : null;
+        if (!button || button.hasAttribute("data-tp-full") || !window.fetch || !window.FormData || !window.DOMParser) return;
+        e.preventDefault();
+        if (!partialBusy) partialSubmit(button);
+    }, true);
+
+    function init(root) {
+        root = root || document;
+        initEditFields(root);
+        initLearnerSearch(root);
+        initDomainInputs(root);
+        qsa("[data-tp-cardlist]", root).forEach(initCardList);
+        qsa("[data-tp-questions]", root).forEach(initQuestions);
+        // a page that edits one item (the quiz / assessment page): its file row carries the stored path in data-media
+        var soloMedia = qs("[data-tp-media-row][data-media]", root);
+        if (soloMedia) {
+            var soloField = initMediaField();
+            if (soloField) soloField.show(soloMedia.getAttribute("data-media"));
+        }
+        qsa("[data-tp-chapter-list]", root).forEach(initChapterList);
+        qsa("[data-tp-content-list]", root).forEach(initContentList);
+        qsa("[data-tp-dropzone]", root).forEach(initDropzone);
+        qsa("[data-tp-grading]", root).forEach(initGrading);
+        qsa("[data-tp-forum]", root).forEach(initForum);
+        qsa("[data-tp-tag-source]", root).forEach(initTagPreview);
+        qsa("[data-tp-delete-email]", root).forEach(initDeleteAccount);
+        qsa("[data-tp-zoom]", root).forEach(initZoom);
+        qsa("[data-tp-selector]", root).forEach(initSelector);
+        qsa("[data-tp-course-form]", root).forEach(initCourseForm);
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { init(); });
     else init();
 
     window.TeacherPortal = { toast: toast, openModal: openModal, closeModal: closeModal, setDrawer: setDrawer, validateCourseForm: validateCourseForm };

@@ -33,13 +33,49 @@ namespace Codercept
         protected global::Codercept.TeacherStepHeading shTeacherLearners;
 
         /// <summary>
-        /// hfTeacherLearnerIndex control.
+        /// hfTeacherLearnerId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherLearnerIndex;
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherLearnerId;
+
+        /// <summary>
+        /// pnlTeacherAddLearner control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTeacherAddLearner;
+
+        /// <summary>
+        /// fldTeacherAddLearner control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherAddLearner;
+
+        /// <summary>
+        /// txtTeacherAddLearnerEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtTeacherAddLearnerEmail;
+
+        /// <summary>
+        /// hintTeacherAddLearner control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherAddLearner;
 
         /// <summary>
         /// btnTeacherAddLearner control.

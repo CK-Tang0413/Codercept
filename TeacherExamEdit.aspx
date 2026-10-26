@@ -1,6 +1,7 @@
 <%@ Page Title="Edit Exam - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherExamEdit.aspx.cs" Inherits="Codercept.TeacherExamEdit" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
+<%@ Register Src="~/TeacherRichEditor.ascx" TagPrefix="uc" TagName="RichEditor" %>
 <%@ Register Src="~/TeacherQuestionCard.ascx" TagPrefix="uc" TagName="QuestionCard" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
@@ -10,40 +11,86 @@
     <div class="exam-course-banner course-thumbnail--<%= Course.Theme %>">
         <span class="exam-banner-glyph"><%: Course.Glyph %></span>
         <div>
-            <span>EDITING EXAM FOR</span>
+            <span><%= ExamExists ? "EDITING EXAM FOR" : "CREATING EXAM FOR" %></span>
             <h1><%: Course.Title %></h1>
             <p><%: Course.Language %> &bull; <%: Course.Difficulty %> &bull; <%: Course.Duration %> hours</p>
         </div>
-        <span class="badge badge--success">Exam configured</span>
+        <span class="badge badge--<%= ExamExists ? "success" : "warning" %>"><%= ExamExists ? "Exam configured" : "Not created yet" %></span>
         <i class="code-symbol code-symbol--one">{ }</i>
         <i class="code-symbol code-symbol--two">01</i>
     </div>
 
+    <%-- Learners have attempted the exam: its settings and questions are shown but cannot be changed --%>
+    <asp:Panel ID="pnlTeacherExamLocked" runat="server" Visible="false">
+        <div class="exam-new-note">
+            <%= TeacherIcons.Svg("info", 17) %>
+            <p>Learners have attempted this exam, so its pass mark and questions can no longer be changed. This keeps every learner's answers and marks fair. You can still edit the title, description, time limit and rules.</p>
+        </div>
+    </asp:Panel>
+
+    <% if (!ExamExists) { %>
+    <div class="exam-new-note">
+        <%= TeacherIcons.Svg("info", 17) %>
+        <p>This course has no exam yet. Set the pass mark, time limit and rules, add the questions, then press <strong>Create exam</strong>. Learners must pass the exam to earn the course certificate.</p>
+    </div>
+    <% } %>
+
     <section class="flow-section exam-flow-section">
-        <uc:StepHeading runat="server" Step="1" Title="Configure exam rules and restrictions" Subtitle="Define passing criteria, language, and the restrictions learners must follow." />
+        <uc:StepHeading runat="server" Step="1" Title="Fill in exam details" Subtitle="Give the exam a title and, if you like, a short description for learners." />
+        <article class="form-card content-form-card">
+            <div class="form-fields">
+                <label id="fldTeacherExamTitle" runat="server" class="form-field">
+                    <span>Title <b>*</b></span>
+                    <asp:TextBox ID="txtTeacherExamTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off" placeholder="Enter exam title"></asp:TextBox>
+                    <small id="hintTeacherExamTitle" runat="server" data-ok="Use a clear title that describes this exam." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this exam.</small>
+                </label>
+                <div class="form-field">
+                    <span>Description</span>
+                    <uc:RichEditor ID="reTeacherExamDescription" runat="server" />
+                    <small>Optional. Explain what the exam covers.</small>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="flow-section exam-flow-section">
+        <uc:StepHeading runat="server" Step="2" Title="Configure exam rules and restrictions" Subtitle="Define passing criteria, language, and the restrictions learners must follow." />
         <article class="exam-rules-card">
             <div class="exam-primary-rules">
-                <div class="exam-stepper-field">
+                <div id="divTeacherPassMark" runat="server" class="exam-stepper-field">
                     <div>
                         <span>Min marks to pass</span>
                         <small>Required score as a percentage</small>
                     </div>
                     <div class="large-stepper" data-tp-stepper data-min="1" data-max="100">
                         <button type="button" aria-label="Decrease minimum marks" data-tp-step="-1">&minus;</button>
-                        <strong data-tp-step-value>50</strong>
+                        <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Minimum marks to pass"><%: hfTeacherMinMarks.Value %></strong>
                         <span>%</span>
                         <button type="button" aria-label="Increase minimum marks" data-tp-step="1">+</button>
                         <input type="hidden" id="hfTeacherMinMarks" runat="server" value="50" data-tp-step-input />
                     </div>
                 </div>
-                <label class="exam-language-field">
-                    <span>Programming language</span>
-                    <small>Used for syntax and code validation</small>
-                    <div class="language-select">
-                        <span class="language-dot language-dot--<%= Course.Theme %>" data-tp-langdot><%: Course.Glyph %></span>
-                        <asp:DropDownList ID="ddlTeacherExamLanguage" runat="server" data-tp-langselect></asp:DropDownList>
+                <div class="exam-stepper-field">
+                    <div>
+                        <span>Time limit</span>
+                        <small>Minutes learners have to finish the exam</small>
                     </div>
-                </label>
+                    <div class="large-stepper" data-tp-stepper data-min="5" data-max="300">
+                        <button type="button" aria-label="Decrease time limit" data-tp-step="-5">&minus;</button>
+                        <strong contenteditable="true" role="spinbutton" inputmode="numeric" spellcheck="false" data-tp-step-value aria-label="Time limit in minutes"><%: hfTeacherTimeLimit.Value %></strong>
+                        <span>min</span>
+                        <button type="button" aria-label="Increase time limit" data-tp-step="5">+</button>
+                        <input type="hidden" id="hfTeacherTimeLimit" runat="server" value="60" data-tp-step-input />
+                    </div>
+                </div>
+                <div class="exam-language-field">
+                    <span>Programming language</span>
+                    <small>Taken from the course, used for syntax and code validation</small>
+                    <div class="language-select language-select--static">
+                        <span class="language-dot language-dot--<%= Course.Theme %>"><%: Course.Glyph %></span>
+                        <strong><%: Course.Language %></strong>
+                    </div>
+                </div>
             </div>
             <div class="rule-grid">
                 <% for (int i = 0; i < Rules.Count; i++) { TeacherExamRule r = Rules[i]; %>
@@ -57,15 +104,15 @@
                         <p><%: r.Description %></p>
                     </div>
                     <button type="button" class="toggle-switch<%= r.On ? " is-on" : "" %>" aria-label="Toggle <%: r.Title %>" aria-pressed="<%= r.On ? "true" : "false" %>" data-tp-toggle><span></span></button>
-                    <input type="hidden" name="tpRule<%= i %>" value="<%= r.On ? "1" : "0" %>" data-tp-toggle-input />
+                    <input type="hidden" name="tpRule<%= r.Id %>" value="<%= r.On ? "1" : "0" %>" data-tp-toggle-input />
                 </div>
                 <% } %>
             </div>
         </article>
     </section>
 
-    <section class="flow-section exam-flow-section">
-        <uc:StepHeading runat="server" Step="2" Title="Manage exam questions" Subtitle="Add, reorder, and configure the questions learners will answer." />
+    <section id="secTeacherExamQuestions" runat="server" class="flow-section exam-flow-section">
+        <uc:StepHeading runat="server" Step="3" Title="Manage exam questions" Subtitle="Add, reorder, and configure the questions learners will answer." />
         <div class="exam-question-stack" data-tp-questions>
             <asp:Repeater ID="rptTeacherExamQuestions" runat="server">
                 <ItemTemplate>
@@ -87,7 +134,7 @@
         </div>
         <div>
             <a class="button button--ghost" href="TeacherExams.aspx"><span>Back to previous page</span></a>
-            <asp:LinkButton ID="btnTeacherSaveExam" runat="server" CssClass="button button--primary" OnClick="btnTeacherSaveExam_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='m5 12 4 4L19 6' /></svg><span>Save exam details</span></asp:LinkButton>
+            <asp:LinkButton ID="btnTeacherSaveExam" runat="server" CssClass="button button--primary" OnClick="btnTeacherSaveExam_Click"></asp:LinkButton>
         </div>
     </div>
 </asp:Content>

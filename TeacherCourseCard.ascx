@@ -12,9 +12,8 @@
             <span><%= TeacherIcons.Svg("users", 15) %><%: Course.Learners %></span>
         </div>
         <div class="course-actions">
-            <%-- TODO (backend): pass the course id, e.g. TeacherCourses.aspx?courseId=... --%>
-            <a class="button button--secondary" href="TeacherCourses.aspx"><%= TeacherIcons.Svg("edit", 17) %><span>Edit course</span></a>
-            <a class="button button--ghost" href="TeacherLearners.aspx"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
+            <a class="button button--secondary" href="TeacherCourses.aspx?course=<%: Course.Id %>"><%= TeacherIcons.Svg("edit", 17) %><span>Edit course</span></a>
+            <a class="button button--ghost" href="TeacherLearners.aspx?course=<%: Course.Id %>"><%= TeacherIcons.Svg("users", 17) %><span>View learners</span></a>
         </div>
     </div>
 </article>

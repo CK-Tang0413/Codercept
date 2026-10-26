@@ -15,6 +15,60 @@ namespace Codercept
     {
 
         /// <summary>
+        /// pnlTeacherExamLocked control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlTeacherExamLocked;
+
+        /// <summary>
+        /// fldTeacherExamTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherExamTitle;
+
+        /// <summary>
+        /// txtTeacherExamTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtTeacherExamTitle;
+
+        /// <summary>
+        /// hintTeacherExamTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherExamTitle;
+
+        /// <summary>
+        /// reTeacherExamDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::Codercept.TeacherRichEditor reTeacherExamDescription;
+
+        /// <summary>
+        /// divTeacherPassMark control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divTeacherPassMark;
+
+        /// <summary>
         /// hfTeacherMinMarks control.
         /// </summary>
         /// <remarks>
@@ -24,13 +78,22 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherMinMarks;
 
         /// <summary>
-        /// ddlTeacherExamLanguage control.
+        /// hfTeacherTimeLimit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTeacherExamLanguage;
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherTimeLimit;
+
+        /// <summary>
+        /// secTeacherExamQuestions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl secTeacherExamQuestions;
 
         /// <summary>
         /// rptTeacherExamQuestions control.

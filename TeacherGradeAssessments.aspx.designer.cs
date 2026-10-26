@@ -33,24 +33,6 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherGradeLearner;
 
         /// <summary>
-        /// hfTeacherMarksQ2 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherMarksQ2;
-
-        /// <summary>
-        /// txtTeacherCommentQ2 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtTeacherCommentQ2;
-
-        /// <summary>
         /// btnTeacherSaveGrading control.
         /// </summary>
         /// <remarks>

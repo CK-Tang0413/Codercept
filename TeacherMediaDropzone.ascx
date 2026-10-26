@@ -5,7 +5,7 @@
         <span class="upload-icon"><%= TeacherIcons.Svg("upload", 21) %></span>
         <span>
             <strong data-tp-dropzone-title><%= Compact ? "Add file" : "Drag &amp; drop or browse" %></strong>
-            <small>Images, video, PDF or code files up to 25 MB</small>
+            <small>Images, MP4 video or PDF up to 25 MB</small>
         </span>
     </button>
     <asp:FileUpload ID="fuTeacherMedia" runat="server" style="display: none" data-tp-dropzone-input />

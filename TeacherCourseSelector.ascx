@@ -1,8 +1,9 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="TeacherCourseSelector.ascx.cs" Inherits="Codercept.TeacherCourseSelector" %>
 <%-- Search / filter / grid-list / pagination run client-side (TeacherPortal.js, data-tp-sel-*).
-     Choosing a course is a form post: the tile <button> submits "<UniqueID>$sel" = course index. --%>
+     Choosing a course is a form post: the tile <button> submits "<UniqueID>$sel" = the CourseId.
+     data-tp-partial: TeacherPortal.js sends that post in the background and swaps only the page's data-tp-region sections (no reload). --%>
 <div class="course-selector<%= Compact ? " is-compact" : "" %>" data-tp-selector data-tp-page-size="3">
-    <input type="hidden" runat="server" id="hfTeacherSelIndex" value="0" />
+    <input type="hidden" runat="server" id="hfTeacherSelId" value="" />
     <input type="hidden" runat="server" id="hfTeacherSelState" data-tp-sel-state />
 
     <div class="selector-toolbar">
@@ -53,10 +54,10 @@
     </div>
 
     <div class="select-course-grid select-course-grid--grid" data-tp-sel-grid>
-        <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; bool selected = (i == SelectedIndex); %>
-        <button type="submit" name="<%= UniqueID %>$sel" value="<%= i %>" aria-pressed="<%= selected ? "true" : "false" %>"
+        <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; bool selected = (c.Id == SelectedCourse.Id); %>
+        <button type="submit" data-tp-partial name="<%= UniqueID %>$sel" value="<%= c.Id %>" aria-pressed="<%= selected ? "true" : "false" %>"
             class="select-course-card<%= selected ? " is-selected" : "" %>"
-            data-tp-course-tile data-index="<%= i %>" data-title="<%: c.Title %>" data-language="<%: c.Language %>" data-difficulty="<%: c.Difficulty %>">
+            data-tp-course-tile data-id="<%= c.Id %>" data-index="<%= i %>" data-title="<%: c.Title %>" data-language="<%: c.Language %>" data-difficulty="<%: c.Difficulty %>">
             <div class="course-thumbnail course-thumbnail--<%= c.Theme %> select-course-thumbnail">
                 <span><%: c.Glyph %></span>
                 <i class="code-symbol code-symbol--one">{ }</i>
