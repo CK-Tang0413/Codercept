@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="signIn.aspx.cs" Inherits="Codercept.signIn" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="signIn.aspx.cs" Inherits="Codercept.signIn" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -63,6 +63,9 @@
 
             <div class="right-panel">
                 <div class="form-container">
+                    <asp:Panel ID="pnlNotice" runat="server" Visible="false" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:0.875rem 1rem; border-radius:8px; margin-bottom:1.5rem; font-size:0.875rem; line-height:1.5;">
+                        <asp:Literal ID="litNotice" runat="server"></asp:Literal>
+                    </asp:Panel>
                     <div class="auth-toggle">
                         <a href="signIn.aspx" class="active">Sign In</a>
                         <a href="signUp.aspx">Sign Up</a>

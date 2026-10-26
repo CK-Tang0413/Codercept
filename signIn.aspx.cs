@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -13,6 +13,14 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!IsPostBack)
+            {
+                if (Request.QueryString["registered"] == "pending")
+                {
+                    pnlNotice.Visible = true;
+                    litNotice.Text = "<strong>Application Received!</strong> Your educator application has been submitted and is currently pending administrator approval. You will receive an update once approved.";
+                }
+            }
         }
 
         protected void btnSignIn_Click(object sender, EventArgs e)
