@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="TeacherRegistration.aspx.cs" Inherits="Codercept.TeacherRegistration" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="TeacherRegistration.aspx.cs" Inherits="Codercept.TeacherRegistration" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -59,6 +59,11 @@
         .btn-back { width: 100%; padding: 0.875rem; background: transparent; color: #71717a; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 0.75rem; }
         .btn-back:hover { background: #f4f4f5; color: #18181b; }
         
+        /* Alert Banners */
+        .alert-banner { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500; }
+        .alert-banner.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .alert-banner.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
         /* Step Management */
         .step-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .step-container.active { display: block; }
@@ -69,6 +74,7 @@
 </head>
 <body>
     <form id="form1" runat="server" enctype="multipart/form-data">
+        <asp:HiddenField ID="hfActiveStep" runat="server" Value="1" />
         <div class="split-layout">
             <div class="left-panel">
                 <a href="signIn.aspx" class="brand">
@@ -88,6 +94,10 @@
             <div class="right-panel">
                 <div class="form-container">
                     
+                    <asp:Panel ID="pnlAlert" runat="server" Visible="false" CssClass="alert-banner error">
+                        <asp:Label ID="lblAlertMessage" runat="server" />
+                    </asp:Panel>
+
                     <!-- STEP 1: Basic Information -->
                     <div id="step1" class="step-container active">
                         <div class="form-header">
@@ -117,7 +127,7 @@
                             <label for="chkShowPassword">Show Password</label>
                         </div>
 
-                        <button type="button" class="btn-submit" onclick="goToStep(2)">Next: Qualifications</button>
+                        <button type="button" class="btn-submit" onclick="validateStep1AndProceed()">Next: Qualifications</button>
                         
                         <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a;">
                             Already have an educator account? <a href="signIn.aspx" style="color: #7c3aed; font-weight: 600; text-decoration: none;">Sign in</a>
@@ -131,7 +141,7 @@
                             <p>Step 2 of 2: Verify your teaching credentials.</p>
                         </div>
 
-                        <!-- Role Toggle[cite: 9] -->
+                        <!-- Role Toggle -->
                         <div class="role-toggle">
                             <input type="radio" id="roleTeacher" name="RoleSelection" value="Teacher" checked="checked" />
                             <label for="roleTeacher">Teacher</label>
@@ -140,34 +150,31 @@
                             <label for="roleAssistant">Teaching Assistant</label>
                         </div>
 
-                        <!-- Qualifications[cite: 9] -->
+                        <!-- Qualifications -->
                         <div class="form-group">
                             <label>Highest Qualification Level</label>
-                            <asp:TextBox ID="txtQualification" runat="server" CssClass="form-control" placeholder="e.g., Diploma in Information Technology"></asp:TextBox>
+                            <asp:TextBox ID="txtQualification" runat="server" CssClass="form-control" placeholder="e.g., Bachelor of Computer Science"></asp:TextBox>
                         </div>
                         
                         <div class="form-group">
-                            <label>Subject Area</label>
+                            <label>Subject Area (Optional)</label>
                             <asp:TextBox ID="txtSubjectArea" runat="server" CssClass="form-control" placeholder="e.g., Computer Science / Data Analytics"></asp:TextBox>
                         </div>
 
-                        <!-- Programming Languages Checkboxes[cite: 9] -->
+                        <!-- Programming Languages Checkboxes: strictly 4 languages -->
                         <div class="form-group">
                             <label>Proficient Programming Languages</label>
                             <div class="lang-grid">
                                 <label class="lang-item"><input type="checkbox" runat="server" id="chkJava" /> Java</label>
                                 <label class="lang-item"><input type="checkbox" runat="server" id="chkPython" /> Python</label>
                                 <label class="lang-item"><input type="checkbox" runat="server" id="chkCpp" /> C++</label>
-                                <label class="lang-item">
-                                    <input type="checkbox" runat="server" id="chkOthers" /> Others: 
-                                    <asp:TextBox ID="txtOthersLang" runat="server" CssClass="others-input" placeholder="e.g., Flutter"></asp:TextBox>
-                                </label>
+                                <label class="lang-item"><input type="checkbox" runat="server" id="chkC" /> C</label>
                             </div>
                         </div>
 
-                        <!-- Document Upload[cite: 9] -->
+                        <!-- Document Upload -->
                         <div class="form-group">
-                            <label>Upload Document (Certificate/Transcript)</label>
+                            <label>Upload Document (Certificate/Transcript - PDF, PNG, JPG)</label>
                             <div class="upload-zone" id="dropZone">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -187,20 +194,42 @@
     </form>
 
     <script type="text/javascript">
-// Toggle password visibility
-function toggleSignUpPassword() {
-    var pwd = document.getElementById('<%= txtPassword.ClientID %>');
+        // Toggle password visibility
+        function toggleSignUpPassword() {
+            var pwd = document.getElementById('<%= txtPassword.ClientID %>');
             var confirmPwd = document.getElementById('<%= txtConfirmPassword.ClientID %>');
             
             if (pwd != null && confirmPwd != null) {
-                if (pwd.type === "password") {
-                    pwd.type = "text";
-                    confirmPwd.type = "text";
-                } else {
-                    pwd.type = "password";
-                    confirmPwd.type = "password";
-                }
+                var newType = pwd.type === "password" ? "text" : "password";
+                pwd.type = newType;
+                confirmPwd.type = newType;
             }
+        }
+
+        function validateStep1AndProceed() {
+            var name = document.getElementById('<%= txtFullName.ClientID %>').value.trim();
+            var email = document.getElementById('<%= txtEmail.ClientID %>').value.trim();
+            var pwd = document.getElementById('<%= txtPassword.ClientID %>').value;
+            var confirmPwd = document.getElementById('<%= txtConfirmPassword.ClientID %>').value;
+
+            if (!name) {
+                alert("Please enter your full name.");
+                return;
+            }
+            if (!email || email.indexOf('@') === -1) {
+                alert("Please enter a valid email address.");
+                return;
+            }
+            if (!pwd || pwd.length < 8) {
+                alert("Password must be at least 8 characters long.");
+                return;
+            }
+            if (pwd !== confirmPwd) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            goToStep(2);
         }
 
         // Navigate between form steps
@@ -208,8 +237,24 @@ function toggleSignUpPassword() {
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.remove('active');
             
-            document.getElementById('step' + stepNumber).classList.add('active');
+            var target = document.getElementById('step' + stepNumber);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            var hf = document.getElementById('<%= hfActiveStep.ClientID %>');
+            if (hf) {
+                hf.value = stepNumber;
+            }
         }
+
+        // Restore active step if set by server
+        window.addEventListener('DOMContentLoaded', function() {
+            var hf = document.getElementById('<%= hfActiveStep.ClientID %>');
+            if (hf && hf.value === '2') {
+                goToStep(2);
+            }
+        });
 
         // Update file name text in drop zone when file selected
         function updateFileName(input) {
