@@ -1,0 +1,5 @@
+{
+    "FSharp.suggestGitignore": false,
+    "dotnet.defaultSolution": "Codercept.slnx",
+    "dotnet.preferCSharpExtension": true
+}
