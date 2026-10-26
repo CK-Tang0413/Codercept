@@ -98,6 +98,8 @@ CREATE TABLE [dbo].[Teacher] (
     [Age]           INT            NULL,
     [Region]        NVARCHAR (50)  NULL,
     [TeachingLevel] NVARCHAR (50)  NULL,
+    [QualificationName] NVARCHAR (50)  NULL,
+    [QualificationDocument] NVARCHAR (MAX) NULL,
     [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
     [DateJoined]    DATETIME       NOT NULL DEFAULT GETDATE(),
     [ApplicationId] INT            NULL,
@@ -113,6 +115,8 @@ CREATE TABLE [dbo].[Teaching_Assistant] (
     [Password]      NVARCHAR (255) NOT NULL,
     [Region]        NVARCHAR (50)  NULL,
     [TeachingLevel] NVARCHAR (50)  NULL,
+    [QualificationName] NVARCHAR (50)  NULL,
+    [QualificationDocument] NVARCHAR (MAX) NULL,
     [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
     [ApplicationId] INT            NULL,
     PRIMARY KEY CLUSTERED ([TA_Id] ASC),
@@ -388,18 +392,6 @@ CREATE TABLE [dbo].[ForumRead] (
     CONSTRAINT [PK_ForumRead] PRIMARY KEY CLUSTERED ([PostId] ASC, [TeacherId] ASC),
     CONSTRAINT [FK_ForumRead_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ForumRead_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
-);
-
-CREATE TABLE [dbo].[Qualification] (
-    [QualificationId]       INT            IDENTITY (1, 1) NOT NULL,
-    [QualificationName]     NVARCHAR (50)  NOT NULL,
-    [QualificationDocument] NVARCHAR (MAX) NOT NULL,
-    [QualificationDate]     DATE           NOT NULL,
-    [TeacherId]             INT            NULL,
-    [TA_Id]                 INT            NULL,
-    PRIMARY KEY CLUSTERED ([QualificationId] ASC),
-    CONSTRAINT [FK_Qualification_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
-    CONSTRAINT [FK_Qualification_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
 
 CREATE TABLE [dbo].[User_Log] (

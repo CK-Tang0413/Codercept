@@ -1202,8 +1202,6 @@
         var title = qs("[data-tp-forum-title]", root);
         if (!title) return; // no posts yet: nothing to wire up
 
-        function closeFlags() { qsa("[data-tp-forum-flag-pop]", root).forEach(function (p) { p.hidden = true; }); }
-
         function select(id, openOnMobile) {
             qsa("[data-tp-forum-post]", root).forEach(function (card) {
                 var on = card.getAttribute("data-tp-forum-post") === id;
@@ -1212,7 +1210,6 @@
             });
             qsa("[data-tp-forum-thread]", root).forEach(function (t) { t.hidden = t.getAttribute("data-tp-forum-thread") !== id; });
             selected.value = id;
-            closeFlags();
             setReplying("", "");
             if (openOnMobile) { root.classList.add("show-discussion"); mobile.value = "1"; }
         }
@@ -1221,30 +1218,48 @@
         function setReplying(id, name) {
             replying.value = id;
             replyingLabel.hidden = !name;
-            replyingLabel.textContent = name ? "Replying to " + name : "";
+            qs("[data-tp-forum-replying-text]", replyingLabel).textContent = name ? "Replying to " + name : "";
         }
 
         root.addEventListener("click", function (e) {
             var t = e.target;
             if (!(t instanceof Element)) return;
 
+            // "Action" on a post: open the moderate dialog for that post (without also choosing the post)
+            var action = t.closest("[data-tp-forum-action]");
+            if (action) {
+                var postCard = action.closest("[data-tp-forum-post]");
+                qs("[data-tp-moderate-title]").textContent = postCard.getAttribute("data-title");
+                qs("[data-tp-moderate-post]").value = action.getAttribute("data-tp-forum-action");
+                openModal("tpModerateModal");
+                return;
+            }
+
             var card = t.closest("[data-tp-forum-post]");
             if (card) { select(card.getAttribute("data-tp-forum-post"), true); return; }
 
             if (t.closest("[data-tp-forum-back]")) { root.classList.remove("show-discussion"); mobile.value = "0"; return; }
 
+            if (t.closest("[data-tp-forum-reply-cancel]")) { setReplying("", ""); replyInput.focus(); return; }
+
             var reply = t.closest("[data-tp-forum-reply]");
             if (reply) { setReplying(reply.getAttribute("data-tp-forum-reply"), reply.getAttribute("data-name")); replyInput.focus(); return; }
+        });
 
-            var flag = t.closest("[data-tp-forum-flag]");
-            if (flag) {
-                var pop = qs("[data-tp-forum-flag-pop]", flag.closest(".comment-popover-wrap"));
-                var wasOpen = !pop.hidden;
-                closeFlags();
-                pop.hidden = wasOpen;
-                return;
-            }
-            if (t.closest("[data-tp-forum-flag-cancel]")) closeFlags();
+        // Flag / Hide in the moderate dialog (outside the forum root): a reason is required. TODO (backend): post the reason and action
+        // (data-tp-moderate = "flag" or "hide", for the post in data-tp-moderate-post) instead of only closing the dialog.
+        document.addEventListener("click", function (e) {
+            var button = e.target instanceof Element ? e.target.closest("[data-tp-moderate]") : null;
+            if (!button) return;
+            var modal = button.closest("[data-tp-modal]");
+            var reason = qs("[data-tp-moderate-reason]", modal);
+            var wrap = reason.closest(".portal-form-field");
+            var empty = reason.value.trim().length === 0;
+            wrap.classList.toggle("has-error", empty);
+            qs("small", wrap).textContent = empty ? "Enter the reason for this action." : "";
+            if (empty) { reason.focus(); return; }
+            closeModal(modal);
+            toast("Moderation is not connected yet, so nothing was changed.");
         });
 
         // Enter in the reply box sends the reply instead of triggering whichever submit button comes first
