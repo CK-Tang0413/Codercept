@@ -113,7 +113,7 @@ namespace Codercept
                                 Session["UserType"] = "Teacher";
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
-                                // Response.Redirect("TeacherDashboard.aspx");
+                                Response.Redirect("TeacherDashboard.aspx");
                             }
                             else
                             {

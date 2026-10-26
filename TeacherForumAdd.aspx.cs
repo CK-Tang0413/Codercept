@@ -15,29 +15,33 @@ namespace Codercept
             string title = txtTeacherPostTitle.Text.Trim();
             string description = txtTeacherPostDescription.Text.Trim();
 
-            bool titleError = title.Length == 0;
-            bool descriptionError = description.Length == 0;
-            MarkError(fldTeacherPostTitle, hintTeacherPostTitle, titleError, "Title is required.");
-            MarkError(fldTeacherPostDescription, hintTeacherPostDescription, descriptionError, "Description is required.");
-            if (titleError || descriptionError) return;
-
-            // Same parsing as the live preview in TeacherPortal.js: split on commas, drop a leading #, skip blanks
+            // Same parsing as the live preview in TeacherPortal.js: split on commas, drop a leading #, skip blanks (and repeats)
             List<string> tags = txtTeacherPostTags.Text.Split(',')
                 .Select(t => t.Trim().TrimStart('#').Trim())
                 .Where(t => t.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // TODO (backend): INSERT INTO Forum (Title, Description, Tags, AuthorId, CreatedAt)
-            //   values: title, description, tags (comma separated), Session["UserId"]
-            List<TeacherForumPost> posts = TeacherSampleData.GetForumPosts();
-            posts.Insert(0, new TeacherForumPost
+            string titleMessage = title.Length == 0 ? "Title is required."
+                : title.Length > TeacherForumData.MaxTitleLength ? "Title can be at most " + TeacherForumData.MaxTitleLength + " characters." : null;
+            string descriptionMessage = description.Length == 0 ? "Description is required."
+                : description.Length > TeacherForumData.MaxDescriptionLength ? "Description can be at most " + TeacherForumData.MaxDescriptionLength + " characters." : null;
+            string tagsMessage = string.Join(",", tags).Length > TeacherForumData.MaxTagsLength
+                ? "Tags are too long: " + TeacherForumData.MaxTagsLength + " characters at most in total." : null;
+
+            MarkError(fldTeacherPostTitle, hintTeacherPostTitle, titleMessage != null, titleMessage);
+            MarkError(fldTeacherPostDescription, hintTeacherPostDescription, descriptionMessage != null, descriptionMessage);
+            // the Tags help text is the one written in the page unless there is an error
+            fldTeacherPostTags.Attributes["class"] = tagsMessage != null ? "portal-form-field has-error" : "portal-form-field";
+            hintTeacherPostTags.InnerText = tagsMessage ?? "Separate tags with commas. Hashtags will be added automatically.";
+            if (titleMessage != null || descriptionMessage != null || tagsMessage != null) return;
+
+            int postId = TeacherForumData.CreatePost(title, description, tags);
+            if (postId == 0)
             {
-                Id = posts.Max(p => p.Id) + 1,
-                Title = title,
-                Excerpt = description.Length > 110 ? description.Substring(0, 110).TrimEnd() + "..." : description,
-                Tags = tags,
-                Comments = new List<TeacherForumComment>()
-            });
+                Master.ShowToast("The post could not be saved, so nothing was published.");
+                return;
+            }
 
             Session["TeacherFlashToast"] = "Post published successfully";
             Response.Redirect("TeacherForum.aspx");

@@ -9,11 +9,11 @@ namespace Codercept
             string fullName = Session["UserName"] != null ? Session["UserName"].ToString() : TeacherSampleData.FallbackName;
             string email = Session["UserEmail"] != null ? Session["UserEmail"].ToString() : TeacherSampleData.FallbackEmail;
 
-            litTeacherNameNav.Text = fullName;
+            litTeacherNameNav.Text = Server.HtmlEncode(fullName);
             litTeacherEmailNav.Text = email;
             if (!string.IsNullOrEmpty(fullName))
             {
-                litTeacherInitial.Text = fullName.Substring(0, 1).ToUpper();
+                litTeacherInitial.Text = Server.HtmlEncode(fullName.Substring(0, 1).ToUpper());
             }
         }
 

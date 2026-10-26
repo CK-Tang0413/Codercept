@@ -212,6 +212,7 @@
     <Content Include="LearnerDashboard.aspx" />
     <Content Include="LearnerForum.aspx" />
     <Content Include="LearnerSideBar.ascx" />
+    <Content Include="media\uploads\1\13551c8f08844826b9841992d3314ee0.jpg" />
     <Content Include="MyProgress.aspx" />
     <Content Include="profile.aspx" />
     <Content Include="ResetPassword.aspx" />
@@ -255,8 +256,10 @@
     <Content Include="TeacherBreadcrumb.ascx" />
     <Content Include="TeacherChapterAdd.aspx" />
     <Content Include="TeacherChapterContent.aspx" />
+    <Content Include="TeacherChapterTest.aspx" />
     <Content Include="TeacherChapters.aspx" />
     <Content Include="TeacherConfirmModal.ascx" />
+    <Content Include="TeacherDomainInput.ascx" />
     <Content Include="TeacherCourseCard.ascx" />
     <Content Include="TeacherCourseCreate.aspx" />
     <Content Include="TeacherCourses.aspx" />
@@ -456,6 +459,13 @@
     <Compile Include="TeacherChapterContent.aspx.designer.cs">
       <DependentUpon>TeacherChapterContent.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherChapterTest.aspx.cs">
+      <DependentUpon>TeacherChapterTest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherChapterTest.aspx.designer.cs">
+      <DependentUpon>TeacherChapterTest.aspx</DependentUpon>
+    </Compile>
     <Compile Include="TeacherChapters.aspx.cs">
       <DependentUpon>TeacherChapters.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -469,6 +479,13 @@
     </Compile>
     <Compile Include="TeacherConfirmModal.ascx.designer.cs">
       <DependentUpon>TeacherConfirmModal.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherDomainInput.ascx.cs">
+      <DependentUpon>TeacherDomainInput.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherDomainInput.ascx.designer.cs">
+      <DependentUpon>TeacherDomainInput.ascx</DependentUpon>
     </Compile>
     <Compile Include="TeacherCourseCard.ascx.cs">
       <DependentUpon>TeacherCourseCard.ascx</DependentUpon>
@@ -498,6 +515,9 @@
     <Compile Include="TeacherCourseSelector.ascx.designer.cs">
       <DependentUpon>TeacherCourseSelector.ascx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherCourseStatsPdf.ashx.cs">
+      <DependentUpon>TeacherCourseStatsPdf.ashx</DependentUpon>
+    </Compile>
     <Compile Include="TeacherCourseStats.aspx.cs">
       <DependentUpon>TeacherCourseStats.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -519,6 +539,17 @@
     <Compile Include="TeacherExamEdit.aspx.designer.cs">
       <DependentUpon>TeacherExamEdit.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TeacherChapterData.cs" />
+    <Compile Include="TeacherCourseData.cs" />
+    <Compile Include="TeacherDashboardData.cs" />
+    <Compile Include="TeacherExamData.cs" />
+    <Compile Include="TeacherForumData.cs" />
+    <Compile Include="TeacherGradingData.cs" />
+    <Compile Include="TeacherLearnerData.cs" />
+    <Compile Include="TeacherMediaStore.cs" />
+    <Compile Include="TeacherSubChapterData.cs" />
+    <Compile Include="TeacherTestData.cs" />
+    <Compile Include="TeacherDb.cs" />
     <Compile Include="TeacherExams.aspx.cs">
       <DependentUpon>TeacherExams.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -601,6 +632,8 @@
       <DependentUpon>TeacherRichEditor.ascx</DependentUpon>
     </Compile>
     <Compile Include="TeacherSampleData.cs" />
+    <Compile Include="TeacherStatsData.cs" />
+    <Compile Include="TeacherAccountData.cs" />
     <Compile Include="TeacherSideBar.ascx.cs">
       <DependentUpon>TeacherSideBar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -667,6 +700,7 @@
     <Content Include="TeacherSite.master" />
     <Content Include="secrets.config" />
     <Content Include="TeacherLearnerReportPdf.ashx" />
+    <Content Include="TeacherCourseStatsPdf.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

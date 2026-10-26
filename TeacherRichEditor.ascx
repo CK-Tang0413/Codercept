@@ -8,5 +8,5 @@
         <button type="button" aria-label="link"><%= TeacherIcons.Svg("link", 15) %></button>
         <button type="button" aria-label="list"><%= TeacherIcons.Svg("list", 15) %></button>
     </div>
-    <asp:TextBox ID="txtTeacherRichText" runat="server" TextMode="MultiLine" Rows="7" aria-label="Description"></asp:TextBox>
+    <asp:TextBox ID="txtTeacherRichText" runat="server" TextMode="MultiLine" Rows="7" ValidateRequestMode="Disabled" aria-label="Description"></asp:TextBox>
 </div>

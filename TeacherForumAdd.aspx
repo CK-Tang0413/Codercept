@@ -18,20 +18,20 @@
             <div class="forum-form-fields">
                 <label id="fldTeacherPostTitle" runat="server" class="portal-form-field">
                     <span>Title</span>
-                    <asp:TextBox ID="txtTeacherPostTitle" runat="server" MaxLength="150"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherPostTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="150"></asp:TextBox>
                     <small id="hintTeacherPostTitle" runat="server"></small>
                 </label>
 
                 <label id="fldTeacherPostDescription" runat="server" class="portal-form-field post-description-field">
                     <span>Description</span>
-                    <asp:TextBox ID="txtTeacherPostDescription" runat="server" TextMode="MultiLine" Rows="8"></asp:TextBox>
+                    <asp:TextBox ID="txtTeacherPostDescription" runat="server" ValidateRequestMode="Disabled" TextMode="MultiLine" Rows="8"></asp:TextBox>
                     <small id="hintTeacherPostDescription" runat="server"></small>
                 </label>
 
-                <label class="portal-form-field">
+                <label id="fldTeacherPostTags" runat="server" class="portal-form-field">
                     <span>Tags</span>
-                    <asp:TextBox ID="txtTeacherPostTags" runat="server" data-tp-tag-source></asp:TextBox>
-                    <small>Separate tags with commas. Hashtags will be added automatically.</small>
+                    <asp:TextBox ID="txtTeacherPostTags" runat="server" ValidateRequestMode="Disabled" data-tp-tag-source></asp:TextBox>
+                    <small id="hintTeacherPostTags" runat="server">Separate tags with commas. Hashtags will be added automatically.</small>
                 </label>
                 <div class="tag-preview" aria-label="Tag preview" data-tp-tag-preview></div>
             </div>

@@ -21,7 +21,7 @@
         <uc:CourseSelector ID="selTeacherCourse" runat="server" Compact="true" />
     </section>
 
-    <section class="flow-section">
+    <section class="flow-section" data-tp-region="details">
         <uc:StepHeading ID="shTeacherResults" runat="server" Step="2" Title="View / Download statistics" />
         <div class="statistics-layout">
             <article class="detail-card statistics-card">
@@ -45,9 +45,9 @@
                 <div class="completion-block">
                     <div class="completion-copy">
                         <span>Completion rate</span>
-                        <strong>74%</strong>
+                        <strong><%= Figures.CompletionRate %>%</strong>
                     </div>
-                    <div class="progress-track"><span></span></div>
+                    <div class="progress-track"><span style="width: <%= Figures.CompletionRate %>%"></span></div>
                 </div>
                 <asp:LinkButton ID="btnTeacherSaveCourseStatsPdf" runat="server" CssClass="button button--secondary download-button" OnClick="btnTeacherSaveCourseStatsPdf_Click"><svg aria-hidden="true" class="icon" fill="none" height="17" viewBox="0 0 24 24" width="17"><path d='M12 3v12m-5-5 5 5 5-5M5 21h14' /></svg><span>Save course statistics as PDF</span></asp:LinkButton>
             </article>
@@ -58,7 +58,7 @@
                         <span>Assessment results</span>
                         <h3>Performance Statistics</h3>
                     </div>
-                    <span class="badge badge--success">84 graded</span>
+                    <span class="badge badge--success"><%: Performance.Graded %> graded</span>
                 </div>
                 <div class="metric-grid">
                     <asp:Repeater ID="rptTeacherMetrics" runat="server">

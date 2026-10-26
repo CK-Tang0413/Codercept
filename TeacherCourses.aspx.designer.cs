@@ -60,6 +60,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtTeacherCourseDescription;
 
         /// <summary>
+        /// fldTeacherEditLanguage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherEditLanguage;
+
+        /// <summary>
         /// ddlTeacherCourseLanguage control.
         /// </summary>
         /// <remarks>
@@ -67,6 +76,24 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlTeacherCourseLanguage;
+
+        /// <summary>
+        /// hintTeacherEditLanguage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherEditLanguage;
+
+        /// <summary>
+        /// ctlTeacherDomains control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::Codercept.TeacherDomainInput ctlTeacherDomains;
 
         /// <summary>
         /// ddlTeacherCourseDifficulty control.

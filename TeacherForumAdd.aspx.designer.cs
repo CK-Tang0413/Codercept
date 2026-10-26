@@ -69,6 +69,15 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherPostDescription;
 
         /// <summary>
+        /// fldTeacherPostTags control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl fldTeacherPostTags;
+
+        /// <summary>
         /// txtTeacherPostTags control.
         /// </summary>
         /// <remarks>
@@ -76,6 +85,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtTeacherPostTags;
+
+        /// <summary>
+        /// hintTeacherPostTags control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl hintTeacherPostTags;
 
         /// <summary>
         /// btnTeacherPublishPost control.

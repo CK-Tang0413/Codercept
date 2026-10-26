@@ -39,8 +39,8 @@
         </div>
 
         <div class="grading-course-grid grading-course-grid--grid" data-tp-cl-grid>
-            <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; int pending = TeacherSampleData.PendingSubmissions(i); %>
-            <a class="grading-course-card" href="TeacherGradeAssessments.aspx?course=<%= i %>" data-tp-cl-item data-title="<%: c.Title %>" data-status="<%= pending > 0 ? "Pending" : "None" %>">
+            <% for (int i = 0; i < Courses.Count; i++) { TeacherCourse c = Courses[i]; int pending = PendingOf(c.Id); %>
+            <a class="grading-course-card" href="TeacherGradeAssessments.aspx?course=<%= c.Id %>" data-tp-cl-item data-title="<%: c.Title %>" data-status="<%= pending > 0 ? "Pending" : "None" %>">
                 <div class="course-thumbnail course-thumbnail--<%= c.Theme %> grading-course-thumbnail">
                     <span><%: c.Glyph %></span>
                     <i class="code-symbol code-symbol--one">{ }</i>
