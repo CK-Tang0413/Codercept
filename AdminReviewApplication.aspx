@@ -10,43 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <style>
-        :root {
-            --bg-body: #0a0a0f;
-            --bg-panel: #14151a;
-            --bg-card: #181920;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --border-color: #2b2d3a;
-            
-            --accent-purple: #6366f1;
-            --accent-purple-hover: #4f46e5;
-            --accent-purple-bg: rgba(99, 102, 241, 0.12);
-            
-            --accent-blue: #3b82f6;
-            --accent-blue-bg: rgba(59, 130, 246, 0.12);
-
-            --success-green: #10b981;
-            --success-green-hover: #059669;
-            --success-green-bg: rgba(16, 185, 129, 0.12);
-            --success-green-border: rgba(16, 185, 129, 0.25);
-            
-            --danger-red: #ef4444;
-            --danger-red-hover: #dc2626;
-            --danger-red-bg: rgba(239, 68, 68, 0.12);
-            --danger-red-border: rgba(239, 68, 68, 0.25);
-            
-            --warning-orange: #f59e0b;
-            --warning-orange-bg: rgba(245, 158, 11, 0.12);
-        }
-
-        .review-wrapper {
-            padding: 32px 40px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Top Breadcrumb & Navigation */
+        <style>
+        /* Applicant Overview Banner */
         .breadcrumb-row {
             display: flex;
             align-items: center;
@@ -54,41 +19,6 @@
             margin-bottom: 24px;
         }
 
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .btn-back:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: var(--text-secondary);
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--warning-orange-bg);
-            color: var(--warning-orange);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        /* Applicant Overview Banner */
         .applicant-header-card {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -141,162 +71,17 @@
             font-size: 12px;
             font-weight: 600;
         }
-        .badge-teacher { background-color: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
-        .badge-ta { background-color: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid rgba(99, 102, 241, 0.3); }
 
         /* Grid of Details */
         .details-grid {
             display: grid;
-            grid-template-columns: 1.6fr 1fr; /* Adjusted for wide screens */
+            grid-template-columns: 1.6fr 1fr;
             gap: 24px;
             margin-bottom: 32px;
         }
 
         @media (max-width: 900px) {
             .details-grid { grid-template-columns: 1fr; }
-        }
-
-        .info-card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-        }
-
-        .info-card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .info-card-title i {
-            color: var(--accent-purple);
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 14px;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .info-label {
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
-
-        .info-value {
-            color: var(--text-primary);
-            font-weight: 500;
-            text-align: right;
-        }
-
-        /* Chips / Tags */
-        .chip-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: flex-end;
-            max-width: 320px;
-        }
-
-        .lang-chip {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            background-color: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-        .lang-chip.highlight {
-            background-color: var(--accent-purple-bg);
-            border-color: rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
-        }
-
-        /* Document Cards */
-        .docs-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .doc-item {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: border-color 0.2s;
-        }
-
-        .doc-item:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-        }
-
-        .doc-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .doc-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            background-color: rgba(239, 68, 68, 0.12);
-            color: var(--danger-red);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .doc-meta h5 {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .doc-meta p {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .btn-view-doc {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-view-doc:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-            border-color: var(--text-secondary);
         }
 
         /* Decision Action Footer */
@@ -356,107 +141,6 @@
             background-color: var(--danger-red-bg);
         }
 
-        /* Modal Overlays */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-overlay.active { display: flex; }
-
-        .modal-box {
-            background-color: #171821;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 520px;
-            padding: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-        }
-
-        .modal-box.large {
-            max-width: 850px;
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-box h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .modal-box p.modal-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .form-textarea {
-            width: 100%;
-            min-height: 120px;
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-            resize: vertical;
-            transition: border-color 0.2s;
-        }
-        .form-textarea:focus { border-color: var(--danger-red); }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .btn-modal-cancel {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-modal-cancel:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
-
-        .btn-modal-reject {
-            background-color: var(--danger-red);
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-modal-reject:hover { background-color: var(--danger-red-hover); }
-
         /* Document Viewer Mockup inside Modal */
         .doc-preview-body {
             flex: 1;
@@ -487,26 +171,6 @@
             margin-bottom: 24px;
         }
 
-        .feedback-card .form-textarea {
-            width: 100%;
-            min-height: 100px;
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 14px 16px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-            resize: vertical;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-
-        .feedback-card .form-textarea:focus {
-            border-color: var(--accent-purple);
-        }
-
         .feedback-hint {
             display: flex;
             align-items: center;
@@ -515,7 +179,6 @@
             font-size: 12px;
             color: var(--text-secondary);
         }
-
         .feedback-hint i {
             color: var(--warning-orange);
         }

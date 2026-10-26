@@ -3,7 +3,7 @@
 <aside class="sidebar">
     <div class="sidebar-top">
         <div class="logo-area">
-            <div class="logo-icon">CL</div>
+            <img class="logo-icon" src="~/img/Codercept_Icon.png" alt="Codercept" runat="server" />
             <div class="logo-text">
                 <h1>Codercept</h1>
                 <p>Admin Portal</p>
@@ -29,6 +29,12 @@
             <li>
                 <a class="nav-item <%= GetActiveCssClass("Courses") %>" href="AdminCourses.aspx">
                     <i class="fa-solid fa-book-open"></i> Courses
+                </a>
+            </li>
+            <li>
+                <a href="AdminUserLogs.aspx" class="nav-item <%= Request.Path.Contains("AdminUserLogs") ? "active" : "" %>">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Activity Logs</span>
                 </a>
             </li>
         </ul>

@@ -31,5 +31,32 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::Codercept.Admin_Sidebar SidebarCtrl;
+
+        /// <summary>
+        /// pnlSuperAdminAction control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSuperAdminAction;
+
+        /// <summary>
+        /// UserProfileDetailsCtrl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::Codercept.UserProfileDetails UserProfileDetailsCtrl;
+
+        /// <summary>
+        /// CreateAdminAccountCtrl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::Codercept.CreateAdminAccount CreateAdminAccountCtrl;
     }
 }

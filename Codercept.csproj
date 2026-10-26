@@ -173,6 +173,7 @@
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminReviewApplication.aspx" />
     <Content Include="AdminSidebar.ascx" />
+    <Content Include="AdminUserLogs.aspx" />
     <Content Include="AdminUserManagement.aspx" />
     <Content Include="App_Data\Codercept_db.mdf" />
     <Content Include="App_Data\Codercept_db_log.ldf">
@@ -199,6 +200,7 @@
     <Content Include="CourseCatalog.aspx" />
     <Content Include="CourseDetails.aspx" />
     <Content Include="CourseViewer.aspx" />
+    <Content Include="CreateAdminAccount.ascx" />
     <Content Include="css\admin-portal.css" />
     <Content Include="css\global.css" />
     <Content Include="css\teacher-portal.css" />
@@ -281,6 +283,7 @@
     <Content Include="TeacherSideBar.ascx" />
     <Content Include="TeacherStatCard.ascx" />
     <Content Include="TeacherStepHeading.ascx" />
+    <Content Include="UserProfileDetails.ascx" />
     <Content Include="VerifyOTP.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -320,6 +323,13 @@
     <Compile Include="AdminSidebar.ascx.designer.cs">
       <DependentUpon>AdminSidebar.ascx</DependentUpon>
     </Compile>
+    <Compile Include="AdminUserLogs.aspx.cs">
+      <DependentUpon>AdminUserLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminUserLogs.aspx.designer.cs">
+      <DependentUpon>AdminUserLogs.aspx</DependentUpon>
+    </Compile>
     <Compile Include="AdminUserManagement.aspx.cs">
       <DependentUpon>AdminUserManagement.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -356,6 +366,13 @@
     </Compile>
     <Compile Include="CourseViewer.aspx.designer.cs">
       <DependentUpon>CourseViewer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CreateAdminAccount.ascx.cs">
+      <DependentUpon>CreateAdminAccount.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CreateAdminAccount.ascx.designer.cs">
+      <DependentUpon>CreateAdminAccount.ascx</DependentUpon>
     </Compile>
     <Compile Include="ForgotPassword.aspx.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
@@ -637,6 +654,13 @@
     </Compile>
     <Compile Include="TeacherStepHeading.ascx.designer.cs">
       <DependentUpon>TeacherStepHeading.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="UserProfileDetails.ascx.cs">
+      <DependentUpon>UserProfileDetails.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UserProfileDetails.ascx.designer.cs">
+      <DependentUpon>UserProfileDetails.ascx</DependentUpon>
     </Compile>
     <Compile Include="VerifyOTP.aspx.cs">
       <DependentUpon>VerifyOTP.aspx</DependentUpon>
