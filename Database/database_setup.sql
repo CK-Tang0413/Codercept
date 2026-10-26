@@ -61,12 +61,17 @@ CREATE TABLE [dbo].[Admin] (
 );
 
 CREATE TABLE [dbo].[Application] (
-    [ApplicationId]      INT            IDENTITY (1, 1) NOT NULL,
-    [CredentialDocument] NVARCHAR (MAX) NULL,
-    [ApprovalStatus]     NVARCHAR (50)  NULL,
-    [RejectReason]       NVARCHAR (MAX) NULL,
-    [DateReviewed]       DATETIME       NULL,
-    PRIMARY KEY CLUSTERED ([ApplicationId] ASC)
+    [ApplicationId]         INT            IDENTITY (1, 1) NOT NULL,
+    [RoleApplied]           NVARCHAR (50)  NOT NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
+    [CredentialDocument]    NVARCHAR (MAX) NULL,
+    [ApprovalStatus]        NVARCHAR (50)  NOT NULL DEFAULT 'Pending',
+    [RejectReason]          NVARCHAR (MAX) NULL,
+    [DateSubmitted]         DATETIME       NOT NULL DEFAULT GETDATE(),
+    [DateReviewed]          DATETIME       NULL,
+    PRIMARY KEY CLUSTERED ([ApplicationId] ASC),
+    CONSTRAINT [CK_Application_Role] CHECK ([RoleApplied] IN ('Teacher', 'Teaching Assistant')),
+    CONSTRAINT [CK_Application_Status] CHECK ([ApprovalStatus] IN ('Pending', 'Approved', 'Rejected'))
 );
 
 CREATE TABLE [dbo].[Subject] (
@@ -111,16 +116,18 @@ CREATE TABLE [dbo].[Teacher] (
 );
 
 CREATE TABLE [dbo].[Teaching_Assistant] (
-    [TA_Id]         INT            IDENTITY (1, 1) NOT NULL,
-    [Name]          NVARCHAR (50)  NOT NULL,
-    [Email]         NVARCHAR (50)  NOT NULL,
-    [Password]      NVARCHAR (255) NOT NULL,
-    [Region]        NVARCHAR (50)  NULL,
-    [TeachingLevel] NVARCHAR (50)  NULL,
-    [QualificationName] NVARCHAR (50)  NULL,
+    [TA_Id]                 INT            IDENTITY (1, 1) NOT NULL,
+    [Name]                  NVARCHAR (50)  NOT NULL,
+    [Email]                 NVARCHAR (50)  NOT NULL,
+    [Password]              NVARCHAR (255) NOT NULL,
+    [Age]                   INT            NULL,
+    [Region]                NVARCHAR (50)  NULL,
+    [TeachingLevel]         NVARCHAR (50)  NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
     [QualificationDocument] NVARCHAR (MAX) NULL,
-    [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
-    [ApplicationId] INT            NULL,
+    [AccStatus]             NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [DateJoined]            DATETIME       NOT NULL DEFAULT GETDATE(),
+    [ApplicationId]         INT            NULL,
     PRIMARY KEY CLUSTERED ([TA_Id] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
     CONSTRAINT [FK_TeachingAssistant_Application] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Application] ([ApplicationId])
@@ -444,9 +451,6 @@ VALUES ('Kylan Shane Sedrick', 'kylan1234@gmail.com', '$2a$12$cNIkYdVSLG5nagfnR3
 INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
 VALUES ('Wan Hon Kit', 'wan1234@gmail.com', '$2a$12$UtK5EgXtoXPquMKIIrcTuufwaCSlhcz6o6xpWX3zcWuDag3j5yJoO', GETDATE(), 'Active', 21, 'Penang, Malaysia', 'Student');
 
--- Insert Teaching Assistant Account (password: Ta123456)
-INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Region], [TeachingLevel], [AccStatus])
-VALUES ('Jayvee Ong', 'ta1234@gmail.com', '$2a$12$J30n/rvXoP5nIN.cisq6e.ZYklfN8w5sZI3rtTsS6IZz.cxcxr6la', 'Kuala Lumpur, Malaysia', 'Beginner', 'Active');
 
 -- ==========================================
 -- Teacher portal test data (Backend Phase 1, Step 1.1)
@@ -708,4 +712,9 @@ VALUES ('Hi everyone! I want to build a small game.', 'No', NULL, @PostId, @Kyla
 
 INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
 VALUES ('Reminder: C final examination', 'The final examination for C Programming Essentials covers every chapter. Revise pointers and arrays.', DATEADD(DAY, -3, GETDATE()), NULL, 'Exam,Reminder', @SarahId);
+
+-- ==========================================
+-- 4. TEACHING ASSISTANT MOCK DATA
+-- (TA Dashboard, Courses, Provisional Grading, Forum Moderation, and TA Profile)
+-- ==========================================
 
