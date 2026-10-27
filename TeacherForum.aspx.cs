@@ -75,6 +75,39 @@ namespace Codercept
                 return;
             }
 
+            if (parts[0] == "moderate" && parts.Length == 2)
+            {
+                // Flag or Hide: the post is the one named by the dialog, and only when it is one of the posts shown here (never "the first post")
+                int modPostId;
+                if (!int.TryParse(Request.Unvalidated.Form["tpModeratePost"], out modPostId) || !Posts.Any(p => p.Id == modPostId))
+                {
+                    Master.ShowToast("That post could not be found, so nothing was changed.");
+                    return;
+                }
+                string verb = parts[1] == "hide" ? "Hide" : "Flag";
+                ForumModerateResult done = TeacherForumData.Moderate(modPostId, verb, Request.Unvalidated.Form["tpModerateReason"]);
+                switch (done)
+                {
+                    case ForumModerateResult.Done:
+                        ReloadPosts();
+                        Master.ShowToast(verb == "Hide" ? "Post hidden" : "Post flagged");
+                        break;
+                    case ForumModerateResult.AlreadyFlagged:
+                        Master.ShowToast("This post is already flagged.");
+                        break;
+                    case ForumModerateResult.ReasonMissing:
+                        Master.ShowToast("Enter the reason for this action, so nothing was changed.");
+                        break;
+                    case ForumModerateResult.ReasonTooLong:
+                        Master.ShowToast("The reason can be at most " + TeacherForumData.MaxReasonLength + " characters, so nothing was changed.");
+                        break;
+                    default:
+                        Master.ShowToast("That post could not be found, so nothing was changed.");
+                        break;
+                }
+                return;
+            }
+
             int pinPostId, commentId;
             if (parts.Length != 3 || !int.TryParse(parts[1], out pinPostId) || !int.TryParse(parts[2], out commentId)) return;
             TeacherForumPost post = Posts.FirstOrDefault(p => p.Id == pinPostId);
@@ -87,11 +120,6 @@ namespace Codercept
                 // saved in SQL only for a reply of a post this teacher can see; the page then shows the new state
                 if (TeacherForumData.TogglePin(post.Id, comment.Id) == null) Master.ShowToast("That comment could not be found, so nothing was saved.");
                 else ReloadPosts();
-            }
-            else if (parts[0] == "flag")
-            {
-                // flagging needs the moderation feature (teaching assistants), which is not built yet
-                Master.ShowToast("Flagging comes with moderation, so nothing was saved.");
             }
         }
 

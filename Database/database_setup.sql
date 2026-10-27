@@ -358,6 +358,8 @@ CREATE TABLE [dbo].[Forum] (
     [LearnerId]  INT            NULL,
     [Tags]       NVARCHAR (255) NULL, -- comma-separated, for example 'Python,Fundamental'
     [TeacherId]  INT            NULL,
+    [IsFlagged]  BIT            NOT NULL DEFAULT 0, -- moderation: shown with a red background
+    [IsHidden]   BIT            NOT NULL DEFAULT 0, -- moderation: not shown on the forum page (the row is kept)
     PRIMARY KEY CLUSTERED ([PostId] ASC),
     CONSTRAINT [CK_Forum_OneAuthor] CHECK ((CASE WHEN [LearnerId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) = 1), -- written by a learner or by a teacher
     CONSTRAINT [FK_Forum_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
@@ -365,12 +367,18 @@ CREATE TABLE [dbo].[Forum] (
 );
 
 CREATE TABLE [dbo].[Moderate_Forum] (
+    [ModerateId]     INT            IDENTITY (1, 1) NOT NULL,
     [PostId]         INT            NOT NULL,
-    [TA_Id]          INT            NOT NULL,
+    [TeacherId]      INT            NULL,
+    [TA_Id]          INT            NULL,
+    [ModerateAction] NVARCHAR (10)  NOT NULL, -- 'Flag' or 'Hide'
     [ModerateReason] NVARCHAR (MAX) NOT NULL,
     [DateModerate]   DATETIME       NOT NULL,
-    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([PostId] ASC, [TA_Id] ASC),
+    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerateId] ASC),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide')),
+    CONSTRAINT [CK_ModerateForum_OneModerator] CHECK ((CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TA_Id] IS NULL THEN 0 ELSE 1 END) = 1), -- done by a teacher or by a teaching assistant
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
+    CONSTRAINT [FK_ModerateForum_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
 

@@ -260,6 +260,8 @@ namespace Codercept
         public string Title { get; set; }
         public string Excerpt { get; set; }
         public List<string> Tags { get; set; }
+        /// <summary>Forum.IsFlagged: a moderator flagged the post (shown with a red background).</summary>
+        public bool Flagged { get; set; }
         public List<TeacherForumComment> Comments { get; set; }
     }
 

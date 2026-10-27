@@ -28,7 +28,7 @@
         <div class="forum-layout">
             <section class="post-list" aria-label="Forum posts">
                 <% foreach (TeacherForumPost post in Posts) { bool sel = post.Id == SelectedPost.Id; %>
-                <article class="forum-post-card<%= sel ? " is-selected" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>">
+                <article class="forum-post-card<%= sel ? " is-selected" : "" %><%= post.Flagged ? " is-flagged" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>">
                     <h2><%: post.Title %></h2>
                     <p><%: post.Excerpt %></p>
                     <div class="post-tags">
@@ -36,7 +36,7 @@
                     </div>
                     <div class="post-card-footer">
                         <button type="button" class="comment-count" data-tp-forum-open="<%= post.Id %>">Comment (<%= post.Comments.Count %>)</button>
-                        <button type="button" class="post-action" data-tp-forum-action="<%= post.Id %>" aria-label="Actions for <%: post.Title %>">Action</button>
+                        <button type="button" class="post-action" data-tp-forum-action="<%= post.Id %>" data-flagged="<%= post.Flagged ? "1" : "0" %>" aria-label="Actions for <%: post.Title %>">Action</button>
                     </div>
                 </article>
                 <% } %>
@@ -93,22 +93,23 @@
 </asp:Content>
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
-    <%-- Opened by the "Action" button of a post. TODO (backend): post the reason and the chosen action (flag / hide) and store them in Moderate_Forum. --%>
+    <%-- Opened by the "Action" button of a post. Flag and Hide post tpForumAction "moderate:flag" / "moderate:hide" with the post (tpModeratePost) and
+         the reason (tpModerateReason); the page saves them (Forum.IsFlagged / IsHidden) and the reason in Moderate_Forum. --%>
     <div class="modal-backdrop" role="presentation" id="tpModerateModal" data-tp-modal data-tp-region="tpModerateModal" hidden>
         <div class="modal moderate-modal" role="dialog" aria-modal="true" aria-labelledby="tpModerateModalTitle">
             <h2 id="tpModerateModalTitle">Moderate this post</h2>
             <p>Post: <strong data-tp-moderate-title></strong></p>
             <label class="portal-form-field">
                 <span>Reason</span>
-                <textarea rows="4" maxlength="500" placeholder="Explain why you are flagging or hiding this post..." aria-label="Reason" data-tp-moderate-reason data-tp-clear-on-close data-tp-autofocus></textarea>
+                <textarea name="tpModerateReason" rows="4" maxlength="500" placeholder="Explain why you are flagging or hiding this post..." aria-label="Reason" data-tp-moderate-reason data-tp-clear-on-close data-tp-autofocus></textarea>
                 <small></small>
             </label>
             <p class="moderate-note"><strong>Flag</strong> highlights the post in red. <strong>Hide</strong> removes it from the forum page.</p>
-            <input type="hidden" data-tp-moderate-post />
+            <input type="hidden" name="tpModeratePost" data-tp-moderate-post />
             <div class="modal-actions">
                 <button type="button" class="button button--ghost" data-tp-close-modal><span>Cancel</span></button>
-                <button type="button" class="button button--secondary" data-tp-moderate="flag"><span>Flag</span></button>
-                <button type="button" class="button button--danger" data-tp-moderate="hide"><span>Hide</span></button>
+                <button type="submit" name="tpForumAction" value="moderate:flag" class="button button--secondary" data-tp-moderate="flag"><span>Flag</span></button>
+                <button type="submit" name="tpForumAction" value="moderate:hide" class="button button--danger" data-tp-moderate="hide"><span>Hide</span></button>
             </div>
         </div>
     </div>

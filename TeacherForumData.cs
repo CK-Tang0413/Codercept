@@ -15,6 +15,18 @@ namespace Codercept
         TooLong
     }
 
+    /// <summary>What happened when a teacher flagged or hid a forum post.</summary>
+    public enum ForumModerateResult
+    {
+        Done,
+        /// <summary>The post is not one this teacher can see (or it is already hidden).</summary>
+        NotFound,
+        /// <summary>The post is already flagged.</summary>
+        AlreadyFlagged,
+        ReasonMissing,
+        ReasonTooLong
+    }
+
     /// <summary>
     /// Database queries for the teacher forum. A forum post has no course, so which posts a teacher sees is decided here, in SQL:
     /// the posts the teacher wrote, and the posts of learners who are enrolled (LearnerProgress) in one of the teacher's courses
@@ -22,10 +34,13 @@ namespace Codercept
     /// </summary>
     public static class TeacherForumData
     {
-        /// <summary>The posts of Forum f the signed-in teacher may see.</summary>
+        /// <summary>The posts of Forum f the signed-in teacher may see. A hidden post (Forum.IsHidden) is not shown to anyone, so it is never visible here.</summary>
         private const string Visible =
-            "(f.TeacherId = @TeacherId OR EXISTS (SELECT 1 FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
-            "WHERE lp.LearnerId = f.LearnerId AND c.TeacherId = @TeacherId))";
+            "(f.IsHidden = 0 AND (f.TeacherId = @TeacherId OR EXISTS (SELECT 1 FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
+            "WHERE lp.LearnerId = f.LearnerId AND c.TeacherId = @TeacherId)))";
+
+        /// <summary>The longest reason a moderator can give (the dialog allows 500).</summary>
+        public const int MaxReasonLength = 500;
 
         /// <summary>Forum.Title is NVARCHAR(255); the form allows 150.</summary>
         public const int MaxTitleLength = 150;
@@ -52,7 +67,7 @@ namespace Codercept
                 con.Open();
 
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT f.PostId, f.Title, f.Content, f.Tags FROM Forum f WHERE " + Visible + " ORDER BY f.DatePosted DESC, f.PostId DESC", con))
+                    "SELECT f.PostId, f.Title, f.Content, f.Tags, f.IsFlagged FROM Forum f WHERE " + Visible + " ORDER BY f.DatePosted DESC, f.PostId DESC", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -65,6 +80,7 @@ namespace Codercept
                                 Title = reader.GetString(1),
                                 Excerpt = ExcerptOf(reader.GetString(2)),
                                 Tags = TagsOf(reader.IsDBNull(3) ? "" : reader.GetString(3)),
+                                Flagged = reader.GetBoolean(4),
                                 Comments = new List<TeacherForumComment>()
                             });
                         }
@@ -159,6 +175,54 @@ namespace Codercept
                 cmd.Parameters.AddWithValue("@ParentThreadId", parentThreadId.HasValue ? (object)parentThreadId.Value : DBNull.Value);
                 con.Open();
                 return cmd.ExecuteNonQuery() == 1 ? ForumReplyResult.Saved : ForumReplyResult.NotFound;
+            }
+        }
+
+        /// <summary>
+        /// Flags ("Flag": the post gets a red background) or hides ("Hide": the post is no longer shown) one of the posts the signed-in teacher can
+        /// see, and records who did it, what they did and why in Moderate_Forum, in one transaction. The reason is required. Flagging an
+        /// already flagged post changes nothing. Both marks stay in the database, so they survive signing out and closing the website.
+        /// </summary>
+        public static ForumModerateResult Moderate(int postId, string action, string reason)
+        {
+            reason = (reason ?? "").Trim();
+            if (action != "Flag" && action != "Hide") return ForumModerateResult.NotFound;
+            if (reason.Length == 0) return ForumModerateResult.ReasonMissing;
+            if (reason.Length > MaxReasonLength) return ForumModerateResult.ReasonTooLong;
+
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    // only a post this teacher can see; the row is locked so two moderators cannot both flag it
+                    bool flagged;
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT f.IsFlagged FROM Forum f WITH (UPDLOCK, HOLDLOCK) WHERE f.PostId = @PostId AND " + Visible, con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        object found = cmd.ExecuteScalar();
+                        if (found == null) return ForumModerateResult.NotFound;
+                        flagged = (bool)found;
+                    }
+                    if (action == "Flag" && flagged) return ForumModerateResult.AlreadyFlagged;
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE Forum SET " + (action == "Flag" ? "IsFlagged" : "IsHidden") + " = 1 WHERE PostId = @PostId; " +
+                        "INSERT INTO Moderate_Forum (PostId, TeacherId, TA_Id, ModerateAction, ModerateReason, DateModerate) " +
+                        "VALUES (@PostId, @TeacherId, NULL, @Action, @Reason, GETDATE())", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        cmd.Parameters.AddWithValue("@Action", action);
+                        cmd.Parameters.AddWithValue("@Reason", reason);
+                        cmd.ExecuteNonQuery();
+                    }
+                    tx.Commit();
+                    return ForumModerateResult.Done;
+                }
             }
         }
 
