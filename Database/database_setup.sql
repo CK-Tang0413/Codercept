@@ -59,12 +59,17 @@ CREATE TABLE [dbo].[Admin] (
 );
 
 CREATE TABLE [dbo].[Application] (
-    [ApplicationId]      INT            IDENTITY (1, 1) NOT NULL,
-    [CredentialDocument] NVARCHAR (MAX) NULL,
-    [ApprovalStatus]     NVARCHAR (50)  NULL,
-    [RejectReason]       NVARCHAR (MAX) NULL,
-    [DateReviewed]       DATETIME       NULL,
-    PRIMARY KEY CLUSTERED ([ApplicationId] ASC)
+    [ApplicationId]         INT            IDENTITY (1, 1) NOT NULL,
+    [RoleApplied]           NVARCHAR (50)  NOT NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
+    [CredentialDocument]    NVARCHAR (MAX) NULL,
+    [ApprovalStatus]        NVARCHAR (50)  NOT NULL DEFAULT 'Pending',
+    [RejectReason]          NVARCHAR (MAX) NULL,
+    [DateSubmitted]         DATETIME       NOT NULL DEFAULT GETDATE(),
+    [DateReviewed]          DATETIME       NULL,
+    PRIMARY KEY CLUSTERED ([ApplicationId] ASC),
+    CONSTRAINT [CK_Application_Role] CHECK ([RoleApplied] IN ('Teacher', 'Teaching Assistant')),
+    CONSTRAINT [CK_Application_Status] CHECK ([ApprovalStatus] IN ('Pending', 'Approved', 'Rejected'))
 );
 
 CREATE TABLE [dbo].[Subject] (
@@ -109,16 +114,18 @@ CREATE TABLE [dbo].[Teacher] (
 );
 
 CREATE TABLE [dbo].[Teaching_Assistant] (
-    [TA_Id]         INT            IDENTITY (1, 1) NOT NULL,
-    [Name]          NVARCHAR (50)  NOT NULL,
-    [Email]         NVARCHAR (50)  NOT NULL,
-    [Password]      NVARCHAR (255) NOT NULL,
-    [Region]        NVARCHAR (50)  NULL,
-    [TeachingLevel] NVARCHAR (50)  NULL,
-    [QualificationName] NVARCHAR (50)  NULL,
+    [TA_Id]                 INT            IDENTITY (1, 1) NOT NULL,
+    [Name]                  NVARCHAR (50)  NOT NULL,
+    [Email]                 NVARCHAR (50)  NOT NULL,
+    [Password]              NVARCHAR (255) NOT NULL,
+    [Age]                   INT            NULL,
+    [Region]                NVARCHAR (50)  NULL,
+    [TeachingLevel]         NVARCHAR (50)  NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
     [QualificationDocument] NVARCHAR (MAX) NULL,
-    [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
-    [ApplicationId] INT            NULL,
+    [AccStatus]             NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [DateJoined]            DATETIME       NOT NULL DEFAULT GETDATE(),
+    [ApplicationId]         INT            NULL,
     PRIMARY KEY CLUSTERED ([TA_Id] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
     CONSTRAINT [FK_TeachingAssistant_Application] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Application] ([ApplicationId])
