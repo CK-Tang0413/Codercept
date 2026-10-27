@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCourses.aspx.cs" Inherits="Codercept.Admin_Courses" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCourses.aspx.cs" Inherits="Codercept.Admin_Courses" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -35,8 +35,9 @@
 
         .col-enrolled {
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             text-align: center;
+            color: var(--text-primary);
         }
 
         .col-rating {

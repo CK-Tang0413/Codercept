@@ -10,34 +10,39 @@
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <style>
-        /* Alert Banner */
+        /* Alert Banner (Matching Teacher Portal Welcome Banner) */
         .alert-banner {
             background: var(--banner-bg);
-            border: 1px solid var(--success-green-border);
-            border-radius: 12px;
-            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 24px 28px;
             margin-bottom: 32px;
+            box-shadow: 0 12px 30px rgba(67, 56, 202, 0.18);
+            color: var(--banner-text);
         }
 
-        .alert-banner h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
-        .alert-banner p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+        .alert-banner h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #ffffff; letter-spacing: -0.01em; }
+        .alert-banner p { color: #e0e7ff; font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
 
         .btn-review {
-            background-color: rgba(217, 119, 6, 0.1);
-            color: #d97706;
-            border: 1px solid rgba(217, 119, 6, 0.2);
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
             padding: 10px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        .btn-review:hover { background-color: rgba(217, 119, 6, 0.15); }
+        .btn-review:hover { 
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
 
         /* Pending Approvals */
         .approvals-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; }
@@ -49,6 +54,12 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .approval-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-hover);
         }
         .user-details { display: flex; align-items: center; gap: 16px; }
 
@@ -59,25 +70,37 @@
             padding: 8px 14px; 
             border-radius: 6px; 
             font-size: 12px; 
-            font-weight: 500; 
+            font-weight: 600; 
             cursor: pointer; 
             text-decoration: none;
-            border: 1px solid var(--accent-purple); 
-            color: #a5b4fc; 
+            border: 1px solid #ddd6fe; 
+            color: var(--accent-purple); 
             background: var(--accent-purple-bg);
             transition: all 0.2s;
         }
         .btn-action-review:hover {
-            background-color: rgba(99, 102, 241, 0.2);
+            background-color: var(--accent-purple);
+            border-color: var(--accent-purple);
             color: #fff;
         }
 
         /* User Breakdown */
         .breakdown-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
-        .breakdown-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 10px; padding: 24px; }
-        .breakdown-card h3 { font-size: 24px; margin-bottom: 4px; }
+        .breakdown-card { 
+            background-color: var(--bg-panel); 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            padding: 24px; 
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .breakdown-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-hover);
+        }
+        .breakdown-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
         .breakdown-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
-        .status-text { font-size: 12px; color: var(--success-green); font-weight: 500; }
+        .status-text { font-size: 12px; color: var(--success-green); font-weight: 600; }
 
         /* Pinned Announcements */
         .announcements-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
@@ -88,17 +111,23 @@
             padding: 20px; 
             display: flex; 
             gap: 16px; 
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .announcement-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-hover);
         }
         .announcement-card.success { border-color: var(--success-green-border); background-color: var(--success-green-bg); }
         .announcement-card.warning { border-color: var(--warning-orange-border); background-color: var(--warning-orange-bg); }
-        .announcement-card.info { border-color: rgba(59, 130, 246, 0.2); background-color: rgba(59, 130, 246, 0.05); }
+        .announcement-card.info { border-color: var(--info-blue-border); background-color: var(--info-blue-bg); }
 
         .announcement-icon { margin-top: 2px; }
         .announcement-card.success .announcement-icon { color: var(--success-green); }
-        .announcement-card.warning .announcement-icon { color: var(--warning-orange); }
-        .announcement-card.info .announcement-icon { color: #3b82f6; }
+        .announcement-card.warning .announcement-icon { color: var(--warning-orange-text); }
+        .announcement-card.info .announcement-icon { color: var(--info-blue); }
 
-        .announcement-content h5 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .announcement-content h5 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
         .announcement-content p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
     </style>
 </head>
