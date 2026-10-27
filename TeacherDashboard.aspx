@@ -12,11 +12,6 @@
             <span class="eyebrow">OVERVIEW</span>
             <h1>Dashboard</h1>
         </div>
-        <label class="input-wrap">
-            <span class="sr-only">Search dashboard</span>
-            <%= TeacherIcons.Svg("search", 18) %>
-            <input aria-label="Search dashboard" placeholder="Search..." type="search" />
-        </label>
     </div>
 
     <section class="welcome-banner">

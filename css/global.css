@@ -159,6 +159,6 @@ body, html {
     transition: color 0.2s;
 }
 
-    .sign-out:hover {
-        color: #ef4444;
-    }
+.sign-out:hover {
+    color: #ef4444;
+}
