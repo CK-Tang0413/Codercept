@@ -5,29 +5,56 @@
 <html lang="en">
 <head id="taHead" runat="server">
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teaching Assistant - Codercept</title>
 
-    <!-- 1. Shared variables + layout, 2. TA responsive layout (must load AFTER global.css) -->
-    <link href="~/css/global.css" rel="stylesheet" type="text/css" runat="server" />
-    <link href="~/css/ta-responsive.css?v=4" rel="stylesheet" type="text/css" runat="server" />
+    <!-- Prototype fonts (Inter / Plus Jakarta Sans / JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- 3. Page-specific styles -->
+    <link href="~/css/global.css" rel="stylesheet" type="text/css" runat="server" />
+    <link href="~/css/teacher-portal.css" rel="stylesheet" type="text/css" runat="server" />
+
     <asp:ContentPlaceHolder ID="cphHead" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
     <form id="formTA" runat="server">
-        <div class="dashboard-layout">
+        <div class="dashboard-layout tp-app">
 
+            <button type="button" class="sidebar-backdrop" aria-label="Close navigation" data-tp-backdrop data-tp-close-menu></button>
             <uc:Sidebar ID="TASideBarCtrl" runat="server" />
 
             <main class="main-content">
-                <asp:ContentPlaceHolder ID="cphMain" runat="server"></asp:ContentPlaceHolder>
+                <header class="mobile-header">
+                    <button type="button" class="icon-button mobile-menu" aria-label="Open menu" data-tp-open-menu>
+                        <%= TeacherIcons.Svg("menu", 20) %>
+                    </button>
+                    <div class="mobile-brand">
+                        <img src="img/Codercept_Icon.png" alt="" style="height: 32px; width: auto;" />
+                        <span class="brand-name">Codercept</span>
+                    </div>
+                    <a href="TAProfile.aspx" aria-label="Open My Account">
+                        <span class="avatar avatar--amber avatar--sm" aria-hidden="true"><%= UserInitial %></span>
+                    </a>
+                </header>
+
+                <div class="page-container">
+                    <asp:ContentPlaceHolder ID="cphMain" runat="server"></asp:ContentPlaceHolder>
+                </div>
             </main>
 
+            <div class="toast" role="status" data-tp-toast>
+                <span class="toast-icon"><%= TeacherIcons.Svg("check", 15) %></span>
+                <span data-tp-toast-text></span>
+            </div>
+
+            <!-- Page-specific modals live inside .tp-app so scoped styles apply -->
+            <asp:ContentPlaceHolder ID="cphModals" runat="server"></asp:ContentPlaceHolder>
         </div>
     </form>
 
+    <script src="<%= ResolveUrl("~/TeacherPortal.js") %>?v=<%= AssetVersion("~/TeacherPortal.js") %>"></script>
     <asp:ContentPlaceHolder ID="cphScripts" runat="server"></asp:ContentPlaceHolder>
 </body>
 </html>

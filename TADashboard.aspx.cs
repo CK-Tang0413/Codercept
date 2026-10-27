@@ -10,6 +10,7 @@ namespace Codercept
         public class GradingItem
         {
             public int AttemptId { get; set; }
+            public int CourseId { get; set; }
             public string LearnerName { get; set; }
             public string Title { get; set; }
             public string Type { get; set; }
@@ -85,20 +86,21 @@ namespace Codercept
                     a.AttemptDate,
                     COALESCE(q.QuizTitle, asm.AssessmentTitle, ex.ExamTitle) AS Title,
                     CASE WHEN a.QuizId IS NOT NULL THEN 'Quiz' WHEN a.AssessmentId IS NOT NULL THEN 'Assessment' ELSE 'Exam' END AS Type,
+                    c.CourseId,
                     c.CourseTitle,
                     COALESCE(gp.ProgressStatus, 'Pending') AS Status,
                     COUNT(*) OVER () AS TotalCount
                 FROM [dbo].[Attempt] a
                 INNER JOIN [dbo].[Learner] l ON l.LearnerId = a.LearnerId
                 LEFT JOIN [dbo].[Quiz] q ON q.QuizId = a.QuizId
-                LEFT JOIN [dbo].[SubChapter] sc ON sc.SubChapterId = q.SubChapterId
                 LEFT JOIN [dbo].[Assessment] asm ON asm.AssessmentId = a.AssessmentId
                 LEFT JOIN [dbo].[Exam] ex ON ex.ExamId = a.ExamId
-                LEFT JOIN [dbo].[Chapter] ch ON ch.ChapterId = COALESCE(sc.ChapterId, asm.ChapterId, ex.ChapterId)
-                LEFT JOIN [dbo].[Course] c ON c.CourseId = ch.CourseId
+                LEFT JOIN [dbo].[Chapter] ch ON ch.ChapterId = COALESCE(q.ChapterId, asm.ChapterId)
+                LEFT JOIN [dbo].[Course] c ON c.CourseId = COALESCE(ch.CourseId, ex.CourseId)
                 LEFT JOIN [dbo].[GradingProgress] gp ON gp.AttemptId = a.AttemptId
-                WHERE a.AttemptStatus = 'Submitted'
-                  AND (gp.GradingProgId IS NULL OR (gp.TA_Id = @TA_Id AND gp.ProgressStatus = 'In Progress'))
+                WHERE (a.AttemptStatus = 'completed' OR a.AttemptStatus = 'Submitted')
+                  AND (gp.GradingProgId IS NULL OR (gp.TA_Id = @TA_Id AND gp.ProgressStatus IN ('In Progress', 'in_progress')))
+                  AND NOT EXISTS (SELECT 1 FROM [dbo].[Result] r WHERE r.AttemptId = a.AttemptId)
                 ORDER BY a.AttemptDate ASC";
 
             using (SqlConnection con = new SqlConnection(connString))
@@ -117,6 +119,7 @@ namespace Codercept
                         items.Add(new GradingItem
                         {
                             AttemptId = Convert.ToInt32(reader["AttemptId"]),
+                            CourseId = reader["CourseId"] != DBNull.Value ? Convert.ToInt32(reader["CourseId"]) : 0,
                             LearnerName = Server.HtmlEncode(reader["LearnerName"].ToString()),
                             Title = Server.HtmlEncode(reader["Title"].ToString()),
                             Type = reader["Type"].ToString(),
@@ -138,8 +141,9 @@ namespace Codercept
                 SELECT
                     (SELECT COUNT(*) FROM [dbo].[Attempt] a
                         LEFT JOIN [dbo].[GradingProgress] gp ON gp.AttemptId = a.AttemptId
-                        WHERE a.AttemptStatus = 'Submitted'
-                          AND (gp.GradingProgId IS NULL OR (gp.TA_Id = @TA_Id AND gp.ProgressStatus = 'In Progress'))) AS ToMark,
+                        WHERE (a.AttemptStatus = 'completed' OR a.AttemptStatus = 'Submitted')
+                          AND NOT EXISTS (SELECT 1 FROM [dbo].[Result] r WHERE r.AttemptId = a.AttemptId)
+                          AND (gp.GradingProgId IS NULL OR (gp.TA_Id = @TA_Id AND gp.ProgressStatus IN ('In Progress', 'in_progress', 'Draft')))) AS ToMark,
                     (SELECT COUNT(*) FROM [dbo].[GradingProgress] WHERE TA_Id = @TA_Id AND ProgressStatus = 'Reviewed') AS Awaiting";
 
             toMark = awaiting = 0;

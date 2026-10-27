@@ -2,429 +2,315 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
 namespace Codercept
 {
     public partial class TAForumModeration : System.Web.UI.Page
     {
-        // 1. Define Data Structures
-        public class Post
-        {
-            public int PostId { get; set; }
-            public string Title { get; set; }
-            public string Content { get; set; }
-            public string Author { get; set; }
-            public string Posted { get; set; }
-            public int ReplyCount { get; set; }
-            public bool IsVerified { get; set; }
-            public bool IsReported { get; set; }
-            public bool IsHidden { get; set; }
-            public bool IsUnsolved { get { return !IsVerified && !IsHidden; } }
-            public string Flag { get { return IsHidden ? "Hidden" : (IsVerified ? "Verified" : "Unsolved"); } }
-            public string FlagCss { get { return IsHidden ? "flag-hidden" : (IsVerified ? "flag-verified" : "flag-unsolved"); } }
-            // Reported is a moderation state, shown beside the answer status instead of replacing it
-            public bool ShowReported { get { return IsReported && !IsHidden; } }
-            public string CssClass { get; set; }
-        }
-
-        public class Reply
-        {
-            public int ThreadId { get; set; }
-            public string Author { get; set; }
-            public string Role { get; set; }
-            public string RoleCss { get; set; }
-            public string Content { get; set; }
-            public string ContentHtml { get { return TAHelpers.FormatRichText(Content); } }
-            public string Posted { get; set; }
-            public bool IsPinned { get; set; }
-            public string CssClass { get { return IsPinned ? "pinned" : ""; } }
-        }
-
-        public class ModerationEntry
-        {
-            public string Action { get; set; }
-            public string Moderator { get; set; }
-            public string Reason { get; set; }
-            public string When { get; set; }
-        }
-
-        // A post stays in the staff list until it is deleted; hidden posts remain visible to staff only
-        private const string OpenPostFilter = TAHelpers.ForumNotDeleted;
-
-        private readonly string connString = TAHelpers.ConnectionString;
+        protected List<TeacherForumPost> Posts;
+        protected TeacherForumPost SelectedPost;
+        protected bool MobileDiscussion;
 
         protected string CurrentFilter { get; private set; } = "all";
-
         private int TaId { get { return Convert.ToInt32(Session["UserId"]); } }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            string filter = (Request.QueryString["filter"] ?? "all").ToLower();
-            CurrentFilter = (filter == "unsolved" || filter == "verified" || filter == "reported") ? filter : "all";
+            string f = (Request.QueryString["filter"] ?? "").ToLower();
+            CurrentFilter = (f == "flagged" || f == "hidden") ? f : "all";
 
-            if (!IsPostBack)
+            Posts = GetForumPosts();
+
+            int id;
+            int.TryParse(hfTeacherForumPost.Value, out id);
+            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
+
+            if (IsPostBack)
             {
-                LoadForumData();
+                HandleAction(Request.Form["tpForumAction"]);
             }
+
+            hfTeacherForumPost.Value = SelectedPost == null ? "" : SelectedPost.Id.ToString();
+            MobileDiscussion = hfTeacherForumMobile.Value == "1";
         }
 
-        protected string GetTabClass(string tab)
+        private void ReloadPosts()
         {
-            return tab == CurrentFilter ? "active" : "";
+            int id = SelectedPost == null ? 0 : SelectedPost.Id;
+            Posts = GetForumPosts();
+            SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
+            hfTeacherForumPost.Value = SelectedPost == null ? "" : SelectedPost.Id.ToString();
         }
 
-        // ---------- Data access ----------
-
-        private List<Post> GetPosts()
+        private void HandleAction(string action)
         {
-            string query = @"
-                SELECT f.PostId, f.Title, f.Content, l.Name AS Author, f.DatePosted,
-                       (SELECT COUNT(*) FROM [dbo].[Post_Reply] r WHERE r.PostId = f.PostId) AS ReplyCount,
-                       CASE WHEN " + TAHelpers.ForumHasVerifiedAnswer + @" THEN 1 ELSE 0 END AS IsVerified,
-                       CASE WHEN EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag') THEN 1 ELSE 0 END AS IsReported,
-                       CASE WHEN NOT " + TAHelpers.ForumVisibleToLearners + @" THEN 1 ELSE 0 END AS IsHidden
-                FROM [dbo].[Forum] f
-                INNER JOIN [dbo].[Learner] l ON l.LearnerId = f.LearnerId
-                WHERE " + OpenPostFilter + @"
-                ORDER BY f.DatePosted DESC";
+            if (string.IsNullOrEmpty(action) || SelectedPost == null) return;
+            string[] parts = action.Split(':');
 
-            var list = new List<Post>();
-
-            using (SqlConnection con = new SqlConnection(connString))
-            using (SqlCommand cmd = new SqlCommand(query, con))
+            if (parts[0] == "reply")
             {
-                con.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                string body = txtTAReply.Text.Trim();
+                if (body.Length == 0) return;
+
+                int postId;
+                if (!int.TryParse(hfTeacherForumPost.Value, out postId) || !Posts.Any(p => p.Id == postId))
                 {
-                    while (reader.Read())
+                    Master.ShowToast("Choose a post first, so nothing was saved.");
+                    return;
+                }
+                int parent;
+                int? parentId = int.TryParse(hfTeacherReplyingTo.Value, out parent) && parent > 0 ? parent : (int?)null;
+
+                AddReply(postId, body, parentId);
+                txtTAReply.Text = "";
+                hfTeacherReplyingTo.Value = "";
+                ReloadPosts();
+                Master.ShowToast("Your reply was posted.");
+            }
+            else if (parts[0] == "pin" && parts.Length == 3)
+            {
+                int postId, threadId;
+                if (int.TryParse(parts[1], out postId) && int.TryParse(parts[2], out threadId))
+                {
+                    bool? pinned = TogglePin(postId, threadId);
+                    ReloadPosts();
+                    if (pinned.HasValue)
                     {
-                        list.Add(new Post
-                        {
-                            PostId = Convert.ToInt32(reader["PostId"]),
-                            Title = reader["Title"].ToString(),
-                            Content = reader["Content"].ToString(),
-                            Author = reader["Author"].ToString(),
-                            Posted = TAHelpers.TimeAgo(Convert.ToDateTime(reader["DatePosted"])),
-                            ReplyCount = Convert.ToInt32(reader["ReplyCount"]),
-                            IsVerified = Convert.ToInt32(reader["IsVerified"]) == 1,
-                            IsReported = Convert.ToInt32(reader["IsReported"]) == 1,
-                            IsHidden = Convert.ToInt32(reader["IsHidden"]) == 1
-                        });
+                        Master.ShowToast(pinned.Value ? "Comment pinned to the top." : "Comment unpinned.");
                     }
                 }
             }
-
-            return list;
         }
 
-        private List<Reply> GetReplies(int postId)
+        protected void btnModerate_Click(object sender, EventArgs e)
         {
-            const string query = @"
-                SELECT r.ThreadId, r.ReplyComment, r.IsPinned, r.DateReplied,
-                       COALESCE(l.Name, t.Name, ta.Name) AS Author,
-                       CASE WHEN r.TeacherId IS NOT NULL THEN 'Teacher' WHEN r.TA_Id IS NOT NULL THEN 'TA' ELSE 'Learner' END AS Role
-                FROM [dbo].[Post_Reply] r
-                LEFT JOIN [dbo].[Learner] l ON l.LearnerId = r.LearnerId
-                LEFT JOIN [dbo].[Teacher] t ON t.TeacherId = r.TeacherId
-                LEFT JOIN [dbo].[Teaching_Assistant] ta ON ta.TA_Id = r.TA_Id
-                WHERE r.PostId = @PostId
-                ORDER BY CASE r.IsPinned WHEN 'Yes' THEN 0 ELSE 1 END, r.DateReplied ASC";
-
-            var list = new List<Reply>();
-
-            using (SqlConnection con = new SqlConnection(connString))
-            using (SqlCommand cmd = new SqlCommand(query, con))
+            var btn = sender as Button;
+            string action = btn != null ? btn.CommandArgument : "Flag";
+            int postId;
+            if (!int.TryParse(hfModeratePostId.Value, out postId))
             {
-                cmd.Parameters.AddWithValue("@PostId", postId);
-                con.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        string role = reader["Role"].ToString();
-
-                        list.Add(new Reply
-                        {
-                            ThreadId = Convert.ToInt32(reader["ThreadId"]),
-                            Author = reader["Author"].ToString(),
-                            Role = role,
-                            RoleCss = role == "Teacher" ? "role-teacher" : (role == "TA" ? "role-ta" : "role-learner"),
-                            Content = reader["ReplyComment"].ToString(),
-                            Posted = TAHelpers.TimeAgo(Convert.ToDateTime(reader["DateReplied"])),
-                            IsPinned = reader["IsPinned"].ToString() == "Yes"
-                        });
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        private List<ModerationEntry> GetModerationLog(int postId)
-        {
-            const string query = @"
-                SELECT m.ModerationAction, m.ModerateReason, m.DateModerate, ta.Name AS Moderator
-                FROM [dbo].[Moderate_Forum] m
-                INNER JOIN [dbo].[Teaching_Assistant] ta ON ta.TA_Id = m.TA_Id
-                WHERE m.PostId = @PostId
-                ORDER BY m.DateModerate DESC, m.ModerationId DESC";
-
-            var list = new List<ModerationEntry>();
-
-            using (SqlConnection con = new SqlConnection(connString))
-            using (SqlCommand cmd = new SqlCommand(query, con))
-            {
-                cmd.Parameters.AddWithValue("@PostId", postId);
-                con.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        list.Add(new ModerationEntry
-                        {
-                            Action = reader["ModerationAction"].ToString(),
-                            Moderator = reader["Moderator"].ToString(),
-                            Reason = reader["ModerateReason"].ToString(),
-                            When = TAHelpers.TimeAgo(Convert.ToDateTime(reader["DateModerate"]))
-                        });
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        // ---------- Page binding ----------
-
-        private void LoadForumData()
-        {
-            var all = GetPosts();
-
-            // Tab counts (always computed over the full list)
-            litCountAll.Text = all.Count.ToString();
-            litCountUnsolved.Text = all.Count(p => p.IsUnsolved).ToString();
-            litCountVerified.Text = all.Count(p => p.IsVerified).ToString();
-            litCountReported.Text = all.Count(p => p.IsReported && !p.IsHidden).ToString();
-            litFilterLabel.Text = CurrentFilter == "unsolved" ? "Unsolved" : CurrentFilter == "verified" ? "Verified" : CurrentFilter == "reported" ? "Reported" : "All posts";
-
-            // Apply the active filter
-            List<Post> filtered;
-            if (CurrentFilter == "unsolved") filtered = all.Where(p => p.IsUnsolved).ToList();
-            else if (CurrentFilter == "verified") filtered = all.Where(p => p.IsVerified).ToList();
-            else if (CurrentFilter == "reported") filtered = all.Where(p => p.IsReported && !p.IsHidden).ToList();
-            else filtered = all;
-
-            int.TryParse(Request.QueryString["post"], out int postId);
-            var selected = filtered.FirstOrDefault(p => p.PostId == postId) ?? filtered.FirstOrDefault();
-            if (selected != null) selected.CssClass = "selected";
-
-            phListEmpty.Visible = filtered.Count == 0;
-            rptPosts.DataSource = filtered;
-            rptPosts.DataBind();
-
-            // Bind the thread panel for the selected post
-            if (selected == null)
-            {
-                phThread.Visible = false;
-                phNoSelection.Visible = true;
+                Master.ShowToast("No post was selected for moderation.");
                 return;
             }
 
-            phThread.Visible = true;
-            phNoSelection.Visible = false;
-            hfPostId.Value = selected.PostId.ToString();
+            string reason = txtModerateReason.Text.Trim();
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "Moderated by TA";
+            }
 
-            litPostTitle.Text = Server.HtmlEncode(selected.Title);
-            litPostAuthor.Text = Server.HtmlEncode(selected.Author);
-            litPostTime.Text = selected.Posted;
-            litPostBadges.Text = $"<span class='flag-badge {selected.FlagCss}'>{selected.Flag}</span>" + (selected.ShowReported ? "<span class='flag-badge flag-reported'>Reported</span>" : "");
-            litPostContent.Text = TAHelpers.FormatRichText(selected.Content);
-
-            txtModReason.Text = "";
-            pnlHiddenNotice.Visible = selected.IsHidden;
-            btnFlagPost.Enabled = !selected.IsReported && !selected.IsHidden;
-            btnHidePost.Enabled = !selected.IsHidden;
-
-            var log = GetModerationLog(selected.PostId);
-            phModLog.Visible = log.Count > 0;
-            rptModLog.DataSource = log;
-            rptModLog.DataBind();
-
-            var replies = GetReplies(selected.PostId);
-            litReplyCount.Text = $"{replies.Count} repl{(replies.Count == 1 ? "y" : "ies")}";
-            rptReplies.DataSource = replies;
-            rptReplies.DataBind();
-        }
-
-        // ---------- Actions ----------
-
-        private bool TryGetPostId(out int postId)
-        {
-            if (int.TryParse(hfPostId.Value, out postId)) return true;
-            ShowMessage("No post selected.", false);
-            return false;
-        }
-
-        // True when the post still exists and has not been removed
-        private static bool IsPostOpen(SqlConnection con, int postId)
-        {
-            using (SqlCommand cmd = new SqlCommand(
-                "SELECT COUNT(1) FROM [dbo].[Forum] f WHERE f.PostId = @PostId AND " + OpenPostFilter, con))
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+            using (SqlCommand cmd = new SqlCommand(@"
+                INSERT INTO [dbo].[Moderate_Forum] (PostId, TA_Id, ModerationAction, ModerateReason, DateModerate)
+                VALUES (@PostId, @TA_Id, @Action, @Reason, GETDATE())", con))
             {
                 cmd.Parameters.AddWithValue("@PostId", postId);
-                return (int)cmd.ExecuteScalar() > 0;
-            }
-        }
-
-        private const string PostGoneMessage = "This post is no longer available.";
-
-        protected void btnReply_Click(object sender, EventArgs e)
-        {
-            int postId;
-            if (!TryGetPostId(out postId)) return;
-
-            string text = txtReply.Text.Trim();
-            if (text.Length == 0) { ShowMessage("Reply cannot be empty.", false); return; }
-            if (text.Length > 4000) { ShowMessage("Reply is too long (4000 characters maximum).", false); return; }
-
-            using (SqlConnection con = new SqlConnection(connString))
-            {
+                cmd.Parameters.AddWithValue("@TA_Id", TaId);
+                cmd.Parameters.AddWithValue("@Action", action);
+                cmd.Parameters.AddWithValue("@Reason", reason);
                 con.Open();
-                if (!IsPostOpen(con, postId)) { ShowMessage(PostGoneMessage, false); return; }
-
-                using (SqlCommand cmd = new SqlCommand(
-                    "INSERT INTO [dbo].[Post_Reply] (ReplyComment, IsPinned, PostId, TA_Id) VALUES (@Text, 'No', @PostId, @TA_Id)", con))
-                {
-                    cmd.Parameters.AddWithValue("@Text", text);
-                    cmd.Parameters.AddWithValue("@PostId", postId);
-                    cmd.Parameters.AddWithValue("@TA_Id", TaId);
-                    cmd.ExecuteNonQuery();
-                }
+                cmd.ExecuteNonQuery();
             }
 
-            txtReply.Text = "";
-            LoadForumData();
-            ShowMessage("Reply posted.", true);
+            txtModerateReason.Text = "";
+            ReloadPosts();
+            Master.ShowToast(action == "Hide" ? "Post has been hidden from the forum." : "Post has been flagged for moderation.");
         }
 
-        protected void rptReplies_ItemCommand(object source, RepeaterCommandEventArgs e)
+        protected void btnUnflag_Click(object sender, EventArgs e)
         {
             int postId;
-            if (!TryGetPostId(out postId)) return;
-
-            int threadId = int.Parse((string)e.CommandArgument);
-            string message;
-
-            using (SqlConnection con = new SqlConnection(connString))
+            if (!int.TryParse(hfModeratePostId.Value, out postId))
             {
-                con.Open();
-                if (!IsPostOpen(con, postId)) { ShowMessage(PostGoneMessage, false); return; }
-
-                if (e.CommandName == "Pin")
-                {
-                    // Only one pinned answer per post: pinning one unpins the others, pinning it again unpins it
-                    const string pin = @"
-                        DECLARE @WasPinned NVARCHAR(50) = (SELECT IsPinned FROM [dbo].[Post_Reply] WHERE ThreadId = @ThreadId AND PostId = @PostId);
-                        UPDATE [dbo].[Post_Reply] SET IsPinned = 'No', DatePinned = NULL WHERE PostId = @PostId;
-                        IF @WasPinned = 'No'
-                            UPDATE [dbo].[Post_Reply] SET IsPinned = 'Yes', DatePinned = GETDATE() WHERE ThreadId = @ThreadId AND PostId = @PostId;
-                        SELECT @WasPinned;";
-
-                    using (SqlCommand cmd = new SqlCommand(pin, con))
-                    {
-                        cmd.Parameters.AddWithValue("@ThreadId", threadId);
-                        cmd.Parameters.AddWithValue("@PostId", postId);
-                        object wasPinned = cmd.ExecuteScalar();
-                        message = wasPinned == null || wasPinned == DBNull.Value ? "Reply not found."
-                                : (wasPinned.ToString() == "Yes" ? "Verified Answer removed." : "Reply marked as the Verified Answer.");
-                    }
-                }
-                else if (e.CommandName == "Delete")
-                {
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Post_Reply] WHERE ThreadId = @ThreadId AND PostId = @PostId", con))
-                    {
-                        cmd.Parameters.AddWithValue("@ThreadId", threadId);
-                        cmd.Parameters.AddWithValue("@PostId", postId);
-                        message = cmd.ExecuteNonQuery() > 0 ? "Reply deleted." : "Reply not found.";
-                    }
-                }
-                else
-                {
-                    return;
-                }
+                if (SelectedPost != null) postId = SelectedPost.Id;
+                else return;
             }
 
-            LoadForumData();
-            ShowMessage(message, true);
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = 'Flag'", con))
+            {
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            ReloadPosts();
+            Master.ShowToast("Post flag has been dismissed.");
         }
 
-        protected void btnFlagPost_Click(object sender, EventArgs e)
-        {
-            ModeratePost(ModerationAction.Flag, "Post reported. It stays visible and is listed under Reported.");
-        }
-
-        protected void btnHidePost_Click(object sender, EventArgs e)
-        {
-            ModeratePost(ModerationAction.Hide, "Post hidden. Learners can no longer see it.");
-        }
-
-        protected void btnDeletePost_Click(object sender, EventArgs e)
-        {
-            ModeratePost(ModerationAction.Delete, "Post deleted.");
-        }
-
-        // Records the action in Moderate_Forum (the moderation log); the post's state is derived from those rows
-        private void ModeratePost(string action, string successMessage)
+        protected void btnUnhide_Click(object sender, EventArgs e)
         {
             int postId;
-            if (!TryGetPostId(out postId)) return;
+            if (!int.TryParse(hfModeratePostId.Value, out postId))
+            {
+                if (SelectedPost != null) postId = SelectedPost.Id;
+                else return;
+            }
 
-            string reason = txtModReason.Text.Trim();
-            if (reason.Length == 0) { ShowMessage("Please enter a reason for this action.", false); return; }
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = 'Hide'", con))
+            {
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
 
-            using (SqlConnection con = new SqlConnection(connString))
+            ReloadPosts();
+            Master.ShowToast("Post has been unhidden and restored to the public forum.");
+        }
+
+        private List<TeacherForumPost> GetForumPosts()
+        {
+            var list = new List<TeacherForumPost>();
+            string filterSql = "";
+
+            if (CurrentFilter == "flagged")
+            {
+                filterSql = @"WHERE EXISTS (
+                    SELECT 1 FROM [dbo].[Moderate_Forum] m
+                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag'
+                ) AND NOT EXISTS (
+                    SELECT 1 FROM [dbo].[Moderate_Forum] m
+                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                )";
+            }
+            else if (CurrentFilter == "hidden")
+            {
+                filterSql = @"WHERE EXISTS (
+                    SELECT 1 FROM [dbo].[Moderate_Forum] m
+                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                )";
+            }
+            else
+            {
+                filterSql = @"WHERE NOT EXISTS (
+                    SELECT 1 FROM [dbo].[Moderate_Forum] m
+                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                )";
+            }
+
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
             {
                 con.Open();
-                if (!IsPostOpen(con, postId)) { ShowMessage(PostGoneMessage, false); return; }
 
-                // Hiding or reporting twice would only add noise to the log
-                if (action != ModerationAction.Delete)
+                using (SqlCommand cmd = new SqlCommand(@"
+                    SELECT f.PostId, f.Title, f.Content, f.Tags,
+                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason,
+                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide' ORDER BY m.DateModerate DESC) AS HideReason
+                    FROM [dbo].[Forum] f
+                    " + filterSql + @"
+                    ORDER BY f.DatePosted DESC, f.PostId DESC", con))
                 {
-                    using (SqlCommand cmd = new SqlCommand(
-                        "SELECT COUNT(1) FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = @Action", con))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        cmd.Parameters.AddWithValue("@PostId", postId);
-                        cmd.Parameters.AddWithValue("@Action", action);
-                        if ((int)cmd.ExecuteScalar() > 0)
+                        while (reader.Read())
                         {
-                            ShowMessage(action == ModerationAction.Flag ? "This post is already reported." : "This post is already hidden.", false);
-                            return;
+                            string flagReason = reader.IsDBNull(4) ? null : reader.GetString(4);
+                            string hideReason = reader.IsDBNull(5) ? null : reader.GetString(5);
+                            list.Add(new TeacherForumPost
+                            {
+                                Id = reader.GetInt32(0),
+                                Title = reader.GetString(1),
+                                Excerpt = ExcerptOf(reader.GetString(2)),
+                                Tags = TagsOf(reader.IsDBNull(3) ? "" : reader.GetString(3)),
+                                Comments = new List<TeacherForumComment>(),
+                                IsFlagged = !string.IsNullOrEmpty(flagReason),
+                                FlagReason = flagReason,
+                                IsHidden = !string.IsNullOrEmpty(hideReason),
+                                HideReason = hideReason
+                            });
                         }
                     }
                 }
 
-                using (SqlCommand cmd = new SqlCommand(
-                    "INSERT INTO [dbo].[Moderate_Forum] (PostId, TA_Id, ModerationAction, ModerateReason, DateModerate) VALUES (@PostId, @TA_Id, @Action, @Reason, GETDATE())", con))
+                // Fetch replies
+                using (SqlCommand cmd = new SqlCommand(@"
+                    SELECT r.ThreadId, r.PostId, r.ReplyComment, r.IsPinned,
+                           COALESCE(l.Name, t.Name, ta.Name, 'Unknown') AS AuthorName,
+                           CASE WHEN r.TeacherId IS NOT NULL THEN 'TEACHER'
+                                WHEN r.TA_Id IS NOT NULL THEN 'TA'
+                                ELSE 'LEARNER' END AS Role,
+                           r.ParentThreadId
+                    FROM [dbo].[Post_Reply] r
+                    LEFT JOIN [dbo].[Learner] l ON l.LearnerId = r.LearnerId
+                    LEFT JOIN [dbo].[Teacher] t ON t.TeacherId = r.TeacherId
+                    LEFT JOIN [dbo].[Teaching_Assistant] ta ON ta.TA_Id = r.TA_Id
+                    ORDER BY r.ThreadId", con))
                 {
-                    cmd.Parameters.AddWithValue("@PostId", postId);
-                    cmd.Parameters.AddWithValue("@TA_Id", TaId);
-                    cmd.Parameters.AddWithValue("@Action", action);
-                    cmd.Parameters.AddWithValue("@Reason", reason);
-                    cmd.ExecuteNonQuery();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int postId = reader.GetInt32(1);
+                            TeacherForumPost post = list.FirstOrDefault(p => p.Id == postId);
+                            if (post == null) continue;
+
+                            string name = reader.GetString(4);
+                            post.Comments.Add(new TeacherForumComment
+                            {
+                                Id = reader.GetInt32(0),
+                                Name = name,
+                                Initials = name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "U",
+                                Role = reader.GetString(5),
+                                Body = reader.GetString(2),
+                                Pinned = reader.GetString(3) == "Yes",
+                                ParentId = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6)
+                            });
+                        }
+                    }
                 }
             }
-
-            // A deleted post drops out of the list, so the next post is selected
-            LoadForumData();
-            ShowMessage(successMessage, true);
+            return list;
         }
 
-        private void ShowMessage(string message, bool success)
+        private void AddReply(int postId, string body, int? parentId)
         {
-            litMessage.Text = Server.HtmlEncode(message);
-            pnlMessage.CssClass = success ? "toast" : "toast toast-error";
-            pnlMessage.Visible = true;
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+            using (SqlCommand cmd = new SqlCommand(@"
+                INSERT INTO [dbo].[Post_Reply] (ReplyComment, IsPinned, PostId, TA_Id, ParentThreadId, DateReplied)
+                VALUES (@Body, 'No', @PostId, @TA_Id, @ParentId, GETDATE())", con))
+            {
+                cmd.Parameters.AddWithValue("@Body", body);
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                cmd.Parameters.AddWithValue("@TA_Id", TaId);
+                cmd.Parameters.AddWithValue("@ParentId", (object)parentId ?? DBNull.Value);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private bool? TogglePin(int postId, int threadId)
+        {
+            using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+            using (SqlCommand cmd = new SqlCommand(@"
+                UPDATE [dbo].[Post_Reply]
+                SET IsPinned = CASE WHEN IsPinned = 'Yes' THEN 'No' ELSE 'Yes' END,
+                    DatePinned = CASE WHEN IsPinned = 'Yes' THEN NULL ELSE GETDATE() END
+                OUTPUT inserted.IsPinned
+                WHERE ThreadId = @ThreadId AND PostId = @PostId", con))
+            {
+                cmd.Parameters.AddWithValue("@ThreadId", threadId);
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                con.Open();
+                object now = cmd.ExecuteScalar();
+                return now == null ? (bool?)null : (string)now == "Yes";
+            }
+        }
+
+        private static string ExcerptOf(string content)
+        {
+            string text = Regex.Replace(content ?? "", @"\s+", " ").Trim();
+            return text.Length > 110 ? text.Substring(0, 110).TrimEnd() + "..." : text;
+        }
+
+        private static List<string> TagsOf(string tags)
+        {
+            return (tags ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .Where(t => t.Length > 0)
+                .ToList();
         }
     }
 }

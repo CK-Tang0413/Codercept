@@ -261,6 +261,10 @@ namespace Codercept
         public string Excerpt { get; set; }
         public List<string> Tags { get; set; }
         public List<TeacherForumComment> Comments { get; set; }
+        public bool IsFlagged { get; set; }
+        public string FlagReason { get; set; }
+        public bool IsHidden { get; set; }
+        public string HideReason { get; set; }
     }
 
     public class TeacherReportScore

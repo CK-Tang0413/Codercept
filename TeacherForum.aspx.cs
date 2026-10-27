@@ -102,5 +102,13 @@ namespace Codercept
             Session.Remove("TeacherFlashToast");
             Master.ShowToast(message);
         }
+
+        protected void btnTeacherDismissFlag_Click(object sender, EventArgs e)
+        {
+            if (SelectedPost == null) return;
+            TeacherForumData.DismissFlag(SelectedPost.Id);
+            ReloadPosts();
+            Master.ShowToast("Post flag has been dismissed.");
+        }
     }
 }

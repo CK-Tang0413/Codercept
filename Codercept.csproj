@@ -257,6 +257,7 @@
     <Content Include="TACourseView.aspx" />
     <Content Include="TADashboard.aspx" />
     <Content Include="TAForumModeration.aspx" />
+    <Content Include="TAGradeAssessments.aspx" />
     <Content Include="TAGrading.aspx" />
     <Content Include="TAProfile.aspx" />
     <Content Include="TASideBar.ascx" />
@@ -469,6 +470,13 @@
     <Compile Include="TAForumModeration.aspx.designer.cs">
       <DependentUpon>TAForumModeration.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TAGradeAssessments.aspx.cs">
+      <DependentUpon>TAGradeAssessments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TAGradeAssessments.aspx.designer.cs">
+      <DependentUpon>TAGradeAssessments.aspx</DependentUpon>
+    </Compile>
     <Compile Include="TAGrading.aspx.cs">
       <DependentUpon>TAGrading.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -476,6 +484,7 @@
     <Compile Include="TAGrading.aspx.designer.cs">
       <DependentUpon>TAGrading.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TAGradingData.cs" />
     <Compile Include="TAProfile.aspx.cs">
       <DependentUpon>TAProfile.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

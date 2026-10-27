@@ -718,3 +718,111 @@ VALUES ('Reminder: C final examination', 'The final examination for C Programmin
 -- (TA Dashboard, Courses, Provisional Grading, Forum Moderation, and TA Profile)
 -- ==========================================
 
+-- A. Teaching Assistant Applications
+DECLARE @AppJayveeId INT, @AppMarcusId INT, @AppChloeId INT, @AppDavidId INT;
+
+INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
+VALUES ('Teaching Assistant', 'Bachelor of Computer Science (Honours)', '~/UploadedCertificates/jayvee_bsc_cert.pdf', 'Approved', NULL, DATEADD(DAY, -45, GETDATE()), DATEADD(DAY, -40, GETDATE()));
+SET @AppJayveeId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
+VALUES ('Teaching Assistant', 'Diploma in Information Technology', '~/UploadedCertificates/marcus_diploma.pdf', 'Approved', NULL, DATEADD(DAY, -30, GETDATE()), DATEADD(DAY, -28, GETDATE()));
+SET @AppMarcusId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
+VALUES ('Teaching Assistant', 'Certified Python Associate', '~/UploadedCertificates/chloe_cert.pdf', 'Pending', NULL, DATEADD(DAY, -3, GETDATE()), NULL);
+SET @AppChloeId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
+VALUES ('Teaching Assistant', 'Certificate in Web Basics', '~/UploadedCertificates/david_doc.pdf', 'Rejected', 'Does not meet minimum teaching qualification requirement.', DATEADD(DAY, -60, GETDATE()), DATEADD(DAY, -55, GETDATE()));
+SET @AppDavidId = SCOPE_IDENTITY();
+
+-- B. Teaching Assistant Accounts
+-- Passwords are all BCrypt cost-12 hash of 'Ta123456'
+-- Jayvee Ong: Primary TA for test suite and dashboard verification
+INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Jayvee Ong', 'ta1234@gmail.com', '$2a$12$lZ9XOB6tOrmvhXzJRV0On.8WYMveRINXmNAD8xInl.dHHfRN1J.Fq', 24, 'Kuala Lumpur, Malaysia', 'Intermediate', 'Bachelor of Computer Science (Honours)', '~/UploadedCertificates/jayvee_bsc_cert.pdf', 'Active', DATEADD(DAY, -40, GETDATE()), @AppJayveeId);
+
+-- Marcus Vance: Secondary Active TA with advanced level
+INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Marcus Vance', 'marcus.ta@edu.com.my', '$2a$12$lZ9XOB6tOrmvhXzJRV0On.8WYMveRINXmNAD8xInl.dHHfRN1J.Fq', 27, 'Penang, Malaysia', 'Advanced', 'Diploma in Information Technology', '~/UploadedCertificates/marcus_diploma.pdf', 'Active', DATEADD(DAY, -28, GETDATE()), @AppMarcusId);
+
+-- Chloe Teo: Junior TA with no grading history (for empty-state testing)
+INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('Chloe Teo', 'chloe.ta@edu.com.my', '$2a$12$lZ9XOB6tOrmvhXzJRV0On.8WYMveRINXmNAD8xInl.dHHfRN1J.Fq', 22, 'Johor Bahru, Malaysia', 'Beginner', 'Certified Python Associate', '~/UploadedCertificates/chloe_cert.pdf', 'Active', DATEADD(DAY, -5, GETDATE()), @AppChloeId);
+
+-- David Tan: Inactive TA (for unit testing inactive account login rejection)
+INSERT INTO [dbo].[Teaching_Assistant] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+VALUES ('David Tan', 'david.ta@edu.com.my', '$2a$12$lZ9XOB6tOrmvhXzJRV0On.8WYMveRINXmNAD8xInl.dHHfRN1J.Fq', 29, 'Melaka, Malaysia', 'Intermediate', NULL, NULL, 'Inactive', DATEADD(DAY, -60, GETDATE()), @AppDavidId);
+
+-- C. Subject Assignments
+DECLARE @JayveeId INT = (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = 'ta1234@gmail.com');
+DECLARE @MarcusId INT = (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = 'marcus.ta@edu.com.my');
+DECLARE @ChloeId INT  = (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = 'chloe.ta@edu.com.my');
+
+DECLARE @SubPython INT = (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = 'Python');
+DECLARE @SubC INT      = (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = 'C');
+DECLARE @SubJava INT   = (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = 'Java');
+DECLARE @SubCpp INT    = (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = 'C++');
+
+INSERT INTO [dbo].[EducatorSubject] ([TeacherId], [TA_Id], [SubjectId])
+VALUES
+    (NULL, @JayveeId, @SubPython),
+    (NULL, @JayveeId, @SubC),
+    (NULL, @MarcusId, @SubJava),
+    (NULL, @MarcusId, @SubCpp),
+    (NULL, @ChloeId,  @SubPython);
+
+-- D. Provisional Grading Progress Mock Data
+-- 1) An attempt reviewed by Jayvee Ong and submitted for Teacher verification (Awaiting Approval)
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId])
+VALUES ('Reviewed', 'Provisional grading complete: MCQ answers verified. Coding question demonstrates correct structure and outputs as expected.', NULL, @JayveeId, @AttKylanAssessment);
+
+-- 2) An attempt where Jayvee Ong has started a provisional draft (In Progress)
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId])
+VALUES ('In Progress', 'Draft review: Multiple choice verified, checking algorithm efficiency.', NULL, @JayveeId, @AttWanCExam);
+
+-- 3) An attempt reviewed by Jayvee Ong and subsequently verified & approved by Teacher Bryan Yeong
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId])
+VALUES ('Approved', 'Provisional grading reviewed and confirmed by Bryan Yeong.', @BryanId, @JayveeId, @AttWanQuiz);
+
+-- E. Forum Moderation Mock Data
+-- 1) Jayvee Ong flagged a forum question for instructor follow-up
+DECLARE @PostVisualStudio INT = (SELECT TOP 1 [PostId] FROM [dbo].[Forum] WHERE [Title] LIKE '%Visual Studio%');
+IF (@PostVisualStudio IS NOT NULL)
+BEGIN
+    INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerationAction], [ModerateReason], [DateModerate])
+    VALUES (@PostVisualStudio, @JayveeId, 'Flag', 'Discussion touches on external IDE installation rather than core course syntax; flagged for teacher attention.', DATEADD(HOUR, -6, GETDATE()));
+END
+
+-- 2) A spam post hidden by Jayvee Ong (excluded from learner views)
+DECLARE @SpamPostId INT;
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
+VALUES ('Buy Exam Dumps and Solutions', 'Contact Telegram @examcheats for 100% verified exam and quiz answers.', DATEADD(DAY, -1, GETDATE()), @WanId, 'Spam,Offers', NULL);
+SET @SpamPostId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerationAction], [ModerateReason], [DateModerate])
+VALUES (@SpamPostId, @JayveeId, 'Hide', 'Commercial spam and academic integrity policy violation.', DATEADD(HOUR, -20, GETDATE()));
+
+-- F. Forum Replies by Teaching Assistants
+DECLARE @PostString INT = (SELECT TOP 1 [PostId] FROM [dbo].[Forum] WHERE [Title] LIKE '%What is String in Python%');
+IF (@PostString IS NOT NULL)
+BEGIN
+    INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [TA_Id], [ParentThreadId])
+    VALUES ('To add to what Bryan explained: Python strings support indexing and slicing (e.g. s[0:3]), but assigning s[0] = "a" raises a TypeError because strings cannot be mutated in place.', 'No', NULL, @PostString, NULL, NULL, @JayveeId, NULL);
+END
+
+IF (@PostVisualStudio IS NOT NULL)
+BEGIN
+    INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [TA_Id], [ParentThreadId])
+    VALUES ('In Visual Studio Installer, ensure the "Desktop development with C++" workload is selected, and verify that MSVC v143 build tools are checked.', 'No', NULL, @PostVisualStudio, NULL, NULL, @MarcusId, NULL);
+END
+
+-- G. User Activity Logs
+INSERT INTO [dbo].[User_Log] ([StartDateTime], [EndDateTime], [LearnerId], [TeacherId], [TA_Id])
+VALUES
+    (DATEADD(HOUR, -26, GETDATE()), DATEADD(HOUR, -24, GETDATE()), NULL, NULL, @JayveeId),
+    (DATEADD(HOUR, -4, GETDATE()),  DATEADD(HOUR, -2, GETDATE()),  NULL, NULL, @JayveeId),
+    (DATEADD(DAY, -2, GETDATE()),   DATEADD(MINUTE, 50, DATEADD(DAY, -2, GETDATE())), NULL, NULL, @MarcusId);
+
+

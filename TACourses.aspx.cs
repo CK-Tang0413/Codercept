@@ -16,14 +16,13 @@ namespace Codercept
             public string Duration { get; set; }
             public string Teacher { get; set; }
             public string Subjects { get; set; }
+            public string Glyph { get; set; }
+            public string Theme { get; set; }
             public int ChapterCount { get; set; }
             public bool IsMine { get; set; }
         }
 
         private readonly string connString = TAHelpers.ConnectionString;
-
-        protected string CurrentScope { get; private set; } = "all";
-
         private int TaId { get { return Convert.ToInt32(Session["UserId"]); } }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -34,12 +33,6 @@ namespace Codercept
             }
         }
 
-        protected string GetOptionClass(string scope)
-        {
-            return scope == CurrentScope ? "active" : "";
-        }
-
-        // "My courses" = courses that share a programming-language subject with this TA (EducatorSubject + CourseSubject)
         private List<CourseItem> GetCourses()
         {
             var courses = new List<CourseItem>();
@@ -57,11 +50,14 @@ namespace Codercept
                                          WHERE cs.CourseId = c.CourseId
                                          ORDER BY s.SubjectName
                                          FOR XML PATH('')), 1, 2, ''), '') AS Subjects,
-                           CASE WHEN EXISTS (SELECT 1 FROM [dbo].[CourseSubject] cs
-                                             INNER JOIN [dbo].[EducatorSubject] es ON es.SubjectId = cs.SubjectId
-                                             WHERE cs.CourseId = c.CourseId AND es.TA_Id = @TA_Id) THEN 1 ELSE 0 END AS IsMine
+                           1 AS IsMine
                     FROM [dbo].[Course] c
                     INNER JOIN [dbo].[Teacher] t ON t.TeacherId = c.TeacherId
+                    WHERE EXISTS (
+                        SELECT 1 FROM [dbo].[CourseSubject] cs
+                        INNER JOIN [dbo].[EducatorSubject] es ON es.SubjectId = cs.SubjectId
+                        WHERE cs.CourseId = c.CourseId AND es.TA_Id = @TA_Id
+                    )
                     ORDER BY c.CourseTitle", con))
                 {
                     cmd.Parameters.AddWithValue("@TA_Id", TaId);
@@ -70,17 +66,20 @@ namespace Codercept
                     {
                         while (reader.Read())
                         {
+                            string subjects = reader["Subjects"].ToString();
                             courses.Add(new CourseItem
                             {
                                 CourseId = Convert.ToInt32(reader["CourseId"]),
-                                Title = Server.HtmlEncode(reader["CourseTitle"].ToString()),
-                                Description = Server.HtmlEncode(reader["CourseDescription"].ToString()),
-                                Level = Server.HtmlEncode(reader["DifficultyLevel"].ToString()),
-                                Duration = Server.HtmlEncode(reader["CourseDuration"].ToString()),
-                                Teacher = Server.HtmlEncode(reader["TeacherName"].ToString()),
-                                Subjects = Server.HtmlEncode(reader["Subjects"].ToString()),
+                                Title = reader["CourseTitle"].ToString(),
+                                Description = reader["CourseDescription"].ToString(),
+                                Level = reader["DifficultyLevel"].ToString(),
+                                Duration = reader["CourseDuration"].ToString(),
+                                Teacher = reader["TeacherName"].ToString(),
+                                Subjects = subjects,
+                                Glyph = GlyphOf(subjects),
+                                Theme = ThemeOf(subjects),
                                 ChapterCount = Convert.ToInt32(reader["ChapterCount"]),
-                                IsMine = Convert.ToInt32(reader["IsMine"]) == 1
+                                IsMine = true
                             });
                         }
                     }
@@ -92,23 +91,28 @@ namespace Codercept
 
         private void LoadCourses()
         {
-            var all = GetCourses();
-            int mineCount = all.Count(c => c.IsMine);
-
-            // Default to the TA's own courses; fall back to everything when no subject is assigned yet
-            string scope = (Request.QueryString["scope"] ?? "").ToLower();
-            CurrentScope = scope == "all" ? "all" : scope == "mine" ? "mine" : (mineCount > 0 ? "mine" : "all");
-
-            litCountAll.Text = all.Count.ToString();
-            litCountMine.Text = mineCount.ToString();
-            litFilterLabel.Text = CurrentScope == "mine" ? "My courses" : "All courses";
-
-            var shown = CurrentScope == "mine" ? all.Where(c => c.IsMine).ToList() : all;
-
-            phNoAssigned.Visible = CurrentScope == "mine" && mineCount == 0;
-            phEmpty.Visible = shown.Count == 0 && !phNoAssigned.Visible;
-            rptCourses.DataSource = shown;
+            var courses = GetCourses();
+            phNoAssigned.Visible = courses.Count == 0;
+            rptCourses.DataSource = courses;
             rptCourses.DataBind();
+        }
+
+        private static string GlyphOf(string language)
+        {
+            if (language.IndexOf("Python", StringComparison.OrdinalIgnoreCase) >= 0) return "py";
+            if (language.IndexOf("Java", StringComparison.OrdinalIgnoreCase) >= 0) return "Java";
+            if (language.IndexOf("C++", StringComparison.OrdinalIgnoreCase) >= 0) return "C++";
+            if (language.IndexOf("C", StringComparison.OrdinalIgnoreCase) >= 0) return "C";
+            return "?";
+        }
+
+        private static string ThemeOf(string language)
+        {
+            if (language.IndexOf("Python", StringComparison.OrdinalIgnoreCase) >= 0) return "python";
+            if (language.IndexOf("Java", StringComparison.OrdinalIgnoreCase) >= 0) return "java";
+            if (language.IndexOf("C++", StringComparison.OrdinalIgnoreCase) >= 0) return "cpp";
+            if (language.IndexOf("C", StringComparison.OrdinalIgnoreCase) >= 0) return "c";
+            return "other";
         }
     }
 }

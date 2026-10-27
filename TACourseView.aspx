@@ -1,127 +1,184 @@
-﻿<%@ Page Title="Course Content - Codercept" Language="C#" AutoEventWireup="true" CodeBehind="TACourseView.aspx.cs" Inherits="Codercept.TACourseView" MasterPageFile="~/TASite.master" %>
+<%@ Page Title="Course Content - Codercept" Language="C#" AutoEventWireup="true" CodeBehind="TACourseView.aspx.cs" Inherits="Codercept.TACourseView" MasterPageFile="~/TASite.master" %>
+<%@ MasterType VirtualPath="~/TASite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
     <style>
-        :root {
-            --panel-bg: var(--bg-surface);
-            --warn: #fbbf24;
-            --success: #34d399;
-            --item-active-bg: rgba(124, 58, 237, 0.1);
+        .chapter-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 50px;
+            padding: 9px 12px;
+            border-left: 3px solid transparent;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--heading);
+            transition: all 160ms ease;
+            margin-bottom: 4px;
         }
-
-        .back-link { display: inline-block; color: var(--accent-light); text-decoration: none; font-size: 0.9rem; font-weight: 500; margin-bottom: 1.25rem; transition: color 0.2s; }
-        .back-link:hover { color: var(--accent-hover); text-decoration: underline; }
-
-        /* Course header */
-        .course-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem 2rem; background: rgba(30, 22, 51, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); padding: 1.75rem 2rem; border-radius: 16px; margin-bottom: 1.5rem; backdrop-filter: blur(10px); }
-        .course-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
-        .course-header h1 { font-size: 1.75rem; margin-bottom: 0.4rem; color: var(--text-primary); }
-        .course-header p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 640px; }
-        .course-meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); }
-        .course-meta strong { color: var(--text-secondary); font-weight: 600; }
-        .view-only { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border-light); border-radius: 999px; padding: 0.25rem 0.75rem; white-space: nowrap; }
-
-        .tag { font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 999px; white-space: nowrap; }
-        .tag-level { color: var(--warn); background: rgba(251, 191, 36, 0.12); }
-        .tag-subject { color: var(--accent-light); background: var(--accent-transparent); }
-        .tag-mine { color: var(--success); background: rgba(52, 211, 153, 0.12); }
-
-        /* Same shape as the learner course viewer: chapter outline + content */
-        .viewer { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 1.5rem; align-items: start; padding-bottom: 2rem; }
-        .outline { position: sticky; top: 0; max-height: calc(100vh - 3rem); overflow-y: auto; background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 16px; padding: 0.5rem 0; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
-        .outline-title { padding: 1rem 1.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-        .nav-chapter { display: flex; align-items: flex-start; gap: 0.9rem; padding: 0.9rem 1.25rem; border-left: 3px solid transparent; text-decoration: none; transition: background 0.2s; }
-        .nav-chapter:hover { background: rgba(255, 255, 255, 0.03); }
-        .nav-chapter.active { background: var(--item-active-bg); border-left-color: var(--accent-primary); }
-        .nav-num { width: 24px; height: 24px; border-radius: 50%; background: var(--border-light); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 0.05rem; }
-        .nav-chapter.active .nav-num { background: var(--accent-primary); color: #fff; }
-        .nav-details { flex: 1; min-width: 0; }
-        .nav-title { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; overflow-wrap: anywhere; }
-        .nav-time { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
-        .nav-sub { display: flex; align-items: center; gap: 0.65rem; padding: 0.5rem 1.25rem 0.5rem 3.4rem; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; overflow-wrap: anywhere; }
-        .nav-sub:hover { color: var(--accent-light); }
-        .kind-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); }
-        .kind-quiz { background: #60a5fa; }
-        .kind-assessment { background: var(--accent-light); }
-        .kind-exam { background: var(--warn); }
-
-        .content-card { background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 16px; padding: 2rem 2.25rem; min-width: 0; }
-        .content-header { margin-bottom: 1rem; }
-        .ch-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--accent-light); margin-bottom: 0.4rem; }
-        .ch-main-title { font-size: 1.6rem; color: var(--text-primary); line-height: 1.3; }
-        .chapter-desc { color: var(--text-secondary); font-size: 0.98rem; line-height: 1.7; margin-bottom: 0.5rem; }
-
-        .section-divider { margin: 2rem 0 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-light); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-light); }
-        .theory-content, .item-desc { color: var(--text-secondary); font-size: 0.98rem; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
-        .media-link { display: inline-block; margin-top: 0.75rem; color: var(--accent-light); font-size: 0.88rem; font-weight: 500; text-decoration: none; }
-        .media-link:hover { text-decoration: underline; }
-        .video-card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border: 1px solid var(--border-light); border-radius: 12px; background: rgba(255, 255, 255, 0.02); color: var(--text-primary); text-decoration: none; font-weight: 600; }
-        .video-card:hover { border-color: var(--accent-primary); }
-        .play-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; padding-left: 3px; }
-
-        .quiz-question { border: 1px solid var(--border-light); border-radius: 12px; padding: 1rem 1.25rem; background: rgba(255, 255, 255, 0.02); margin-top: 0.85rem; }
-        .q-top { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .q-title { color: var(--text-primary); font-size: 0.95rem; line-height: 1.6; font-weight: 500; white-space: pre-wrap; }
-        .q-title span { color: var(--accent-light); font-weight: 700; margin-right: 0.4rem; }
-
-        .viewer-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-light); }
-        .btn-nav { padding: 0.6rem 1.15rem; border-radius: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
-        .btn-nav:hover { color: var(--text-primary); border-color: var(--accent-primary); }
-        .btn-nav.primary { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
-        .btn-nav.primary:hover { background: var(--accent-hover); }
-        .step-indicator { font-size: 0.85rem; color: var(--text-muted); }
-
-        .empty-state { color: var(--text-muted); font-size: 0.9rem; padding: 2rem 0; }
-
-        @media (max-width: 1100px) {
-            .viewer { grid-template-columns: minmax(0, 1fr); }
-            .outline { position: static; max-height: 320px; }
+        .chapter-nav-item:hover {
+            background: #f8fafc;
         }
-        @media (max-width: 640px) {
-            .course-header { padding: 1.25rem; }
-            .content-card { padding: 1.25rem; }
+        .chapter-nav-item.is-active {
+            border-left-color: var(--indigo);
+            background: var(--indigo-tint);
+        }
+        .chapter-nav-item .chapter-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            background: #f1f5f9;
+            color: var(--body);
+        }
+        .chapter-nav-item.is-active .chapter-number {
+            background: var(--indigo);
+            color: #ffffff;
+        }
+        .chapter-nav-item .chapter-item-title {
+            font-size: 13px;
+            font-weight: 650;
+            color: var(--heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+        .curriculum-item-card {
+            background: #ffffff;
+            border: 1px solid #e9e5f5;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(76, 29, 149, 0.04);
+        }
+        .curriculum-item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
         }
     </style>
 </asp:Content>
 
 <asp:Content ID="ContentMain" ContentPlaceHolderID="cphMain" runat="server">
-
-        <a href="TACourses.aspx" class="back-link">&larr; Back to courses</a>
-
-        <asp:PlaceHolder ID="phNotFound" runat="server" Visible="false">
-            <p class="empty-state">This course could not be found.</p>
-        </asp:PlaceHolder>
-
-        <asp:PlaceHolder ID="phCourse" runat="server">
-            <div class="course-header">
-                <div>
-                    <div class="course-tags">
-                        <span class="tag tag-level"><asp:Literal ID="litLevel" runat="server"></asp:Literal></span>
-                        <asp:Literal ID="litSubjects" runat="server"></asp:Literal>
-                        <asp:Literal ID="litMine" runat="server"></asp:Literal>
-                    </div>
-                    <h1><asp:Literal ID="litTitle" runat="server"></asp:Literal></h1>
-                    <p><asp:Literal ID="litDescription" runat="server"></asp:Literal></p>
-                </div>
-                <div>
-                    <div class="course-meta">
-                        <span>Teacher: <strong><asp:Literal ID="litTeacher" runat="server"></asp:Literal></strong></span>
-                        <span>Duration: <strong><asp:Literal ID="litDuration" runat="server"></asp:Literal></strong></span>
-                        <span>Chapters: <strong><asp:Literal ID="litChapterCount" runat="server"></asp:Literal></strong></span>
-                    </div>
-                    <div style="margin-top: 0.75rem; text-align: right;"><span class="view-only">View only</span></div>
-                </div>
+    <asp:PlaceHolder ID="phNotFound" runat="server" Visible="false">
+        <article class="chapter-detail-card">
+            <p class="summary-empty">The requested course could not be found.</p>
+            <div class="chapter-detail-actions">
+                <a class="button button--primary" href="TACourses.aspx"><span>Back to courses</span></a>
             </div>
+        </article>
+    </asp:PlaceHolder>
 
-            <div class="viewer">
-                <nav class="outline">
-                    <div class="outline-title">Course outline</div>
-                    <asp:Literal ID="litOutline" runat="server"></asp:Literal>
-                </nav>
+    <asp:PlaceHolder ID="phCourse" runat="server">
+        <div class="exam-course-banner course-thumbnail--<%= CourseTheme %>">
+            <span class="exam-banner-glyph"><%= CourseGlyph %></span>
+            <div>
+                <span>COURSE CURRICULUM</span>
+                <h1><asp:Literal ID="litTitle" runat="server"></asp:Literal></h1>
+                <p><asp:Literal ID="litSubtitle" runat="server"></asp:Literal></p>
+            </div>
+            <a class="button button--ghost" href="TACourses.aspx" style="margin-left: auto; z-index: 2;">
+                <%= TeacherIcons.Svg("arrow", 14) %><span>Back to courses</span>
+            </a>
+            <i class="code-symbol code-symbol--one">{ }</i>
+            <i class="code-symbol code-symbol--two">01</i>
+        </div>
 
-                <article class="content-card">
-                    <asp:Literal ID="litChapter" runat="server"></asp:Literal>
+        <div class="chapter-master-detail" style="margin-top: 1.5rem;">
+            <aside class="chapter-list-panel" aria-label="Course chapters">
+                <div class="chapter-list-heading">
+                    <span>COURSE STRUCTURE</span>
+                    <strong><%= Chapters.Count %> chapters</strong>
+                </div>
+                <div class="chapter-items">
+                    <% for (int i = 0; i < Chapters.Count; i++) { ChapterItem c = Chapters[i]; bool active = c.ChapterId == SelectedChapterId; %>
+                    <a href="TACourseView.aspx?id=<%= CourseId %>&ch=<%= c.ChapterId %>" class="chapter-nav-item<%= active ? " is-active" : "" %>">
+                        <span class="chapter-number"><%= c.Number %></span>
+                        <span class="chapter-item-title"><%: c.Title %></span>
+                    </a>
+                    <% } %>
+                </div>
+            </aside>
+
+            <div class="chapter-detail-column">
+                <% if (ActiveChapter != null) { %>
+                <article class="chapter-detail-card">
+                    <div class="chapter-detail-title">
+                        <span class="large-number-badge"><%= ActiveChapter.Number %></span>
+                        <div>
+                            <span>CHAPTER <%= ActiveChapter.Number %></span>
+                            <h2><%: ActiveChapter.Title %></h2>
+                        </div>
+                    </div>
+                    <p style="color: #4b5563; font-size: 0.95rem; line-height: 1.6; margin: 1rem 0 1.5rem;"><%: ActiveChapter.Description %></p>
+
+                    <div class="chapter-meta-grid" style="margin-bottom: 2rem;">
+                        <div class="detail-item">
+                            <span class="detail-item-icon"><%= TeacherIcons.Svg("clock", 17) %></span>
+                            <div>
+                                <span>Duration</span>
+                                <strong><%: ActiveChapter.Duration %></strong>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-item-icon"><%= TeacherIcons.Svg("layers", 17) %></span>
+                            <div>
+                                <span>Lessons & Activities</span>
+                                <strong><%= ActiveChapter.Items.Count %> items</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (ActiveChapter.Items.Count == 0) { %>
+                    <p class="summary-empty">No subchapters or assessments added to this chapter yet.</p>
+                    <% } else { %>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <% foreach (CurriculumItem item in ActiveChapter.Items) { %>
+                        <div class="curriculum-item-card">
+                            <div class="curriculum-item-header">
+                                <span class="badge badge--<%= item.Kind == "Lesson" ? "secondary" : item.Kind == "Quiz" ? "warning" : "success" %>"><%: item.Kind %></span>
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #111827; margin: 0;"><%: item.Title %></h3>
+                            </div>
+                            <% if (!string.IsNullOrWhiteSpace(item.Body)) { %>
+                            <div style="color: #374151; font-size: 0.92rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 0.75rem;"><%: item.Body %></div>
+                            <% } %>
+                            <% if (!string.IsNullOrWhiteSpace(item.MediaLink)) { %>
+                            <div style="margin-top: 0.5rem;">
+                                <a href="<%: item.MediaLink %>" target="_blank" rel="noopener noreferrer" class="button button--ghost" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
+                                    <%= TeacherIcons.Svg("link", 15) %><span>Open Media Attachment</span>
+                                </a>
+                            </div>
+                            <% } %>
+                            <% if (item.Questions.Count > 0) { %>
+                            <div style="margin-top: 1rem; border-top: 1px solid #f3f4f6; padding-top: 0.75rem;">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;"><%= item.Questions.Count %> Question(s)</span>
+                                <% for (int qIdx = 0; qIdx < item.Questions.Count; qIdx++) { QuestionDetail q = item.Questions[qIdx]; %>
+                                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem;">
+                                        <span>Q<%= qIdx + 1 %> &middot; <%: q.Type %></span>
+                                        <span><%: q.Score %> marks</span>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #111827; font-weight: 500;"><%: q.Content %></div>
+                                </div>
+                                <% } %>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
                 </article>
+                <% } %>
             </div>
-        </asp:PlaceHolder>
+        </div>
+    </asp:PlaceHolder>
 </asp:Content>
