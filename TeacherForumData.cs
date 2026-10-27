@@ -53,9 +53,9 @@ namespace Codercept
 
                 using (SqlCommand cmd = new SqlCommand(
                     "SELECT f.PostId, f.Title, f.Content, f.Tags, " +
-                    "(SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason " +
+                    "(SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason " +
                     "FROM Forum f WHERE " + Visible + " " +
-                    "AND NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide') " +
+                    "AND NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide') " +
                     "ORDER BY f.DatePosted DESC, f.PostId DESC", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
@@ -118,7 +118,7 @@ namespace Codercept
         public static void DismissFlag(int postId)
         {
             using (SqlConnection con = TeacherDb.GetConnection())
-            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = 'Flag'", con))
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'", con))
             {
                 cmd.Parameters.AddWithValue("@PostId", postId);
                 con.Open();

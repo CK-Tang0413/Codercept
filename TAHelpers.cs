@@ -55,8 +55,8 @@ namespace Codercept
 
         // SQL conditions on a Forum row aliased "f", shared by the forum page and the dashboard
         // Deleted posts are gone for everyone, hidden posts are only visible to staff
-        public const string ForumNotDeleted = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Delete')";
-        public const string ForumVisibleToLearners = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction IN ('Hide', 'Delete'))";
+        public const string ForumNotDeleted = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Delete')";
+        public const string ForumVisibleToLearners = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction IN ('Hide', 'Delete'))";
         // A post is Verified once one of its replies is pinned as the answer
         public const string ForumHasVerifiedAnswer = "EXISTS (SELECT 1 FROM [dbo].[Post_Reply] r WHERE r.PostId = f.PostId AND r.IsPinned = 'Yes')";
 
@@ -76,11 +76,18 @@ namespace Codercept
         public const string Approved = "Approved";
     }
 
-    // Forum moderation actions stored in Moderate_Forum.ModerationAction
-    public static class ModerationAction
+    // Forum moderation actions stored in Moderate_Forum.ModerateAction
+    public static class ModerateAction
     {
         public const string Hide = "Hide";
         public const string Flag = "Flag";
         public const string Delete = "Delete";
+    }
+
+    public static class ModerationAction
+    {
+        public const string Hide = ModerateAction.Hide;
+        public const string Flag = ModerateAction.Flag;
+        public const string Delete = ModerateAction.Delete;
     }
 }

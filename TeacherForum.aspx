@@ -67,6 +67,11 @@
                 <div class="comment-scroll">
                     <% foreach (TeacherForumPost post in Posts) { %>
                     <div style="display: contents" data-tp-forum-thread="<%= post.Id %>"<%= post.Id == SelectedPost.Id ? "" : " hidden" %>>
+                        <% if (post.Comments.Count == 0) { %>
+                        <div class="empty-thread-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center; color: #6b7280;">
+                            <p style="margin: 0; font-size: 14px; color: #6b7280;">No replies yet. Be the first to reply!</p>
+                        </div>
+                        <% } else { %>
                         <%-- pinned replies first; the rest keep their order (OrderByDescending is stable) --%>
                         <% foreach (TeacherForumComment c in post.Comments.OrderByDescending(x => x.Pinned)) { %>
                         <div class="comment-popover-wrap">
@@ -87,6 +92,7 @@
                                 </div>
                             </article>
                         </div>
+                        <% } %>
                         <% } %>
                     </div>
                     <% } %>

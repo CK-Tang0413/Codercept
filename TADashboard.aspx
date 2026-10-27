@@ -204,7 +204,7 @@
                 <span class="stat-hint">Teacher verification</span>
             </article>
             <article class="stat-card">
-                <div class="stat-icon stat-icon--teal"><%= TeacherIcons.Svg("chat", 20) %></div>
+                <div class="stat-icon stat-icon--teal"><%= TeacherIcons.Svg("question", 20) %></div>
                 <div class="stat-topline">
                     <span class="stat-label">Unsolved Questions</span>
                 </div>

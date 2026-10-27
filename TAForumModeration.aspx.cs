@@ -24,7 +24,10 @@ namespace Codercept
             Posts = GetForumPosts();
 
             int id;
-            int.TryParse(hfTeacherForumPost.Value, out id);
+            if (!int.TryParse(Request.QueryString["postId"], out id))
+            {
+                int.TryParse(hfTeacherForumPost.Value, out id);
+            }
             SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
 
             if (IsPostBack)
@@ -82,6 +85,38 @@ namespace Codercept
                     }
                 }
             }
+            else if (parts[0] == "unflag" && parts.Length >= 2)
+            {
+                int postId;
+                if (int.TryParse(parts[1], out postId))
+                {
+                    using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'", con))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                    ReloadPosts();
+                    Master.ShowToast("Post flag has been dismissed.");
+                }
+            }
+            else if (parts[0] == "unhide" && parts.Length >= 2)
+            {
+                int postId;
+                if (int.TryParse(parts[1], out postId))
+                {
+                    using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Hide'", con))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                    ReloadPosts();
+                    Master.ShowToast("Post has been unhidden and restored to the public forum.");
+                }
+            }
         }
 
         protected void btnModerate_Click(object sender, EventArgs e)
@@ -103,7 +138,7 @@ namespace Codercept
 
             using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
             using (SqlCommand cmd = new SqlCommand(@"
-                INSERT INTO [dbo].[Moderate_Forum] (PostId, TA_Id, ModerationAction, ModerateReason, DateModerate)
+                INSERT INTO [dbo].[Moderate_Forum] (PostId, TA_Id, ModerateAction, ModerateReason, DateModerate)
                 VALUES (@PostId, @TA_Id, @Action, @Reason, GETDATE())", con))
             {
                 cmd.Parameters.AddWithValue("@PostId", postId);
@@ -129,7 +164,7 @@ namespace Codercept
             }
 
             using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
-            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = 'Flag'", con))
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'", con))
             {
                 cmd.Parameters.AddWithValue("@PostId", postId);
                 con.Open();
@@ -150,7 +185,7 @@ namespace Codercept
             }
 
             using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
-            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerationAction = 'Hide'", con))
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Hide'", con))
             {
                 cmd.Parameters.AddWithValue("@PostId", postId);
                 con.Open();
@@ -170,24 +205,24 @@ namespace Codercept
             {
                 filterSql = @"WHERE EXISTS (
                     SELECT 1 FROM [dbo].[Moderate_Forum] m
-                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag'
+                    WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag'
                 ) AND NOT EXISTS (
                     SELECT 1 FROM [dbo].[Moderate_Forum] m
-                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                    WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide'
                 )";
             }
             else if (CurrentFilter == "hidden")
             {
                 filterSql = @"WHERE EXISTS (
                     SELECT 1 FROM [dbo].[Moderate_Forum] m
-                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                    WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide'
                 )";
             }
             else
             {
                 filterSql = @"WHERE NOT EXISTS (
                     SELECT 1 FROM [dbo].[Moderate_Forum] m
-                    WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide'
+                    WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide'
                 )";
             }
 
@@ -197,8 +232,8 @@ namespace Codercept
 
                 using (SqlCommand cmd = new SqlCommand(@"
                     SELECT f.PostId, f.Title, f.Content, f.Tags,
-                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason,
-                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerationAction = 'Hide' ORDER BY m.DateModerate DESC) AS HideReason
+                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason,
+                           (SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide' ORDER BY m.DateModerate DESC) AS HideReason
                     FROM [dbo].[Forum] f
                     " + filterSql + @"
                     ORDER BY f.DatePosted DESC, f.PostId DESC", con))

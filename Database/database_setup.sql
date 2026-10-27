@@ -1,4 +1,4 @@
-USE [Codercept_db];
+﻿USE [Codercept_db];
 GO
 
 -- ==========================================
@@ -374,14 +374,14 @@ CREATE TABLE [dbo].[Forum] (
 );
 
 CREATE TABLE [dbo].[Moderate_Forum] (
-    [ModerationId]     INT            IDENTITY (1, 1) NOT NULL,
+    [ModerateId]       INT            IDENTITY (1, 1) NOT NULL,
     [PostId]           INT            NOT NULL,
     [TA_Id]            INT            NOT NULL,
-    [ModerationAction] NVARCHAR (20)  NOT NULL,
+    [ModerateAction]   NVARCHAR (20)  NOT NULL,
     [ModerateReason]   NVARCHAR (MAX) NOT NULL,
     [DateModerate]     DATETIME       NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerationId] ASC),
-    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerationAction] IN ('Hide', 'Flag', 'Delete')),
+    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerateId] ASC),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide')),
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
@@ -791,7 +791,7 @@ VALUES ('Approved', 'Provisional grading reviewed and confirmed by Bryan Yeong.'
 DECLARE @PostVisualStudio INT = (SELECT TOP 1 [PostId] FROM [dbo].[Forum] WHERE [Title] LIKE '%Visual Studio%');
 IF (@PostVisualStudio IS NOT NULL)
 BEGIN
-    INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerationAction], [ModerateReason], [DateModerate])
+    INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerateAction], [ModerateReason], [DateModerate])
     VALUES (@PostVisualStudio, @JayveeId, 'Flag', 'Discussion touches on external IDE installation rather than core course syntax; flagged for teacher attention.', DATEADD(HOUR, -6, GETDATE()));
 END
 
@@ -801,7 +801,7 @@ INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags]
 VALUES ('Buy Exam Dumps and Solutions', 'Contact Telegram @examcheats for 100% verified exam and quiz answers.', DATEADD(DAY, -1, GETDATE()), @WanId, 'Spam,Offers', NULL);
 SET @SpamPostId = SCOPE_IDENTITY();
 
-INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerationAction], [ModerateReason], [DateModerate])
+INSERT INTO [dbo].[Moderate_Forum] ([PostId], [TA_Id], [ModerateAction], [ModerateReason], [DateModerate])
 VALUES (@SpamPostId, @JayveeId, 'Hide', 'Commercial spam and academic integrity policy violation.', DATEADD(HOUR, -20, GETDATE()));
 
 -- F. Forum Replies by Teaching Assistants
