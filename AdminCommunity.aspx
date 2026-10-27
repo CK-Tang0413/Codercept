@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCommunity.aspx.cs" Inherits="Codercept.Admin_Community" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCommunity.aspx.cs" Inherits="Codercept.Admin_Community" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -26,10 +26,12 @@
             display: flex;
             gap: 16px;
             position: relative;
-            transition: border-color 0.2s;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .announcement-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-hover);
         }
 
         .announcement-card.announcement-type {
@@ -63,12 +65,12 @@
 
         .pin-status {
             font-size: 12px;
-            color: var(--warning-orange);
+            color: var(--warning-orange-text);
             display: inline-flex;
             align-items: center;
             gap: 4px;
             margin-bottom: 10px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .announcement-body {
@@ -80,7 +82,7 @@
 
         .announcement-meta {
             font-size: 12px;
-            color: #6b7280;
+            color: var(--text-muted);
         }
 
         .announcement-actions {
@@ -91,12 +93,12 @@
 
         .icon-btn.active-pin { 
             background-color: var(--warning-orange-bg); 
-            color: var(--warning-orange); 
+            color: var(--warning-orange-text); 
             border-color: var(--warning-orange-border);
         }
         .icon-btn.btn-delete:hover {
             color: var(--danger-red);
-            border-color: rgba(239, 68, 68, 0.4);
+            border-color: var(--danger-red-border);
             background-color: var(--danger-red-bg);
         }
 
@@ -104,7 +106,7 @@
 
         /* Full View Modal Body */
         .view-content-box {
-            background-color: var(--bg-card);
+            background-color: var(--bg-surface-nested);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 16px 20px;
@@ -228,7 +230,7 @@
                 <div class="form-row">
                     <div class="type-select-wrapper">
                         <label class="form-label" for="<%= ddlType.ClientID %>">Type</label>
-                        <asp:DropDownList ID="ddlType" runat="server" CssClass="form-control" style="background-color: #0b0c10;">
+                        <asp:DropDownList ID="ddlType" runat="server" CssClass="form-control form-select">
                             <asp:ListItem Value="Announcement" Text="Announcement" Selected="True"></asp:ListItem>
                             <asp:ListItem Value="Invitation" Text="Invitation"></asp:ListItem>
                         </asp:DropDownList>
@@ -265,7 +267,7 @@
                     Full text goes here...
                 </div>
 
-                <div style="font-size: 12px; color: #6b7280; margin-top: 14px;" id="viewDateMeta">
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 14px;" id="viewDateMeta">
                     Posted on 2026-10-26
                 </div>
 

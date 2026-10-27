@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 <%@ Register Src="~/UserProfileDetails.ascx" TagPrefix="uc" TagName="UserProfileDetails" %>
 
@@ -37,8 +37,8 @@
 
         .session-duration {
             font-size: 13px;
-            font-weight: 500;
-            color: #d1d5db;
+            font-weight: 600;
+            color: var(--text-primary);
         }
     </style>
 </head>

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -28,6 +28,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 24px;
+            box-shadow: var(--shadow);
         }
 
         .applicant-identity {
@@ -93,6 +94,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: var(--shadow);
         }
 
         .decision-text h4 {
@@ -144,7 +146,7 @@
         /* Document Viewer Mockup inside Modal */
         .doc-preview-body {
             flex: 1;
-            background-color: #0b0c10;
+            background-color: var(--bg-surface-nested);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin: 12px 0;
@@ -169,6 +171,7 @@
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
+            box-shadow: var(--shadow);
         }
 
         .feedback-hint {
@@ -180,7 +183,7 @@
             color: var(--text-secondary);
         }
         .feedback-hint i {
-            color: var(--warning-orange);
+            color: var(--warning-orange-text);
         }
     </style>
 </head>

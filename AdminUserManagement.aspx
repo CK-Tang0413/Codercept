@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserManagement.aspx.cs" Inherits="Codercept.Admin_User_Management" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserManagement.aspx.cs" Inherits="Codercept.Admin_User_Management" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 <%@ Register Src="~/UserProfileDetails.ascx" TagPrefix="uc" TagName="UserProfileDetails" %>
 <%@ Register Src="~/CreateAdminAccount.ascx" TagPrefix="uc" TagName="CreateAdminAccount" %>
@@ -27,13 +27,13 @@
         /* Deleted Tab Notice */
         .deleted-notice-banner {
             display: none;
-            background: rgba(239, 68, 68, 0.08);
+            background: var(--danger-red-bg);
             border: 1px solid var(--danger-red-border);
             border-radius: 8px;
             padding: 12px 16px;
             margin-bottom: 20px;
             font-size: 13px;
-            color: #fca5a5;
+            color: #b91c1c;
             align-items: center;
             gap: 10px;
         }
@@ -166,7 +166,7 @@
                             <div class="status-cell"><span class="badge badge-pending">Pending</span></div>
                             <div class="col-joined">2024-08-20</div>
                             <div class="col-actions">
-                                <a href="AdminReviewApplication.aspx?userId=USR_003" class="btn-action" style="border-color: var(--accent-purple); color: #a5b4fc; background: var(--accent-purple-bg);">
+                                <a href="AdminReviewApplication.aspx?userId=USR_003" class="btn-action" style="border-color: #ddd6fe; color: var(--accent-purple); background: var(--accent-purple-bg);">
                                     <i class="fa-solid fa-file-signature"></i> Review Application
                                 </a>
                             </div>
