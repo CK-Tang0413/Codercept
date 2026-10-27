@@ -168,11 +168,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Admin Community.aspx" />
-    <Content Include="Admin Courses.aspx" />
-    <Content Include="Admin Dashboard.aspx" />
-    <Content Include="Admin User Management.aspx" />
-    <Content Include="Administrator Nav Bar.aspx" />
+    <Content Include="AdminCommunity.aspx" />
+    <Content Include="AdminCourses.aspx" />
+    <Content Include="AdminDashboard.aspx" />
+    <Content Include="AdminReviewApplication.aspx" />
+    <Content Include="AdminSidebar.ascx" />
+    <Content Include="AdminUserLogs.aspx" />
+    <Content Include="AdminUserManagement.aspx" />
     <Content Include="App_Data\Codercept_db.mdf" />
     <Content Include="App_Data\Codercept_db_log.ldf">
       <DependentUpon>Codercept_db.mdf</DependentUpon>
@@ -198,6 +200,8 @@
     <Content Include="CourseCatalog.aspx" />
     <Content Include="CourseDetails.aspx" />
     <Content Include="CourseViewer.aspx" />
+    <Content Include="CreateAdminAccount.ascx" />
+    <Content Include="css\admin-portal.css" />
     <Content Include="css\global.css" />
     <Content Include="css\teacher-portal.css" />
     <Content Include="Database\database_setup.sql" />
@@ -282,44 +286,59 @@
     <Content Include="TeacherSideBar.ascx" />
     <Content Include="TeacherStatCard.ascx" />
     <Content Include="TeacherStepHeading.ascx" />
+    <Content Include="UserProfileDetails.ascx" />
     <Content Include="VerifyOTP.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin Community.aspx.cs">
-      <DependentUpon>Admin Community.aspx</DependentUpon>
+    <Compile Include="AdminCommunity.aspx.cs">
+      <DependentUpon>AdminCommunity.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Admin Community.aspx.designer.cs">
-      <DependentUpon>Admin Community.aspx</DependentUpon>
+    <Compile Include="AdminCommunity.aspx.designer.cs">
+      <DependentUpon>AdminCommunity.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Admin Courses.aspx.cs">
-      <DependentUpon>Admin Courses.aspx</DependentUpon>
+    <Compile Include="AdminCourses.aspx.cs">
+      <DependentUpon>AdminCourses.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Admin Courses.aspx.designer.cs">
-      <DependentUpon>Admin Courses.aspx</DependentUpon>
+    <Compile Include="AdminCourses.aspx.designer.cs">
+      <DependentUpon>AdminCourses.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Admin Dashboard.aspx.cs">
-      <DependentUpon>Admin Dashboard.aspx</DependentUpon>
+    <Compile Include="AdminDashboard.aspx.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Admin Dashboard.aspx.designer.cs">
-      <DependentUpon>Admin Dashboard.aspx</DependentUpon>
+    <Compile Include="AdminDashboard.aspx.designer.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Admin User Management.aspx.cs">
-      <DependentUpon>Admin User Management.aspx</DependentUpon>
+    <Compile Include="AdminReviewApplication.aspx.cs">
+      <DependentUpon>AdminReviewApplication.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Admin User Management.aspx.designer.cs">
-      <DependentUpon>Admin User Management.aspx</DependentUpon>
+    <Compile Include="AdminReviewApplication.aspx.designer.cs">
+      <DependentUpon>AdminReviewApplication.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Administrator Nav Bar.aspx.cs">
-      <DependentUpon>Administrator Nav Bar.aspx</DependentUpon>
+    <Compile Include="AdminSidebar.ascx.cs">
+      <DependentUpon>AdminSidebar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Administrator Nav Bar.aspx.designer.cs">
-      <DependentUpon>Administrator Nav Bar.aspx</DependentUpon>
+    <Compile Include="AdminSidebar.ascx.designer.cs">
+      <DependentUpon>AdminSidebar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminUserLogs.aspx.cs">
+      <DependentUpon>AdminUserLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminUserLogs.aspx.designer.cs">
+      <DependentUpon>AdminUserLogs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminUserManagement.aspx.cs">
+      <DependentUpon>AdminUserManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminUserManagement.aspx.designer.cs">
+      <DependentUpon>AdminUserManagement.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -350,6 +369,13 @@
     </Compile>
     <Compile Include="CourseViewer.aspx.designer.cs">
       <DependentUpon>CourseViewer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CreateAdminAccount.ascx.cs">
+      <DependentUpon>CreateAdminAccount.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CreateAdminAccount.ascx.designer.cs">
+      <DependentUpon>CreateAdminAccount.ascx</DependentUpon>
     </Compile>
     <Compile Include="ForgotPassword.aspx.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
@@ -662,6 +688,13 @@
     <Compile Include="TeacherStepHeading.ascx.designer.cs">
       <DependentUpon>TeacherStepHeading.ascx</DependentUpon>
     </Compile>
+    <Compile Include="UserProfileDetails.ascx.cs">
+      <DependentUpon>UserProfileDetails.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UserProfileDetails.ascx.designer.cs">
+      <DependentUpon>UserProfileDetails.ascx</DependentUpon>
+    </Compile>
     <Compile Include="VerifyOTP.aspx.cs">
       <DependentUpon>VerifyOTP.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -740,13 +773,13 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
     <Error Condition="!Exists('packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
   </Target>
   <Import Project="packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets" Condition="Exists('packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets')" />
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
 </Project>

@@ -59,12 +59,17 @@ CREATE TABLE [dbo].[Admin] (
 );
 
 CREATE TABLE [dbo].[Application] (
-    [ApplicationId]      INT            IDENTITY (1, 1) NOT NULL,
-    [CredentialDocument] NVARCHAR (MAX) NULL,
-    [ApprovalStatus]     NVARCHAR (50)  NULL,
-    [RejectReason]       NVARCHAR (MAX) NULL,
-    [DateReviewed]       DATETIME       NULL,
-    PRIMARY KEY CLUSTERED ([ApplicationId] ASC)
+    [ApplicationId]         INT            IDENTITY (1, 1) NOT NULL,
+    [RoleApplied]           NVARCHAR (50)  NOT NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
+    [CredentialDocument]    NVARCHAR (MAX) NULL,
+    [ApprovalStatus]        NVARCHAR (50)  NOT NULL DEFAULT 'Pending',
+    [RejectReason]          NVARCHAR (MAX) NULL,
+    [DateSubmitted]         DATETIME       NOT NULL DEFAULT GETDATE(),
+    [DateReviewed]          DATETIME       NULL,
+    PRIMARY KEY CLUSTERED ([ApplicationId] ASC),
+    CONSTRAINT [CK_Application_Role] CHECK ([RoleApplied] IN ('Teacher', 'Teaching Assistant')),
+    CONSTRAINT [CK_Application_Status] CHECK ([ApprovalStatus] IN ('Pending', 'Approved', 'Rejected'))
 );
 
 CREATE TABLE [dbo].[Subject] (
@@ -98,6 +103,8 @@ CREATE TABLE [dbo].[Teacher] (
     [Age]           INT            NULL,
     [Region]        NVARCHAR (50)  NULL,
     [TeachingLevel] NVARCHAR (50)  NULL,
+    [QualificationName] NVARCHAR (50)  NULL,
+    [QualificationDocument] NVARCHAR (MAX) NULL,
     [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
     [DateJoined]    DATETIME       NOT NULL DEFAULT GETDATE(),
     [ApplicationId] INT            NULL,
@@ -107,14 +114,18 @@ CREATE TABLE [dbo].[Teacher] (
 );
 
 CREATE TABLE [dbo].[Teaching_Assistant] (
-    [TA_Id]         INT            IDENTITY (1, 1) NOT NULL,
-    [Name]          NVARCHAR (50)  NOT NULL,
-    [Email]         NVARCHAR (50)  NOT NULL,
-    [Password]      NVARCHAR (255) NOT NULL,
-    [Region]        NVARCHAR (50)  NULL,
-    [TeachingLevel] NVARCHAR (50)  NULL,
-    [AccStatus]     NVARCHAR (50)  NOT NULL DEFAULT 'Active',
-    [ApplicationId] INT            NULL,
+    [TA_Id]                 INT            IDENTITY (1, 1) NOT NULL,
+    [Name]                  NVARCHAR (50)  NOT NULL,
+    [Email]                 NVARCHAR (50)  NOT NULL,
+    [Password]              NVARCHAR (255) NOT NULL,
+    [Age]                   INT            NULL,
+    [Region]                NVARCHAR (50)  NULL,
+    [TeachingLevel]         NVARCHAR (50)  NULL,
+    [QualificationName]     NVARCHAR (50)  NULL,
+    [QualificationDocument] NVARCHAR (MAX) NULL,
+    [AccStatus]             NVARCHAR (50)  NOT NULL DEFAULT 'Active',
+    [DateJoined]            DATETIME       NOT NULL DEFAULT GETDATE(),
+    [ApplicationId]         INT            NULL,
     PRIMARY KEY CLUSTERED ([TA_Id] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC),
     CONSTRAINT [FK_TeachingAssistant_Application] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Application] ([ApplicationId])
@@ -347,6 +358,8 @@ CREATE TABLE [dbo].[Forum] (
     [LearnerId]  INT            NULL,
     [Tags]       NVARCHAR (255) NULL, -- comma-separated, for example 'Python,Fundamental'
     [TeacherId]  INT            NULL,
+    [IsFlagged]  BIT            NOT NULL DEFAULT 0, -- moderation: shown with a red background
+    [IsHidden]   BIT            NOT NULL DEFAULT 0, -- moderation: not shown on the forum page (the row is kept)
     PRIMARY KEY CLUSTERED ([PostId] ASC),
     CONSTRAINT [CK_Forum_OneAuthor] CHECK ((CASE WHEN [LearnerId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) = 1), -- written by a learner or by a teacher
     CONSTRAINT [FK_Forum_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
@@ -354,12 +367,18 @@ CREATE TABLE [dbo].[Forum] (
 );
 
 CREATE TABLE [dbo].[Moderate_Forum] (
+    [ModerateId]     INT            IDENTITY (1, 1) NOT NULL,
     [PostId]         INT            NOT NULL,
-    [TA_Id]          INT            NOT NULL,
+    [TeacherId]      INT            NULL,
+    [TA_Id]          INT            NULL,
+    [ModerateAction] NVARCHAR (10)  NOT NULL, -- 'Flag' or 'Hide'
     [ModerateReason] NVARCHAR (MAX) NOT NULL,
     [DateModerate]   DATETIME       NOT NULL,
-    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([PostId] ASC, [TA_Id] ASC),
+    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerateId] ASC),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide')),
+    CONSTRAINT [CK_ModerateForum_OneModerator] CHECK ((CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TA_Id] IS NULL THEN 0 ELSE 1 END) = 1), -- done by a teacher or by a teaching assistant
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
+    CONSTRAINT [FK_ModerateForum_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
 
@@ -388,18 +407,6 @@ CREATE TABLE [dbo].[ForumRead] (
     CONSTRAINT [PK_ForumRead] PRIMARY KEY CLUSTERED ([PostId] ASC, [TeacherId] ASC),
     CONSTRAINT [FK_ForumRead_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ForumRead_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
-);
-
-CREATE TABLE [dbo].[Qualification] (
-    [QualificationId]       INT            IDENTITY (1, 1) NOT NULL,
-    [QualificationName]     NVARCHAR (50)  NOT NULL,
-    [QualificationDocument] NVARCHAR (MAX) NOT NULL,
-    [QualificationDate]     DATE           NOT NULL,
-    [TeacherId]             INT            NULL,
-    [TA_Id]                 INT            NULL,
-    PRIMARY KEY CLUSTERED ([QualificationId] ASC),
-    CONSTRAINT [FK_Qualification_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
-    CONSTRAINT [FK_Qualification_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
 
 CREATE TABLE [dbo].[User_Log] (

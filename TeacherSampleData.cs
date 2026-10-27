@@ -250,6 +250,8 @@ namespace Codercept
         public string Role { get; set; }
         public string Body { get; set; }
         public bool Pinned { get; set; }
+        /// <summary>The Id of the reply this one answers (Post_Reply.ParentThreadId); null for a reply to the post itself.</summary>
+        public int? ParentId { get; set; }
     }
 
     public class TeacherForumPost
@@ -258,6 +260,8 @@ namespace Codercept
         public string Title { get; set; }
         public string Excerpt { get; set; }
         public List<string> Tags { get; set; }
+        /// <summary>Forum.IsFlagged: a moderator flagged the post (shown with a red background).</summary>
+        public bool Flagged { get; set; }
         public List<TeacherForumComment> Comments { get; set; }
     }
 
