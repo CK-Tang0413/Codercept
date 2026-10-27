@@ -154,7 +154,7 @@ namespace Codercept
                                 Session["UserType"] = "TA";
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
-                                // Response.Redirect("TADashboard.aspx");
+                                Response.Redirect("TADashboard.aspx");
                             }
                             else
                             {

@@ -1,4 +1,4 @@
-﻿USE [Codercept_db];
+USE [Codercept_db];
 GO
 
 -- ==========================================
@@ -9,8 +9,10 @@ DROP TABLE IF EXISTS [dbo].[User_Log];
 DROP TABLE IF EXISTS [dbo].[Qualification];
 DROP TABLE IF EXISTS [dbo].[ForumRead];
 DROP TABLE IF EXISTS [dbo].[Post_Reply];
+DROP TABLE IF EXISTS [dbo].[Forum_Escalation];
 DROP TABLE IF EXISTS [dbo].[Moderate_Forum];
 DROP TABLE IF EXISTS [dbo].[Forum];
+DROP TABLE IF EXISTS [dbo].[EducatorSubject];
 DROP TABLE IF EXISTS [dbo].[TeacherSubject];
 DROP TABLE IF EXISTS [dbo].[EducatorSubject];
 DROP TABLE IF EXISTS [dbo].[CourseSubject];
@@ -355,6 +357,9 @@ CREATE TABLE [dbo].[EducatorSubject] (
     CONSTRAINT [CK_EducatorSubject_Owner] CHECK (([TeacherId] IS NOT NULL AND [TA_Id] IS NULL) OR ([TeacherId] IS NULL AND [TA_Id] IS NOT NULL))
 );
 
+CREATE UNIQUE NONCLUSTERED INDEX [UX_EducatorSubject_Teacher] ON [dbo].[EducatorSubject] ([TeacherId], [SubjectId]) WHERE [TeacherId] IS NOT NULL;
+CREATE UNIQUE NONCLUSTERED INDEX [UX_EducatorSubject_TA] ON [dbo].[EducatorSubject] ([TA_Id], [SubjectId]) WHERE [TA_Id] IS NOT NULL;
+
 CREATE TABLE [dbo].[Forum] (
     [PostId]     INT            IDENTITY (1, 1) NOT NULL,
     [Title]      NVARCHAR (255) NOT NULL,
@@ -376,11 +381,11 @@ CREATE TABLE [dbo].[Moderate_Forum] (
     [PostId]         INT            NOT NULL,
     [TeacherId]      INT            NULL,
     [TA_Id]          INT            NULL,
-    [ModerateAction] NVARCHAR (10)  NOT NULL, -- 'Flag' or 'Hide'
+    [ModerateAction] NVARCHAR (20)  NOT NULL, -- 'Flag', 'Hide', 'Delete'
     [ModerateReason] NVARCHAR (MAX) NOT NULL,
-    [DateModerate]   DATETIME       NOT NULL,
+    [DateModerate]   DATETIME       NOT NULL DEFAULT GETDATE(),
     CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerateId] ASC),
-    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide')),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide', 'Delete')),
     CONSTRAINT [CK_ModerateForum_OneModerator] CHECK ((CASE WHEN [TeacherId] IS NULL THEN 0 ELSE 1 END) + (CASE WHEN [TA_Id] IS NULL THEN 0 ELSE 1 END) = 1), -- done by a teacher or by a teaching assistant
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ModerateForum_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
@@ -392,6 +397,7 @@ CREATE TABLE [dbo].[Post_Reply] (
     [DatePinned]   DATETIME       NULL,
     [ReplyComment] NVARCHAR (MAX) NOT NULL,
     [IsPinned]     NVARCHAR (50)  NOT NULL,
+    [DateReplied]  DATETIME       NOT NULL DEFAULT GETDATE(),
     [PostId]       INT            NOT NULL,
     [LearnerId]    INT            NULL,
     [TeacherId]    INT            NULL,
@@ -450,6 +456,7 @@ INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStat
 VALUES ('Kylan Shane Sedrick', 'kylan1234@gmail.com', '$2a$12$cNIkYdVSLG5nagfnR3fD4.zdnNIpAj7GHgY7a1qC2LmOPUt73mbs2', GETDATE(), 'Active', 21, 'Negeri Sembilan, Malaysia', 'Student');
 INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
 VALUES ('Wan Hon Kit', 'wan1234@gmail.com', '$2a$12$UtK5EgXtoXPquMKIIrcTuufwaCSlhcz6o6xpWX3zcWuDag3j5yJoO', GETDATE(), 'Active', 21, 'Penang, Malaysia', 'Student');
+
 
 -- ==========================================
 -- Teacher portal test data (Backend Phase 1, Step 1.1)

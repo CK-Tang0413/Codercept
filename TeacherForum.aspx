@@ -28,8 +28,13 @@
         <div class="forum-layout">
             <section class="post-list" aria-label="Forum posts">
                 <% foreach (TeacherForumPost post in Posts) { bool sel = post.Id == SelectedPost.Id; %>
-                <article class="forum-post-card<%= sel ? " is-selected" : "" %><%= post.Flagged ? " is-flagged" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>">
-                    <h2><%: post.Title %></h2>
+                <article class="forum-post-card<%= sel ? " is-selected" : "" %><%= (post.IsFlagged || post.Flagged) ? " is-flagged" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>" style="<%= (post.IsFlagged || post.Flagged) ? "border-left: 3px solid #ef4444; background: #fffcfc;" : "" %>">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.35rem;">
+                        <h2 style="margin: 0;"><%: post.Title %></h2>
+                        <% if (post.IsFlagged || post.Flagged) { %>
+                        <span class="badge badge--danger" title="Flagged: <%: post.FlagReason %>" style="flex-shrink: 0;">Flagged</span>
+                        <% } %>
+                    </div>
                     <p><%: post.Excerpt %></p>
                     <div class="post-tags">
                         <% foreach (string tag in post.Tags) { %><span class="tag-chip">#<%: tag %></span><% } %>
@@ -45,11 +50,28 @@
             <section class="discussion-panel" aria-label="Discussion">
                 <div class="discussion-header">
                     <button type="button" class="discussion-back" aria-label="Back to forum posts" data-tp-forum-back><%= TeacherIcons.Svg("arrow", 18) %></button>
-                    <h2>Discussion: <span data-tp-forum-title><%: SelectedPost.Title %></span></h2>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.75rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <h2 style="margin: 0;">Discussion: <span data-tp-forum-title><%: SelectedPost.Title %></span></h2>
+                            <% if (SelectedPost.IsFlagged) { %>
+                            <span class="badge badge--danger" title="Flagged: <%: SelectedPost.FlagReason %>">Flagged</span>
+                            <% } %>
+                        </div>
+                        <% if (SelectedPost.IsFlagged) { %>
+                        <div>
+                            <asp:Button ID="btnTeacherDismissFlag" runat="server" CssClass="button button--secondary" style="padding: 4px 12px; font-size: 12px;" Text="Dismiss Flag" OnClick="btnTeacherDismissFlag_Click" />
+                        </div>
+                        <% } %>
+                    </div>
                 </div>
                 <div class="comment-scroll">
                     <% foreach (TeacherForumPost post in Posts) { %>
                     <div style="display: contents" data-tp-forum-thread="<%= post.Id %>"<%= post.Id == SelectedPost.Id ? "" : " hidden" %>>
+                        <% if (post.Comments.Count == 0) { %>
+                        <div class="empty-thread-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center; color: #6b7280;">
+                            <p style="margin: 0; font-size: 14px; color: #6b7280;">No replies yet. Be the first to reply!</p>
+                        </div>
+                        <% } else { %>
                         <%-- pinned replies first; the rest keep their order (OrderByDescending is stable) --%>
                         <% foreach (TeacherForumComment c in post.Comments.OrderByDescending(x => x.Pinned)) { %>
                         <div class="comment-popover-wrap">
@@ -70,6 +92,7 @@
                                 </div>
                             </article>
                         </div>
+                        <% } %>
                         <% } %>
                     </div>
                     <% } %>
