@@ -333,20 +333,23 @@
                     </div>
                 </div>
 
-                <!-- 1. Document Viewer Modal -->
+                <!-- Document Viewer Modal -->
                 <div class="modal-overlay" id="docModal">
                     <div class="modal-box large">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 id="docModalTitle">Document Viewer</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 id="docModalTitle" style="color: var(--text-primary); font-size: 18px; font-weight: 600;">Document Viewer</h3>
                             <button type="button" class="btn-view-doc" onclick="closeDocModal()"><i class="fa-solid fa-xmark"></i> Close</button>
                         </div>
-                        <div class="doc-preview-body">
-                            <i class="fa-regular fa-file-pdf"></i>
-                            <h4 style="color: var(--text-primary); margin-bottom: 6px;" id="docModalFileName">certificate.pdf</h4>
-                            <p style="font-size: 13px; max-width: 400px; margin-bottom: 20px;">In production, link this iframe to your Azure Blob / Amazon S3 / local uploads handler: <code>/Uploads/Documents/...</code></p>
-                            <a href="#" class="btn-view-doc" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab</a>
+
+                        <!-- Dynamic Container that switches based on file extension -->
+                        <div id="dynamicPreviewContainer" style="flex: 1; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #0b0c10; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
+                            <!-- Content injected via JavaScript -->
                         </div>
-                        <div style="text-align: right;">
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <a id="btnDocExternal" href="#" class="btn-view-doc" target="_blank">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab
+                            </a>
                             <button type="button" class="btn-modal-cancel" onclick="closeDocModal()">Done Reading</button>
                         </div>
                     </div>
@@ -356,52 +359,84 @@
     </form>
 
     <script>
-        // Document Modal Handlers
-        function openDocModal(docTitle, fileName) {
-            document.getElementById('docModalTitle').innerText = docTitle;
-            document.getElementById('docModalFileName').innerText = fileName;
-            document.getElementById('docModal').classList.add('active');
+        // @ts-nocheck
+        function openDocModal(docTitle, fileUrl) {
+            var titleEl = document.getElementById('docModalTitle');
+            if (titleEl) titleEl.innerText = docTitle;s
+
+            var btnExternal = document.getElementById('btnDocExternal');
+            if (btnExternal) btnExternal.href = fileUrl;
+
+            var container = document.getElementById('dynamicPreviewContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            var ext = fileUrl.split('.').pop().toLowerCase();
+
+            if (ext === 'pdf') {
+                container.innerHTML = '<iframe src="' + fileUrl + '" style="width: 100%; height: 100%; min-height: 500px; border: none;"></iframe>';
+            }
+            else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+                container.innerHTML = '<img src="' + fileUrl + '" alt="' + docTitle + '" style="max-width: 100%; max-height: 500px; object-fit: contain; padding: 10px;" />';
+            }
+            else if (['doc', 'docx'].includes(ext)) {
+                container.innerHTML = 
+                    '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">' +
+                        '<i class="fa-regular fa-file-word" style="font-size: 54px; color: #3b82f6; margin-bottom: 16px;"></i>' +
+                        '<h4 style="color: var(--text-primary); margin-bottom: 8px;">Word Document (.' + ext + ')</h4>' +
+                        '<p style="font-size: 13px; max-width: 380px; margin-bottom: 18px;">Word documents cannot be previewed natively in the browser without an external viewer plugin.</p>' +
+                        '<a href="' + fileUrl + '" download class="btn-decision btn-approve-lg" style="text-decoration: none;">' +
+                            '<i class="fa-solid fa-download"></i> Download & View File' +
+                        '</a>' +
+                    '</div>';
+            }
+            else {
+                container.innerHTML = 
+                    '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">' +
+                        '<i class="fa-regular fa-file" style="font-size: 54px; color: var(--accent-purple); margin-bottom: 16px;"></i>' +
+                        '<h4 style="color: var(--text-primary); margin-bottom: 8px;">Document (.' + ext + ')</h4>' +
+                        '<a href="' + fileUrl + '" download class="btn-view-doc" style="margin-top: 10px;">' +
+                            '<i class="fa-solid fa-download"></i> Download File' +
+                        '</a>' +
+                    '</div>';
+            }
+
+            var modal = document.getElementById('docModal');
+            if (modal) modal.classList.add('active');
         }
+
         function closeDocModal() {
-            document.getElementById('docModal').classList.remove('active');
+            var modal = document.getElementById('docModal');
+            if (modal) modal.classList.remove('active');
         }
 
-        // Rejection Modal Handlers
         function openRejectModal() {
-            document.getElementById('rejectModal').classList.add('active');
-        }
-        function closeRejectModal() {
-            document.getElementById('rejectModal').classList.remove('active');
+            var modal = document.getElementById('rejectModal');
+            if (modal) modal.classList.add('active');
         }
 
-        // Close on background backdrop click
+        function closeRejectModal() {
+            var modal = document.getElementById('rejectModal');
+            if (modal) modal.classList.remove('active');
+        }
+
         window.addEventListener('click', function (e) {
-            const docM = document.getElementById('docModal');
-            const rejM = document.getElementById('rejectModal');
+            var docM = document.getElementById('docModal');
+            var rejM = document.getElementById('rejectModal');
             if (e.target === docM) closeDocModal();
             if (e.target === rejM) closeRejectModal();
         });
 
-           function validateRejectReason() {
-            const txt = document.getElementById('<%= txtAdminRemarks.ClientID %>');
+        function validateRejectReason() {
+            var txt = document.getElementById('<%= txtAdminRemarks.ClientID %>');
             if (!txt || !txt.value.trim()) {
                 alert('Please provide a reason for rejecting the application.');
-                txt.focus();
-                txt.style.borderColor = "var(--danger-red)";
+                if (txt) {
+                    txt.focus();
+                    txt.style.borderColor = "var(--danger-red)";
+                }
                 return false;
             }
-            return confirm("Are you sure you want to reject this applicant with the provided reason?");
-        }
-        function validateRejectionReason() {
-            const txtField = document.getElementById('<%= txtAdminRemarks.ClientID %>');
-
-            if (!txtField || !txtField.value.trim()) {
-                alert("Please provide a rejection reason in the remarks field before rejecting this application.");
-                txtField.focus();
-                txtField.style.borderColor = "var(--danger-red)";
-                return false;
-            }
-
             return confirm("Are you sure you want to reject this applicant with the provided reason?");
         }
     </script>

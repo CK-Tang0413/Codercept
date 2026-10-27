@@ -7,7 +7,7 @@
    * Every selector is scoped under .tp-app so nothing leaks into learner/admin pages
      and nothing from them leaks in. :root variables live on .tp-app.
    * The prototype's own sidebar / .main-content / .app-shell rules are NOT ported:
-     the sidebar uses the shared global.css classes (see "Shared shell" at the bottom).
+     the sidebar uses the shared global.css classes (see "Shared shell" at the bottom).F
    * @import "tailwindcss" is replaced by the minimal reset directly below.
    ============================================================================= */
 

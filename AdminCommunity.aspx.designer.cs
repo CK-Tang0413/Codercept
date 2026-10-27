@@ -24,6 +24,15 @@ namespace Codercept
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// hfDeleteAnnouncementId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfDeleteAnnouncementId;
+
+        /// <summary>
         /// SidebarCtrl control.
         /// </summary>
         /// <remarks>
@@ -87,15 +96,6 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.DropDownList ddlType;
 
         /// <summary>
-        /// chkPinToggle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkPinToggle;
-
-        /// <summary>
         /// btnPostAnnouncement control.
         /// </summary>
         /// <remarks>
@@ -103,5 +103,14 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnPostAnnouncement;
+
+        /// <summary>
+        /// btnConfirmDeleteAnnouncement control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnConfirmDeleteAnnouncement;
     }
 }

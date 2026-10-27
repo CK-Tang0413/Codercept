@@ -66,10 +66,9 @@ namespace Codercept
 
                     // Query mapped to [dbo].[Notification], ordering pinned records first
                     string query = @"
-                        SELECT NotificationId, Title, Content, Type, DateTime,
-                               ISNULL(IsPinned, 0) AS IsPinned
-                        FROM Notification
-                        ORDER BY IsPinned DESC, DateTime DESC";
+                        SELECT NotificationId, Title, Content, Type, DateTime
+                        FROM [dbo].[Notification]
+                        ORDER BY DateTime DESC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
@@ -111,7 +110,6 @@ namespace Codercept
             string title = txtTitle.Text.Trim();
             string content = txtContent.Text.Trim();
             string type = ddlType.SelectedValue;
-            bool isPinned = chkPinToggle.Checked;
 
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(content))
             {
@@ -127,15 +125,14 @@ namespace Codercept
                         conn.Open();
 
                         string insertQuery = @"
-                            INSERT INTO Notification (Title, Content, Type, DateTime, IsPinned)
-                            VALUES (@Title, @Content, @Type, GETDATE(), @IsPinned)";
+                    INSERT INTO [dbo].[Notification] (Title, Content, Type, DateTime)
+                    VALUES (@Title, @Content, @Type, GETDATE())";
 
                         using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                         {
                             cmd.Parameters.AddWithValue("@Title", title);
                             cmd.Parameters.AddWithValue("@Content", content);
                             cmd.Parameters.AddWithValue("@Type", type);
-                            cmd.Parameters.AddWithValue("@IsPinned", isPinned);
 
                             cmd.ExecuteNonQuery();
                         }
@@ -147,10 +144,8 @@ namespace Codercept
                 }
             }
 
-            // Clear inputs and reload list
             txtTitle.Text = string.Empty;
             txtContent.Text = string.Empty;
-            chkPinToggle.Checked = false;
             ddlType.SelectedIndex = 0;
 
             LoadAnnouncements();
@@ -183,9 +178,9 @@ namespace Codercept
                 {
                     conn.Open();
                     string query = @"
-                        UPDATE Notification
-                        SET IsPinned = CASE WHEN ISNULL(IsPinned, 0) = 1 THEN 0 ELSE 1 END
-                        WHERE NotificationId = @Id";
+                        SELECT NotificationId, Title, Content, Type, DateTime
+                        FROM [dbo].[Notification]
+                        ORDER BY DateTime DESC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
@@ -209,7 +204,7 @@ namespace Codercept
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string query = "DELETE FROM Notification WHERE NotificationId = @Id";
+                    string query = "DELETE FROM [dbo].[Notification] WHERE [NotificationId] = @Id";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
@@ -244,5 +239,20 @@ namespace Codercept
                         .Replace("\r\n", " ")
                         .Replace("\n", " ");
         }
+
+        protected void btnConfirmDeleteAnnouncement_Click(object sender, EventArgs e)
+        {
+            // Retrieve the target announcement ID stored in the HiddenField by the custom modal
+            if (int.TryParse(hfDeleteAnnouncementId.Value, out int notificationId))
+            {
+                DeleteAnnouncement(notificationId);
+            }
+
+            // Reset hidden field and reload the announcements grid
+            hfDeleteAnnouncementId.Value = string.Empty;
+            LoadAnnouncements();
+        }
+
+
     }
 }
