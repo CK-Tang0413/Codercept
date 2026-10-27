@@ -380,8 +380,8 @@ CREATE TABLE [dbo].[Moderate_Forum] (
     [ModerateAction]   NVARCHAR (20)  NOT NULL,
     [ModerateReason]   NVARCHAR (MAX) NOT NULL,
     [DateModerate]     DATETIME       NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerateId] ASC),
-    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Flag', 'Hide')),
+    CONSTRAINT [PK_ModerateForum] PRIMARY KEY CLUSTERED ([ModerationId] ASC),
+    CONSTRAINT [CK_ModerateForum_Action] CHECK ([ModerateAction] IN ('Hide', 'Flag', 'Delete')),
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
 );
