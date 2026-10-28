@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -12,13 +12,14 @@ namespace Codercept
 {
     public partial class AdminUserLogs : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
         protected bool IsSuperAdmin { get; set; } = false;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             // Retrieve role stored in Session upon authentication
-            string userRole = Session["UserRole"] as string;
+            string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
 
             // Default fallback for development/testing if session is empty:
             if (string.IsNullOrEmpty(userRole))
@@ -43,30 +44,7 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback structured mock data
-                dt.Columns.Add("LogId", typeof(int));
-                dt.Columns.Add("UserId", typeof(int));
-                dt.Columns.Add("UserName", typeof(string));
-                dt.Columns.Add("Email", typeof(string));
-                dt.Columns.Add("Role", typeof(string));
-                dt.Columns.Add("RoleCategory", typeof(string)); // Used by client-side tab filter
-                dt.Columns.Add("DateJoined", typeof(DateTime));
-                dt.Columns.Add("StartDateTime", typeof(DateTime));
-                dt.Columns.Add("EndDateTime", typeof(DateTime));
-
-                dt.Rows.Add(101, 1, "Kylan Shane Sedrick", "kylan1234@gmail.com", "Learner", "learner", DateTime.Now.AddDays(-60), DateTime.Now.AddHours(-3), DateTime.Now.AddHours(-1).AddMinutes(-15));
-                dt.Rows.Add(102, 2, "Wan Hon Kit", "wan1234@gmail.com", "Learner", "learner", DateTime.Now.AddDays(-30), DateTime.Now.AddHours(-1), DateTime.Now.AddMinutes(-10));
-                dt.Rows.Add(103, 1, "Dr. Sarah Park", "sarah.park@codelearn.edu", "Teacher", "teacher", DateTime.Now.AddDays(-120), DateTime.Now.AddHours(-4), DateTime.Now.AddHours(-2));
-                dt.Rows.Add(104, 1, "Jessica Lee", "jessica.lee@student.edu", "Teaching Assistant", "assistant", DateTime.Now.AddDays(-45), DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-4).AddMinutes(-20));
-
-                // Include Admin mock data only if SuperAdmin
-                if (IsSuperAdmin)
-                {
-                    dt.Rows.Add(105, 1, "Tang Chee Kin", "tterry616@gmail.com", "SuperAdmin", "admin", DateTime.Now.AddDays(-100), DateTime.Now.AddMinutes(-50), DateTime.Now.AddMinutes(10));
-                    dt.Rows.Add(106, 2, "Kevin Wong", "kevin.wong@codelearn.edu", "Admin", "admin", DateTime.Now.AddDays(-80), DateTime.Now.AddHours(-6), DateTime.Now.AddHours(-4));
-                }
-
-                BindLogs(dt);
+                pnlNoLogs.Visible = true;
                 return;
             }
 
@@ -107,12 +85,58 @@ namespace Codercept
                             END AS RoleCategory,
                             COALESCE(adm.Name, l.Name, t.Name, ta.Name, 'System User') AS UserName,
                             COALESCE(adm.Email, l.Email, t.Email, ta.Email, 'unknown@codercept.edu') AS Email,
-                            COALESCE(l.DateJoined, GETDATE()) AS DateJoined
+                            COALESCE(adm.AccStatus, l.AccStatus, t.AccStatus, ta.AccStatus, 'Active') AS AccStatus,
+                            COALESCE(l.DateJoined, t.DateJoined, ta.DateJoined, GETDATE()) AS DateJoined,
+                            COALESCE(l.Age, t.Age, ta.Age) AS Age,
+                            COALESCE(t.Region, ta.Region, 'N/A') AS Region,
+                            COALESCE(t.TeachingLevel, ta.TeachingLevel, 'N/A') AS TeachingLevel,
+                            COALESCE(t.QualificationName, ta.QualificationName, a_t.QualificationName, a_ta.QualificationName, 'N/A') AS QualificationName,
+                            COALESCE(t.QualificationDocument, ta.QualificationDocument, a_t.CredentialDocument, a_ta.CredentialDocument, '') AS QualificationDocument,
+                            l.Address,
+                            l.Occupation,
+                            ISNULL(
+                                CASE 
+                                    WHEN ul.TeacherId IS NOT NULL THEN (
+                                        SELECT STRING_AGG(s.SubjectName, ', ')
+                                        FROM [dbo].[EducatorSubject] es
+                                        JOIN [dbo].[Subject] s ON es.SubjectId = s.SubjectId
+                                        WHERE es.TeacherId = ul.TeacherId
+                                    )
+                                    WHEN ul.TA_Id IS NOT NULL THEN (
+                                        SELECT STRING_AGG(s.SubjectName, ', ')
+                                        FROM [dbo].[EducatorSubject] es
+                                        JOIN [dbo].[Subject] s ON es.SubjectId = s.SubjectId
+                                        WHERE es.TA_Id = ul.TA_Id
+                                    )
+                                    ELSE 'N/A'
+                                END, 'N/A'
+                            ) AS SubjectTeaching,
+                            ISNULL((
+                                SELECT STRING_AGG(c.CourseTitle, ', ')
+                                FROM [dbo].[LearnerProgress] lp
+                                JOIN [dbo].[Course] c ON lp.CourseId = c.CourseId
+                                WHERE lp.LearnerId = ul.LearnerId
+                                  AND NOT EXISTS (
+                                      SELECT 1 FROM [dbo].[Certificate] cert 
+                                      WHERE cert.LearnerId = ul.LearnerId AND cert.CourseId = lp.CourseId
+                                  )
+                            ), 'None in progress') AS ProgressCourses,
+                            ISNULL((
+                                SELECT STRING_AGG(c.CourseTitle, ', ')
+                                FROM (
+                                    SELECT DISTINCT cert.CourseId
+                                    FROM [dbo].[Certificate] cert
+                                    WHERE cert.LearnerId = ul.LearnerId
+                                ) userCerts
+                                JOIN [dbo].[Course] c ON userCerts.CourseId = c.CourseId
+                            ), 'None completed') AS CompletedCourses
                         FROM [dbo].[User_Log] ul
                         LEFT JOIN [dbo].[Learner] l ON ul.LearnerId = l.LearnerId
                         LEFT JOIN [dbo].[Teacher] t ON ul.TeacherId = t.TeacherId
                         LEFT JOIN [dbo].[Teaching_Assistant] ta ON ul.TA_Id = ta.TA_Id
                         LEFT JOIN [dbo].[Admin] adm ON ul.AdminId = adm.AdminId
+                        LEFT JOIN [dbo].[Application] a_t ON t.ApplicationId = a_t.ApplicationId
+                        LEFT JOIN [dbo].[Application] a_ta ON ta.ApplicationId = a_ta.ApplicationId
                         {adminFilterCondition}
                         ORDER BY ul.StartDateTime DESC";
 
@@ -134,7 +158,7 @@ namespace Codercept
 
         private void BindLogs(DataTable dt)
         {
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 rptUserLogs.DataSource = dt;
                 rptUserLogs.DataBind();
@@ -144,26 +168,29 @@ namespace Codercept
                 int totalSessions = dt.Rows.Count;
                 int activeSessions = 0;
                 double totalMinutes = 0;
-                var uniqueUsers = new System.Collections.Generic.HashSet<string>();
+                var uniqueUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    DateTime start = Convert.ToDateTime(row["StartDateTime"]);
-                    DateTime end = Convert.ToDateTime(row["EndDateTime"]);
-                    string email = row["Email"].ToString();
+                    DateTime start = row["StartDateTime"] != DBNull.Value ? Convert.ToDateTime(row["StartDateTime"]) : DateTime.Now;
+                    DateTime end = (row["EndDateTime"] != DBNull.Value) ? Convert.ToDateTime(row["EndDateTime"]) : start;
+                    string email = row["Email"]?.ToString() ?? "";
 
-                    if (!uniqueUsers.Contains(email))
+                    if (!string.IsNullOrWhiteSpace(email) && !uniqueUsers.Contains(email))
                         uniqueUsers.Add(email);
 
                     if (IsSessionActive(end))
                         activeSessions++;
 
-                    totalMinutes += (end - start).TotalMinutes;
+                    double minutes = (end - start).TotalMinutes;
+                    if (minutes > 0)
+                        totalMinutes += minutes;
                 }
 
                 litTotalSessions.Text = totalSessions.ToString("N0");
                 litActiveSessions.Text = activeSessions.ToString();
-                litAvgDuration.Text = $"{(int)(totalMinutes / totalSessions)}m";
+                int avgTotalMin = totalSessions > 0 ? (int)(totalMinutes / totalSessions) : 0;
+                litAvgDuration.Text = avgTotalMin >= 60 ? $"{avgTotalMin / 60}h {avgTotalMin % 60}m" : $"{avgTotalMin}m";
                 litUniqueUsers.Text = uniqueUsers.Count.ToString();
             }
             else
@@ -179,8 +206,12 @@ namespace Codercept
             }
         }
 
-        protected string CalculateDuration(DateTime start, DateTime end)
+        protected string CalculateDuration(object startObj, object endObj)
         {
+            if (startObj == null || startObj == DBNull.Value) return "< 1m";
+            DateTime start = Convert.ToDateTime(startObj);
+            DateTime end = (endObj != null && endObj != DBNull.Value) ? Convert.ToDateTime(endObj) : DateTime.Now;
+
             TimeSpan span = end - start;
             if (span.TotalMinutes < 1) return "< 1m";
 
@@ -193,8 +224,10 @@ namespace Codercept
             return $"{minutes}m";
         }
 
-        protected bool IsSessionActive(DateTime end)
+        protected bool IsSessionActive(object endObj)
         {
+            if (endObj == null || endObj == DBNull.Value) return true;
+            DateTime end = Convert.ToDateTime(endObj);
             return end >= DateTime.Now.AddMinutes(-5);
         }
 

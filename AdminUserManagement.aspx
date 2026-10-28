@@ -214,7 +214,7 @@
                                         </asp:LinkButton>
 
                                         <!-- Custom Delete Modal Trigger -->
-                                        <%# (Eval("Role").ToString() != "SuperAdmin" && Eval("AccStatus").ToString().ToLower() != "deleted") ? @"
+                                        <%# (Eval("Role").ToString() != "SuperAdmin" && Eval("AccStatus").ToString().ToLower() != "pending" && Eval("AccStatus").ToString().ToLower() != "deleted") ? @"
                                             <button type='button' class='btn-icon' title='Move to Deleted' onclick=""openCustomUserDeleteModal('" + Eval("UserId") + @"', '" + Eval("RoleCategory") + @"', '" + HttpUtility.JavaScriptStringEncode(Eval("Name").ToString()) + @"')"">
                                                 <i class='fa-regular fa-trash-can'></i>
                                             </button>" : "" %>

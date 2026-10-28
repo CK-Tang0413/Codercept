@@ -209,6 +209,13 @@ namespace Codercept
                 int userId = Convert.ToInt32(args[0]);
                 string roleCategory = args[1];
                 string currentStatus = args[2];
+
+                // Guard: Pending educator accounts must go through application review first
+                if (currentStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
                 string nextStatus = currentStatus.Equals("Active", StringComparison.OrdinalIgnoreCase) ? "Inactive" : "Active";
 
                 UpdateUserStatus(userId, roleCategory, nextStatus);
@@ -301,13 +308,47 @@ namespace Codercept
             if (int.TryParse(hfDeleteTargetUserId.Value, out int userId))
             {
                 string roleCategory = hfDeleteTargetRole.Value;
-                UpdateUserStatus(userId, roleCategory, "Deleted");
+                // Guard: Pending educator accounts cannot be moved to deleted without review
+                if (!IsUserPending(userId, roleCategory))
+                {
+                    UpdateUserStatus(userId, roleCategory, "Deleted");
+                }
             }
 
             hfDeleteTargetUserId.Value = string.Empty;
             hfDeleteTargetRole.Value = string.Empty;
             LoadAllUsers();
             UpdatePurgeBannerInfo();
+        }
+
+        private bool IsUserPending(int userId, string roleCategory)
+        {
+            if (string.IsNullOrEmpty(connectionString)) return false;
+            string tableName = GetTableName(roleCategory);
+            string idCol = GetIdColumn(roleCategory);
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    string query = $"SELECT AccStatus FROM [dbo].[{tableName}] WHERE [{idCol}] = @Id";
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", userId);
+                        object statusObj = cmd.ExecuteScalar();
+                        if (statusObj != null && statusObj != DBNull.Value)
+                        {
+                            return statusObj.ToString().Equals("Pending", StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AdminUserManagement IsUserPending Error]: {ex.Message}");
+            }
+            return false;
         }
 
         protected void btnRunWeeklyPurge_Click(object sender, EventArgs e)

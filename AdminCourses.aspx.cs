@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -12,7 +12,8 @@ namespace Codercept
 {
     public partial class Admin_Courses : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -28,25 +29,8 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback Mock Data
-                dt.Columns.Add("CourseId", typeof(int));
-                dt.Columns.Add("CourseTitle", typeof(string));
-                dt.Columns.Add("DifficultyLevel", typeof(string));
-                dt.Columns.Add("CourseDuration", typeof(string)); // <-- Added
-                dt.Columns.Add("Language", typeof(string));
-                dt.Columns.Add("TeacherName", typeof(string));
-                dt.Columns.Add("EnrolledCount", typeof(int));
-                dt.Columns.Add("Rating", typeof(decimal));
-                dt.Columns.Add("ReviewCount", typeof(int));       // <-- Ensure ReviewCount is present
-
-                dt.Rows.Add(1, "Python for Beginners", "Beginner", "18 hours", "Python", "Dr. Sarah Park", 128, 4.8m, 24);
-                dt.Rows.Add(2, "Java Fundamentals", "Beginner", "24 hours", "Java", "Prof. Michael Torres", 94, 4.6m, 18);
-                dt.Rows.Add(3, "C Programming Essentials", "Intermediate", "20 hours", "C", "Prof. Michael Torres", 67, 4.5m, 12);
-                dt.Rows.Add(4, "C++ Object-Oriented Programming", "Intermediate", "30 hours", "C++", "Dr. Sarah Park", 82, 4.7m, 15);
-                dt.Rows.Add(5, "Advanced Python — Data Structures & Algorithms", "Advanced", "32 hours", "Python", "Dr. Sarah Park", 45, 4.9m, 9);
-                dt.Rows.Add(6, "Data Structures with C++", "Advanced", "36 hours", "C++", "Prof. Michael Torres", 38, 4.4m, 7);
-
-                BindRepeater(dt);
+                pnlNoCourses.Visible = true;
+                litCourseSummary.Text = "Database connection not found";
                 return;
             }
 
@@ -57,31 +41,38 @@ namespace Codercept
                     conn.Open();
 
                     string query = @"
-                SELECT 
-                    c.CourseId,
-                    c.CourseTitle,
-                    c.DifficultyLevel,
-                    c.CourseDuration,                     -- <-- Added
-                    ISNULL(s.SubjectName, 'General') AS Language,
-                    ISNULL(t.Name, 'Unassigned') AS TeacherName,
-                    ISNULL(enrolled.Count, 0) AS EnrolledCount,
-                    ISNULL(reviews.AvgRating, 5.0) AS Rating,
-                    ISNULL(reviews.TotalReviews, 0) AS ReviewCount
-                FROM [dbo].[Course] c
-                LEFT JOIN [dbo].[Teacher] t ON c.TeacherId = t.TeacherId
-                LEFT JOIN [dbo].[CourseSubject] cs ON c.CourseId = cs.CourseId
-                LEFT JOIN [dbo].[Subject] s ON cs.SubjectId = s.SubjectId
-                OUTER APPLY (
-                    SELECT COUNT(DISTINCT lp.LearnerId) AS Count
-                    FROM [dbo].[LearnerProgress] lp
-                    WHERE lp.CourseId = c.CourseId
-                ) enrolled
-                OUTER APPLY (
-                    SELECT AVG(cr.Rating) AS AvgRating, COUNT(cr.ReviewId) AS TotalReviews
-                    FROM [dbo].[Course_Review] cr
-                    WHERE cr.CourseId = c.CourseId
-                ) reviews
-                ORDER BY c.CourseId ASC";
+                        SELECT 
+                            c.CourseId,
+                            c.CourseTitle,
+                            c.DifficultyLevel,
+                            c.CourseDuration,
+                            ISNULL((SELECT TOP 1 s.SubjectName 
+                                    FROM [dbo].[CourseSubject] cs 
+                                    INNER JOIN [dbo].[Subject] s ON cs.SubjectId = s.SubjectId 
+                                    WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language' 
+                                    ORDER BY s.SubjectId),
+                                   ISNULL((SELECT TOP 1 s2.SubjectName 
+                                           FROM [dbo].[CourseSubject] cs2 
+                                           INNER JOIN [dbo].[Subject] s2 ON cs2.SubjectId = s2.SubjectId 
+                                           WHERE cs2.CourseId = c.CourseId 
+                                           ORDER BY s2.SubjectId), 'General')) AS Language,
+                            ISNULL(t.Name, 'Unassigned') AS TeacherName,
+                            ISNULL(enrolled.Count, 0) AS EnrolledCount,
+                            ISNULL(reviews.AvgRating, 0.0) AS Rating,
+                            ISNULL(reviews.TotalReviews, 0) AS ReviewCount
+                        FROM [dbo].[Course] c
+                        LEFT JOIN [dbo].[Teacher] t ON c.TeacherId = t.TeacherId
+                        OUTER APPLY (
+                            SELECT COUNT(DISTINCT lp.LearnerId) AS Count
+                            FROM [dbo].[LearnerProgress] lp
+                            WHERE lp.CourseId = c.CourseId
+                        ) enrolled
+                        OUTER APPLY (
+                            SELECT AVG(cr.Rating) AS AvgRating, COUNT(cr.ReviewId) AS TotalReviews
+                            FROM [dbo].[Course_Review] cr
+                            WHERE cr.CourseId = c.CourseId
+                        ) reviews
+                        ORDER BY c.CourseId ASC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
@@ -96,12 +87,13 @@ namespace Codercept
             {
                 System.Diagnostics.Debug.WriteLine($"[AdminCourses Load Error]: {ex.Message}");
                 pnlNoCourses.Visible = true;
+                litCourseSummary.Text = "Error loading courses from database";
             }
         }
 
         private void BindRepeater(DataTable dt)
         {
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 rptCourses.DataSource = dt;
                 rptCourses.DataBind();
@@ -120,62 +112,13 @@ namespace Codercept
 
         protected void rptCourses_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName == "TogglePublish")
-            {
-                // Format: "CourseId|CurrentStatus"
-                string[] parts = e.CommandArgument.ToString().Split('|');
-                if (parts.Length == 2)
-                {
-                    int courseId = Convert.ToInt32(parts[0]);
-                    string currentStatus = parts[1];
-
-                    // Switch status: Published -> Draft, Draft/Unpublished -> Published
-                    string newStatus = currentStatus.Equals("Published", StringComparison.OrdinalIgnoreCase)
-                        ? "Draft"
-                        : "Published";
-
-                    UpdateCourseStatusInDatabase(courseId, newStatus);
-
-                    // Refresh course list and statistics
-                    LoadCourses();
-                }
-            }
-        }
-
-        private void UpdateCourseStatusInDatabase(int courseId, string newStatus)
-        {
-            if (string.IsNullOrEmpty(connectionString)) return;
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    conn.Open();
-
-                    string updateQuery = @"
-                        UPDATE [dbo].[Course]
-                        SET [Status] = @Status,
-                            [DateUpdate] = GETDATE()
-                        WHERE [CourseId] = @CourseId";
-
-                    using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Status", newStatus);
-                        cmd.Parameters.AddWithValue("@CourseId", courseId);
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[AdminCourses Update Status Error]: {ex.Message}");
-            }
+            // Optional repeater actions
         }
 
         // Helper: CSS styling for course language badges
         protected string GetLanguageBadgeClass(string language)
         {
+            if (string.IsNullOrWhiteSpace(language)) return "badge-python";
             switch (language.Trim().ToLower())
             {
                 case "python": return "badge-python";

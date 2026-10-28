@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -12,7 +12,8 @@ namespace Codercept
 {
     public partial class AdminCourseReviews : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -23,27 +24,55 @@ namespace Codercept
                 {
                     courseId = id;
                 }
+                else
+                {
+                    courseId = GetFirstCourseId();
+                }
 
-                LoadCourseDetails(courseId);
-                LoadCourseReviews(courseId);
+                if (courseId > 0)
+                {
+                    LoadCourseDetails(courseId);
+                    LoadCourseReviews(courseId);
+                }
+                else
+                {
+                    litCourseTitle.Text = "No Courses Available";
+                    litCourseDesc.Text = "There are no courses currently in the database.";
+                    pnlNoReviews.Visible = true;
+                }
             }
+        }
+
+        private int GetFirstCourseId()
+        {
+            if (string.IsNullOrEmpty(connectionString)) return 0;
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT TOP 1 CourseId FROM [dbo].[Course] ORDER BY CourseId ASC", conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && int.TryParse(result.ToString(), out int id))
+                        {
+                            return id;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AdminCourseReviews GetFirstCourseId Error]: {ex.Message}");
+            }
+            return 0;
         }
 
         private void LoadCourseDetails(int courseId)
         {
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback Mock data
-                litCourseTitle.Text = "Python Programming Fundamentals";
-                badgeLanguage.InnerText = "Python";
-                badgeLanguage.Attributes["class"] = "badge badge-python";
-                litCourseDesc.Text = "Build a strong foundation in Python through practical examples, clear explanations, and hands-on programming exercises.";
-                litTeacherName.Text = "Bryan Yeong";
-                litDifficulty.Text = "Easy";
-                litDuration.Text = "18 hours";
-                litEnrolledCount.Text = "128";
-                litAvgScore.Text = "4.8";
-                litTotalReviews.Text = "2";
+                litCourseTitle.Text = "Database Connection Error";
                 return;
             }
 
@@ -58,15 +87,22 @@ namespace Codercept
                             c.CourseDescription,
                             c.DifficultyLevel,
                             c.CourseDuration,
-                            ISNULL(s.SubjectName, 'General') AS Language,
+                            ISNULL((SELECT TOP 1 s.SubjectName 
+                                    FROM [dbo].[CourseSubject] cs 
+                                    INNER JOIN [dbo].[Subject] s ON cs.SubjectId = s.SubjectId 
+                                    WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language' 
+                                    ORDER BY s.SubjectId),
+                                   ISNULL((SELECT TOP 1 s2.SubjectName 
+                                           FROM [dbo].[CourseSubject] cs2 
+                                           INNER JOIN [dbo].[Subject] s2 ON cs2.SubjectId = s2.SubjectId 
+                                           WHERE cs2.CourseId = c.CourseId 
+                                           ORDER BY s2.SubjectId), 'General')) AS Language,
                             ISNULL(t.Name, 'Unassigned') AS TeacherName,
                             ISNULL(enrolled.Count, 0) AS EnrolledCount,
                             ISNULL(rev.AvgRating, 0.0) AS AvgScore,
                             ISNULL(rev.TotalReviews, 0) AS TotalReviews
                         FROM [dbo].[Course] c
                         LEFT JOIN [dbo].[Teacher] t ON c.TeacherId = t.TeacherId
-                        LEFT JOIN [dbo].[CourseSubject] cs ON c.CourseId = cs.CourseId
-                        LEFT JOIN [dbo].[Subject] s ON cs.SubjectId = s.SubjectId
                         OUTER APPLY (
                             SELECT COUNT(DISTINCT lp.LearnerId) AS Count
                             FROM [dbo].[LearnerProgress] lp
@@ -101,6 +137,11 @@ namespace Codercept
                                 litAvgScore.Text = avg.ToString("0.0");
                                 litTotalReviews.Text = reader["TotalReviews"].ToString();
                             }
+                            else
+                            {
+                                litCourseTitle.Text = "Course Not Found";
+                                litCourseDesc.Text = "The specified course could not be located in the database.";
+                            }
                         }
                     }
                 }
@@ -117,17 +158,7 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                dt.Columns.Add("LearnerName", typeof(string));
-                dt.Columns.Add("Rating", typeof(double));
-                dt.Columns.Add("SubmissionDate", typeof(DateTime));
-                dt.Columns.Add("CourseFeedBack", typeof(string));
-
-                dt.Rows.Add("Wan Hon Kit", 5.0, DateTime.Now.AddDays(-2), "Exceptional explanation of data structures and loops! Highly recommended for all beginner students.");
-                dt.Rows.Add("Kylan Shane Sedrick", 4.5, DateTime.Now.AddDays(-5), "Great exercises and code challenges throughout the chapters. Really helped solidify OOP concepts.");
-
-                rptReviews.DataSource = dt;
-                rptReviews.DataBind();
-                pnlNoReviews.Visible = false;
+                pnlNoReviews.Visible = true;
                 return;
             }
 
@@ -188,6 +219,7 @@ namespace Codercept
 
         protected string GetLanguageBadgeClass(string language)
         {
+            if (string.IsNullOrWhiteSpace(language)) return "badge-python";
             switch (language.Trim().ToLower())
             {
                 case "python": return "badge-python";

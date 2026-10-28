@@ -137,11 +137,21 @@
                                 <div class="list-row log-row user-row" 
                                      data-id='<%# Eval("UserId") %>'
                                      data-role='<%# Eval("RoleCategory").ToString().ToLower() %>'
-                                     data-name='<%# Eval("UserName") %>'
-                                     data-email='<%# Eval("Email") %>'
-                                     data-joined='<%# Eval("DateJoined", "{0:yyyy-MM-dd}") %>'
-                                     data-start='<%# Eval("StartDateTime", "{0:yyyy-MM-dd HH:mm:ss}") %>'
-                                     data-status='active'>
+                                     data-status='<%# Eval("AccStatus") != null ? Eval("AccStatus").ToString().ToLower() : "active" %>'
+                                     data-name='<%# HttpUtility.HtmlAttributeEncode(Eval("UserName")?.ToString() ?? "") %>'
+                                     data-email='<%# HttpUtility.HtmlAttributeEncode(Eval("Email")?.ToString() ?? "") %>'
+                                     data-joined='<%# Eval("DateJoined") != DBNull.Value && Eval("DateJoined") != null ? Eval("DateJoined", "{0:yyyy-MM-dd}") : "N/A" %>'
+                                     data-age='<%# Eval("Age") != DBNull.Value && Eval("Age") != null ? Eval("Age") : "N/A" %>'
+                                     data-region='<%# HttpUtility.HtmlAttributeEncode(Eval("Region")?.ToString() ?? "N/A") %>'
+                                     data-teachinglevel='<%# HttpUtility.HtmlAttributeEncode(Eval("TeachingLevel")?.ToString() ?? "N/A") %>'
+                                     data-qualification='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationName")?.ToString() ?? "N/A") %>'
+                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationDocument")?.ToString() ?? "") %>'
+                                     data-subject='<%# HttpUtility.HtmlAttributeEncode(Eval("SubjectTeaching")?.ToString() ?? "N/A") %>'
+                                     data-address='<%# HttpUtility.HtmlAttributeEncode(Eval("Address")?.ToString() ?? "N/A") %>'
+                                     data-occupation='<%# HttpUtility.HtmlAttributeEncode(Eval("Occupation")?.ToString() ?? "N/A") %>'
+                                     data-progress='<%# HttpUtility.HtmlAttributeEncode(Eval("ProgressCourses")?.ToString() ?? "None in progress") %>'
+                                     data-completed='<%# HttpUtility.HtmlAttributeEncode(Eval("CompletedCourses")?.ToString() ?? "None completed") %>'
+                                     data-start='<%# Eval("StartDateTime", "{0:yyyy-MM-dd HH:mm:ss}") %>'>
                                     
                                     <!-- Log ID -->
                                     <div class="col-logid">#LOG-<%# Eval("LogId") %></div>
@@ -149,7 +159,7 @@
                                     <!-- User Meta -->
                                     <div class="col-user">
                                         <div class="avatar" style='<%# Eval("RoleCategory").ToString().ToLower() == "admin" ? "background-color: var(--accent-rose-bg); color: var(--accent-rose);" : "" %>'>
-                                            <%# GetInitials(Eval("UserName").ToString()) %>
+                                            <%# GetInitials(Eval("UserName")?.ToString() ?? "") %>
                                         </div>
                                         <div class="user-meta">
                                             <h5 class="user-name"><%# Eval("UserName") %></h5>
@@ -159,7 +169,7 @@
 
                                     <!-- Role Badge -->
                                     <div>
-                                        <span class="badge <%# GetRoleBadgeClass(Eval("Role").ToString()) %>">
+                                        <span class="badge <%# GetRoleBadgeClass(Eval("Role")?.ToString() ?? "") %>">
                                             <%# Eval("Role") %>
                                         </span>
                                     </div>
@@ -172,14 +182,14 @@
 
                                     <!-- Duration -->
                                     <div class="session-duration">
-                                        <%# CalculateDuration(Convert.ToDateTime(Eval("StartDateTime")), Convert.ToDateTime(Eval("EndDateTime"))) %>
+                                        <%# CalculateDuration(Eval("StartDateTime"), Eval("EndDateTime")) %>
                                     </div>
 
                                     <!-- Status -->
                                     <div>
-                                        <span class="status-badge <%# IsSessionActive(Convert.ToDateTime(Eval("EndDateTime"))) ? "status-active" : "status-completed" %>">
-                                            <i class="<%# IsSessionActive(Convert.ToDateTime(Eval("EndDateTime"))) ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-circle-check" %>"></i>
-                                            <%# IsSessionActive(Convert.ToDateTime(Eval("EndDateTime"))) ? "In Progress" : "Completed" %>
+                                        <span class="status-badge <%# IsSessionActive(Eval("EndDateTime")) ? "status-active" : "status-completed" %>">
+                                            <i class="<%# IsSessionActive(Eval("EndDateTime")) ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-circle-check" %>"></i>
+                                            <%# IsSessionActive(Eval("EndDateTime")) ? "In Progress" : "Completed" %>
                                         </span>
                                     </div>
 
@@ -233,7 +243,7 @@
                     const email = row.querySelector('.user-email').innerText.toLowerCase();
                     const logId = row.querySelector('.col-logid').innerText.toLowerCase();
                     const startDateStr = row.getAttribute('data-start');
-                    const startDate = new Date(startDateStr);
+                    const startDate = new Date(startDateStr ? startDateStr.replace(' ', 'T') : '');
 
                     // 1. Role tab match
                     let matchesRole = (activeRole === 'all') || (role === activeRole);
@@ -244,11 +254,11 @@
                     // 3. Date range match
                     let matchesDate = true;
                     if (dateFilter === 'today') {
-                        matchesDate = (now - startDate) < (24 * 60 * 60 * 1000);
+                        matchesDate = (now - startDate) >= 0 && (now - startDate) < (24 * 60 * 60 * 1000);
                     } else if (dateFilter === '7days') {
-                        matchesDate = (now - startDate) < (7 * 24 * 60 * 60 * 1000);
+                        matchesDate = (now - startDate) >= 0 && (now - startDate) < (7 * 24 * 60 * 60 * 1000);
                     } else if (dateFilter === '30days') {
-                        matchesDate = (now - startDate) < (30 * 24 * 60 * 60 * 1000);
+                        matchesDate = (now - startDate) >= 0 && (now - startDate) < (30 * 24 * 60 * 60 * 1000);
                     }
 
                     if (matchesRole && matchesSearch && matchesDate) {

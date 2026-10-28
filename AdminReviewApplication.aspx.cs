@@ -10,6 +10,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using BCrypt.Net;
 
 namespace Codercept
 {
@@ -315,6 +316,10 @@ namespace Codercept
             {
                 try
                 {
+                    string recipientName = "";
+                    string recipientEmail = "";
+                    string predefinedPassword = "";
+
                     using (SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
@@ -322,6 +327,42 @@ namespace Codercept
                         {
                             try
                             {
+                                // Retrieve applicant Name and Email from database for 100% accuracy
+                                string selectQuery = (roleCategory == "teacher")
+                                    ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                    : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+
+                                using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                {
+                                    selectCmd.Parameters.AddWithValue("@Id", userId);
+                                    using (SqlDataReader r = selectCmd.ExecuteReader())
+                                    {
+                                        if (r.Read())
+                                        {
+                                            recipientName = r["Name"]?.ToString() ?? "";
+                                            recipientEmail = r["Email"]?.ToString() ?? "";
+                                        }
+                                    }
+                                }
+
+                                if (string.IsNullOrWhiteSpace(recipientName))
+                                {
+                                    recipientName = HttpUtility.HtmlDecode(litFullName.Text)?.Trim() ?? "Educator";
+                                }
+                                if (string.IsNullOrWhiteSpace(recipientEmail))
+                                {
+                                    recipientEmail = litEmail.Text?.Trim() ?? "";
+                                }
+
+                                // Derive predefined password: <userfirstname> + alias + 1234
+                                // Format: <userFirstName>@1234 (alias symbol '@') matching CreateAdminAccount
+                                string[] nameParts = recipientName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                string firstName = nameParts.Length > 0 ? nameParts[0] : (roleCategory == "teacher" ? "Teacher" : "Educator");
+                                predefinedPassword = $"{firstName}@1234";
+
+                                // Hash predefined password with BCrypt (Cost Factor 12)
+                                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(predefinedPassword, 12);
+
                                 // 1. Update Application table
                                 if (appId > 0)
                                 {
@@ -333,21 +374,23 @@ namespace Codercept
                                     }
                                 }
 
-                                // 2. Update Teacher or Teaching_Assistant table
+                                // 2. Update Teacher or Teaching_Assistant table with Active status and hashed predefined password
                                 if (roleCategory == "teacher" && userId > 0)
                                 {
-                                    string tQuery = "UPDATE [dbo].[Teacher] SET AccStatus = 'Active' WHERE TeacherId = @id";
+                                    string tQuery = "UPDATE [dbo].[Teacher] SET AccStatus = 'Active', Password = @Password WHERE TeacherId = @id";
                                     using (SqlCommand cmd = new SqlCommand(tQuery, conn, tx))
                                     {
+                                        cmd.Parameters.AddWithValue("@Password", hashedPassword);
                                         cmd.Parameters.AddWithValue("@id", userId);
                                         cmd.ExecuteNonQuery();
                                     }
                                 }
                                 else if (roleCategory == "assistant" && userId > 0)
                                 {
-                                    string taQuery = "UPDATE [dbo].[Teaching_Assistant] SET AccStatus = 'Active' WHERE TA_Id = @id";
+                                    string taQuery = "UPDATE [dbo].[Teaching_Assistant] SET AccStatus = 'Active', Password = @Password WHERE TA_Id = @id";
                                     using (SqlCommand cmd = new SqlCommand(taQuery, conn, tx))
                                     {
+                                        cmd.Parameters.AddWithValue("@Password", hashedPassword);
                                         cmd.Parameters.AddWithValue("@id", userId);
                                         cmd.ExecuteNonQuery();
                                     }
@@ -363,10 +406,8 @@ namespace Codercept
                         }
                     }
 
-                    // Send approval announcement email
-                    string recipientEmail = litEmail.Text;
-                    string recipientName = litFullName.Text;
-                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: true, remarks: optionalNotes);
+                    // Send approval announcement email with predefined password
+                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: true, remarks: optionalNotes, temporaryPassword: predefinedPassword);
                 }
                 catch (Exception ex)
                 {
@@ -388,6 +429,9 @@ namespace Codercept
             {
                 try
                 {
+                    string recipientName = "";
+                    string recipientEmail = "";
+
                     using (SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
@@ -395,6 +439,24 @@ namespace Codercept
                         {
                             try
                             {
+                                // Retrieve applicant Name and Email for email notification
+                                string selectQuery = (roleCategory == "teacher")
+                                    ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                    : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+
+                                using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                {
+                                    selectCmd.Parameters.AddWithValue("@Id", userId);
+                                    using (SqlDataReader r = selectCmd.ExecuteReader())
+                                    {
+                                        if (r.Read())
+                                        {
+                                            recipientName = r["Name"]?.ToString() ?? "";
+                                            recipientEmail = r["Email"]?.ToString() ?? "";
+                                        }
+                                    }
+                                }
+
                                 // 1. Update Application table
                                 if (appId > 0)
                                 {
@@ -437,9 +499,10 @@ namespace Codercept
                         }
                     }
 
+                    if (string.IsNullOrWhiteSpace(recipientName)) recipientName = HttpUtility.HtmlDecode(litFullName.Text)?.Trim() ?? "Educator";
+                    if (string.IsNullOrWhiteSpace(recipientEmail)) recipientEmail = litEmail.Text?.Trim() ?? "";
+
                     // Send rejection announcement email
-                    string recipientEmail = litEmail.Text;
-                    string recipientName = litFullName.Text;
                     SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: false, remarks: rejectionReason);
                 }
                 catch (Exception ex)
@@ -451,7 +514,7 @@ namespace Codercept
             Response.Redirect("AdminUserManagement.aspx?tab=pending&msg=application_rejected");
         }
 
-        private void SendApplicationDecisionEmail(string email, string fullName, bool isApproved, string remarks)
+        private void SendApplicationDecisionEmail(string email, string fullName, bool isApproved, string remarks, string temporaryPassword = null)
         {
             try
             {
@@ -460,6 +523,7 @@ namespace Codercept
 
                 if (string.IsNullOrEmpty(senderEmail) || string.IsNullOrEmpty(senderAppPassword) || string.IsNullOrEmpty(email))
                 {
+                    System.Diagnostics.Debug.WriteLine("[AdminReviewApplication SendEmail]: SenderEmail or SenderAppPassword not configured.");
                     return;
                 }
 
@@ -468,17 +532,39 @@ namespace Codercept
                 mail.To.Add(email);
                 mail.Subject = isApproved ? "Codercept - Educator Application Approved" : "Codercept - Educator Application Status Update";
 
-                string bodyContent = isApproved
-                    ? $@"<h2 style='color: #10b981; margin-top: 0;'>Application Approved!</h2>
+                string bodyContent;
+                if (isApproved)
+                {
+                    bodyContent = $@"
+                        <h2 style='color: #6366f1; margin-top: 0;'>Welcome to Codercept!</h2>
                         <p>Hello <strong>{HttpUtility.HtmlEncode(fullName)}</strong>,</p>
-                        <p>Congratulations! Your educator application for Codercept has been approved. Your account is now active and you can log in to begin teaching on the platform.</p>"
-                    : $@"<h2 style='color: #ef4444; margin-top: 0;'>Application Review Update</h2>
+                        <p>Congratulations! Your educator application for Codercept has been approved. Your account is now active and you can log in to begin teaching on the platform.</p>
+                        <div style='background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #6366f1; padding: 16px; border-radius: 6px; margin: 20px 0;'>
+                            <p style='margin: 0 0 8px 0;'><strong>Login Email:</strong> {HttpUtility.HtmlEncode(email)}</p>
+                            <p style='margin: 0;'><strong>Predefined Password:</strong> <code style='font-size: 16px; font-weight: bold; color: #6366f1;'>{HttpUtility.HtmlEncode(temporaryPassword)}</code></p>
+                        </div>
+                        <p>You can use this predefined password to log in to your account. For security purposes, please change your password after logging in.</p>";
+
+                    if (!string.IsNullOrWhiteSpace(remarks))
+                    {
+                        bodyContent += $@"
+                        <div style='background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981; padding: 12px; margin: 16px 0; border-radius: 6px;'>
+                            <strong>Review Notes:</strong><br/>
+                            {HttpUtility.HtmlEncode(remarks)}
+                        </div>";
+                    }
+                }
+                else
+                {
+                    bodyContent = $@"
+                        <h2 style='color: #ef4444; margin-top: 0;'>Application Review Update</h2>
                         <p>Hello <strong>{HttpUtility.HtmlEncode(fullName)}</strong>,</p>
                         <p>Thank you for your interest in joining the Codercept educator community. Following our evaluation of your submitted credentials, we regret to inform you that your application has not been approved at this time.</p>
-                        <div style='background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin: 16px 0;'>
+                        <div style='background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 12px; margin: 16px 0; border-radius: 6px;'>
                             <strong>Feedback from Review Team:</strong><br/>
                             {HttpUtility.HtmlEncode(remarks)}
                         </div>";
+                }
 
                 mail.Body = $@"
                     <div style='font-family: Arial, sans-serif; padding: 24px; color: #1e293b; line-height: 1.6; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 8px;'>
