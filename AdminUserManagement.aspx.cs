@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -12,7 +12,8 @@ namespace Codercept
 {
     public partial class Admin_User_Management : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -21,7 +22,20 @@ namespace Codercept
                 string userRole = Session["UserRole"] as string ?? "SuperAdmin";
                 pnlSuperAdminAction.Visible = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
 
+                // Automated weekly removal check: removes users with 'Deleted' status automatically every week
+                UserPurgeService.CheckAndPerformPurgeIfNeeded(Server, Application);
+
                 LoadAllUsers();
+                UpdatePurgeBannerInfo();
+            }
+        }
+
+        private void UpdatePurgeBannerInfo()
+        {
+            if (litPurgeScheduleInfo != null)
+            {
+                litPurgeScheduleInfo.Text = "<span style='display:inline-block; margin-left: 6px; opacity: 0.9;'>&bull; " + 
+                    HttpUtility.HtmlEncode(UserPurgeService.GetScheduleStatusDescription(Server, Application)) + "</span>";
             }
         }
 
@@ -31,30 +45,10 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback Mock Data
-                dt.Columns.Add("UserId", typeof(int));
-                dt.Columns.Add("Name", typeof(string));
-                dt.Columns.Add("Email", typeof(string));
-                dt.Columns.Add("Role", typeof(string));
-                dt.Columns.Add("RoleCategory", typeof(string));
-                dt.Columns.Add("AccStatus", typeof(string));
-                dt.Columns.Add("DateJoined", typeof(DateTime));
-                dt.Columns.Add("Age", typeof(object));
-                dt.Columns.Add("Region", typeof(string));
-                dt.Columns.Add("TeachingLevel", typeof(string));
-                dt.Columns.Add("QualificationName", typeof(string));
-                dt.Columns.Add("QualificationDocument", typeof(string));
-
-                dt.Rows.Add(1, "Tang Chee Kin", "tterry616@gmail.com", "SuperAdmin", "admin", "Active", DateTime.Now.AddDays(-120), DBNull.Value, "", "", "", "");
-                dt.Rows.Add(2, "Kevin Wong", "kevin.wong@codercept.edu", "Admin", "admin", "Active", DateTime.Now.AddDays(-80), DBNull.Value, "", "", "", "");
-                dt.Rows.Add(1, "Dr. Sarah Park", "sarah.park@codercept.edu", "Teacher", "teacher", "Active", DateTime.Now.AddDays(-60), 36, "Selangor", "Advanced", "PhD in Computer Science", "~/media/uploads/1/13551c8f08844826b9841992d3314ee0.jpg");
-                dt.Rows.Add(9, "Emma Wilson", "emma.wilson@codercept.edu", "Teacher", "teacher", "Pending", DateTime.Now.AddDays(-3), 28, "Kuala Lumpur", "Intermediate", "Master in Distributed Systems", "~/media/uploads/1/13551c8f08844826b9841992d3314ee0.jpg");
-                dt.Rows.Add(1, "Jessica Lee", "jessica.lee@codercept.edu", "Teaching Assistant", "assistant", "Active", DateTime.Now.AddDays(-40), 24, "Selangor", "Intermediate", "Bachelor of Computer Science", "~/media/uploads/1/13551c8f08844826b9841992d3314ee0.jpg");
-                dt.Rows.Add(1, "Kylan Shane Sedrick", "kylan1234@gmail.com", "Learner", "learner", "Active", DateTime.Now.AddDays(-30), 21, "Negeri Sembilan", "Student", "", "");
-                dt.Rows.Add(2, "Wan Hon Kit", "wan1234@gmail.com", "Learner", "learner", "Active", DateTime.Now.AddDays(-25), 21, "Penang", "Student", "", "");
-
-                rptUsers.DataSource = dt;
+                rptUsers.DataSource = null;
                 rptUsers.DataBind();
+                litUserCount.Text = "0";
+                litDeletedCount.Text = "0";
                 return;
             }
 
@@ -64,22 +58,121 @@ namespace Codercept
                 {
                     conn.Open();
                     string query = @"
-                        SELECT AdminId AS UserId, Name, Email, Role, 'admin' AS RoleCategory, AccStatus, 
-                               GETDATE() AS DateJoined, NULL AS Age, NULL AS Region, NULL AS TeachingLevel, 
-                               NULL AS QualificationName, NULL AS QualificationDocument
+                        SELECT 
+                            AdminId AS UserId, 
+                            Name, 
+                            Email, 
+                            Role, 
+                            'admin' AS RoleCategory, 
+                            ISNULL(AccStatus, 'Active') AS AccStatus, 
+                            CAST(NULL AS DATETIME) AS DateJoined, 
+                            NULL AS Age, 
+                            NULL AS Region, 
+                            NULL AS TeachingLevel, 
+                            NULL AS QualificationName, 
+                            NULL AS QualificationDocument,
+                            NULL AS SubjectTeaching,
+                            NULL AS Address,
+                            NULL AS Occupation,
+                            NULL AS ProgressCourses,
+                            NULL AS CompletedCourses
                         FROM [dbo].[Admin]
+
                         UNION ALL
-                        SELECT TeacherId AS UserId, Name, Email, 'Teacher' AS Role, 'teacher' AS RoleCategory, AccStatus,
-                               DateJoined, Age, Region, TeachingLevel, QualificationName, QualificationDocument
-                        FROM [dbo].[Teacher]
+
+                        SELECT 
+                            t.TeacherId AS UserId, 
+                            t.Name, 
+                            t.Email, 
+                            'Teacher' AS Role, 
+                            'teacher' AS RoleCategory, 
+                            ISNULL(t.AccStatus, 'Active') AS AccStatus,
+                            t.DateJoined, 
+                            t.Age, 
+                            t.Region, 
+                            t.TeachingLevel, 
+                            ISNULL(t.QualificationName, a.QualificationName) AS QualificationName, 
+                            ISNULL(t.QualificationDocument, a.CredentialDocument) AS QualificationDocument,
+                            (
+                                SELECT STRING_AGG(s.SubjectName, ', ')
+                                FROM [dbo].[EducatorSubject] es
+                                JOIN [dbo].[Subject] s ON es.SubjectId = s.SubjectId
+                                WHERE es.TeacherId = t.TeacherId
+                            ) AS SubjectTeaching,
+                            NULL AS Address,
+                            NULL AS Occupation,
+                            NULL AS ProgressCourses,
+                            NULL AS CompletedCourses
+                        FROM [dbo].[Teacher] t
+                        LEFT JOIN [dbo].[Application] a ON t.ApplicationId = a.ApplicationId
+
                         UNION ALL
-                        SELECT TA_Id AS UserId, Name, Email, 'Teaching Assistant' AS Role, 'assistant' AS RoleCategory, AccStatus,
-                               DateJoined, Age, Region, TeachingLevel, QualificationName, QualificationDocument
-                        FROM [dbo].[Teaching_Assistant]
+
+                        SELECT 
+                            ta.TA_Id AS UserId, 
+                            ta.Name, 
+                            ta.Email, 
+                            'Teaching Assistant' AS Role, 
+                            'assistant' AS RoleCategory, 
+                            ISNULL(ta.AccStatus, 'Active') AS AccStatus,
+                            ta.DateJoined, 
+                            ta.Age, 
+                            ta.Region, 
+                            ta.TeachingLevel, 
+                            ISNULL(ta.QualificationName, a.QualificationName) AS QualificationName, 
+                            ISNULL(ta.QualificationDocument, a.CredentialDocument) AS QualificationDocument,
+                            (
+                                SELECT STRING_AGG(s.SubjectName, ', ')
+                                FROM [dbo].[EducatorSubject] es
+                                JOIN [dbo].[Subject] s ON es.SubjectId = s.SubjectId
+                                WHERE es.TA_Id = ta.TA_Id
+                            ) AS SubjectTeaching,
+                            NULL AS Address,
+                            NULL AS Occupation,
+                            NULL AS ProgressCourses,
+                            NULL AS CompletedCourses
+                        FROM [dbo].[Teaching_Assistant] ta
+                        LEFT JOIN [dbo].[Application] a ON ta.ApplicationId = a.ApplicationId
+
                         UNION ALL
-                        SELECT LearnerId AS UserId, Name, Email, 'Learner' AS Role, 'learner' AS RoleCategory, AccStatus,
-                               DateJoined, Age, Address AS Region, Occupation AS TeachingLevel, NULL AS QualificationName, NULL AS QualificationDocument
-                        FROM [dbo].[Learner]
+
+                        SELECT 
+                            l.LearnerId AS UserId, 
+                            l.Name, 
+                            l.Email, 
+                            'Learner' AS Role, 
+                            'learner' AS RoleCategory, 
+                            ISNULL(l.AccStatus, 'Active') AS AccStatus,
+                            l.DateJoined, 
+                            l.Age, 
+                            l.Address AS Region, 
+                            l.Occupation AS TeachingLevel, 
+                            NULL AS QualificationName, 
+                            NULL AS QualificationDocument,
+                            NULL AS SubjectTeaching,
+                            l.Address,
+                            l.Occupation,
+                            ISNULL((
+                                SELECT STRING_AGG(c.CourseTitle, ', ')
+                                FROM [dbo].[LearnerProgress] lp
+                                JOIN [dbo].[Course] c ON lp.CourseId = c.CourseId
+                                WHERE lp.LearnerId = l.LearnerId
+                                  AND NOT EXISTS (
+                                      SELECT 1 FROM [dbo].[Certificate] cert 
+                                      WHERE cert.LearnerId = l.LearnerId AND cert.CourseId = lp.CourseId
+                                  )
+                            ), 'None in progress') AS ProgressCourses,
+                            ISNULL((
+                                SELECT STRING_AGG(c.CourseTitle, ', ')
+                                FROM (
+                                    SELECT DISTINCT cert.CourseId
+                                    FROM [dbo].[Certificate] cert
+                                    WHERE cert.LearnerId = l.LearnerId
+                                ) userCerts
+                                JOIN [dbo].[Course] c ON userCerts.CourseId = c.CourseId
+                            ), 'None completed') AS CompletedCourses
+                        FROM [dbo].[Learner] l
+
                         ORDER BY RoleCategory ASC, Name ASC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -91,10 +184,20 @@ namespace Codercept
 
                 rptUsers.DataSource = dt;
                 rptUsers.DataBind();
+
+                int activeUsers = dt.AsEnumerable().Count(r => !r.Field<string>("AccStatus").Equals("Deleted", StringComparison.OrdinalIgnoreCase));
+                int deletedUsers = dt.AsEnumerable().Count(r => r.Field<string>("AccStatus").Equals("Deleted", StringComparison.OrdinalIgnoreCase));
+
+                litUserCount.Text = activeUsers.ToString();
+                litDeletedCount.Text = deletedUsers.ToString();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AdminUserManagement Load Error]: {ex.Message}");
+                rptUsers.DataSource = null;
+                rptUsers.DataBind();
+                litUserCount.Text = "0";
+                litDeletedCount.Text = "0";
             }
         }
 
@@ -204,6 +307,14 @@ namespace Codercept
             hfDeleteTargetUserId.Value = string.Empty;
             hfDeleteTargetRole.Value = string.Empty;
             LoadAllUsers();
+            UpdatePurgeBannerInfo();
+        }
+
+        protected void btnRunWeeklyPurge_Click(object sender, EventArgs e)
+        {
+            UserPurgeService.PerformPurge(Server, Application);
+            LoadAllUsers();
+            UpdatePurgeBannerInfo();
         }
     }
 }

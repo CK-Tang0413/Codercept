@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,7 +8,8 @@ namespace Codercept
 {
     public partial class Admin_Dashboard : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -16,13 +17,12 @@ namespace Codercept
             {
                 LoadDashboardStatistics();
                 LoadPendingApplications();
-                LoadPinnedAnnouncements();
+                LoadRecentAnnouncements();
             }
         }
 
         private void LoadDashboardStatistics()
         {
-            // Fallback/Default values
             int totalUsers = 0;
             int pendingApprovals = 0;
             int publishedCourses = 0;
@@ -35,8 +35,7 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback mock statistics if DB is not yet connected
-                PopulateStatisticLiterals(9, 3, 6, 454, 5, 3, 3, 2, 5);
+                PopulateStatisticLiterals(0, 0, 0, 0, 0, 0, 0, 0, 0);
                 return;
             }
 
@@ -46,33 +45,52 @@ namespace Codercept
                 {
                     conn.Open();
 
-                    // Aggregated SQL Query calculating all required statistics in a single round-trip
                     string query = @"
                         SELECT
-                            (SELECT COUNT(*) FROM Users WHERE IsDeleted = 0) AS TotalUsers,
-                            (SELECT COUNT(*) FROM Users WHERE Status = 'Pending' AND IsDeleted = 0) AS PendingApprovals,
-                            (SELECT COUNT(*) FROM Courses WHERE Status = 'Published') AS PublishedCourses,
-                            (SELECT ISNULL(SUM(EnrolledCount), 0) FROM Courses) AS TotalEnrollments,
-                            (SELECT COUNT(*) FROM Users WHERE Role = 'Learner' AND IsDeleted = 0) AS LearnersCount,
-                            (SELECT COUNT(*) FROM Users WHERE Role = 'Learner' AND Status = 'Active' AND IsDeleted = 0) AS ActiveLearners,
-                            (SELECT COUNT(*) FROM Users WHERE Role = 'Teacher' AND IsDeleted = 0) AS TeachersCount,
-                            (SELECT COUNT(*) FROM Users WHERE Role = 'Teacher' AND Status = 'Active' AND IsDeleted = 0) AS ActiveTeachers,
-                            (SELECT COUNT(*) FROM Users WHERE Status = 'Active' AND IsDeleted = 0) AS ActiveTotal";
+                            (
+                                (SELECT COUNT(*) FROM [dbo].[Learner] WHERE AccStatus != 'Deleted') +
+                                (SELECT COUNT(*) FROM [dbo].[Teacher] WHERE AccStatus != 'Deleted') +
+                                (SELECT COUNT(*) FROM [dbo].[Teaching_Assistant] WHERE AccStatus != 'Deleted') +
+                                (SELECT COUNT(*) FROM [dbo].[Admin] WHERE AccStatus != 'Deleted')
+                            ) AS TotalUsers,
+                            (
+                                SELECT COUNT(*) FROM (
+                                    SELECT t.TeacherId FROM [dbo].[Teacher] t LEFT JOIN [dbo].[Application] a ON t.ApplicationId = a.ApplicationId WHERE t.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teacher')
+                                    UNION
+                                    SELECT ta.TA_Id FROM [dbo].[Teaching_Assistant] ta LEFT JOIN [dbo].[Application] a ON ta.ApplicationId = a.ApplicationId WHERE ta.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teaching Assistant')
+                                    UNION
+                                    SELECT a.ApplicationId FROM [dbo].[Application] a WHERE a.ApprovalStatus = 'Pending'
+                                        AND NOT EXISTS (SELECT 1 FROM [dbo].[Teacher] t WHERE t.ApplicationId = a.ApplicationId)
+                                        AND NOT EXISTS (SELECT 1 FROM [dbo].[Teaching_Assistant] ta WHERE ta.ApplicationId = a.ApplicationId)
+                                ) p
+                            ) AS PendingApprovals,
+                            (SELECT COUNT(*) FROM [dbo].[Course]) AS PublishedCourses,
+                            (SELECT COUNT(*) FROM [dbo].[LearnerProgress]) AS TotalEnrollments,
+                            (SELECT COUNT(*) FROM [dbo].[Learner] WHERE AccStatus != 'Deleted') AS LearnersCount,
+                            (SELECT COUNT(*) FROM [dbo].[Learner] WHERE AccStatus = 'Active') AS ActiveLearners,
+                            (SELECT COUNT(*) FROM [dbo].[Teacher] WHERE AccStatus != 'Deleted') AS TeachersCount,
+                            (SELECT COUNT(*) FROM [dbo].[Teacher] WHERE AccStatus = 'Active') AS ActiveTeachers,
+                            (
+                                (SELECT COUNT(*) FROM [dbo].[Learner] WHERE AccStatus = 'Active') +
+                                (SELECT COUNT(*) FROM [dbo].[Teacher] WHERE AccStatus = 'Active') +
+                                (SELECT COUNT(*) FROM [dbo].[Teaching_Assistant] WHERE AccStatus = 'Active') +
+                                (SELECT COUNT(*) FROM [dbo].[Admin] WHERE AccStatus = 'Active')
+                            ) AS ActiveTotal";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            totalUsers = Convert.ToInt32(reader["TotalUsers"]);
-                            pendingApprovals = Convert.ToInt32(reader["PendingApprovals"]);
-                            publishedCourses = Convert.ToInt32(reader["PublishedCourses"]);
-                            totalEnrollments = Convert.ToInt32(reader["TotalEnrollments"]);
-                            learnersCount = Convert.ToInt32(reader["LearnersCount"]);
-                            activeLearnersCount = Convert.ToInt32(reader["ActiveLearners"]);
-                            teachersCount = Convert.ToInt32(reader["TeachersCount"]);
-                            activeTeachersCount = Convert.ToInt32(reader["ActiveTeachers"]);
-                            activeTotal = Convert.ToInt32(reader["ActiveTotal"]);
+                            totalUsers = reader["TotalUsers"] != DBNull.Value ? Convert.ToInt32(reader["TotalUsers"]) : 0;
+                            pendingApprovals = reader["PendingApprovals"] != DBNull.Value ? Convert.ToInt32(reader["PendingApprovals"]) : 0;
+                            publishedCourses = reader["PublishedCourses"] != DBNull.Value ? Convert.ToInt32(reader["PublishedCourses"]) : 0;
+                            totalEnrollments = reader["TotalEnrollments"] != DBNull.Value ? Convert.ToInt32(reader["TotalEnrollments"]) : 0;
+                            learnersCount = reader["LearnersCount"] != DBNull.Value ? Convert.ToInt32(reader["LearnersCount"]) : 0;
+                            activeLearnersCount = reader["ActiveLearners"] != DBNull.Value ? Convert.ToInt32(reader["ActiveLearners"]) : 0;
+                            teachersCount = reader["TeachersCount"] != DBNull.Value ? Convert.ToInt32(reader["TeachersCount"]) : 0;
+                            activeTeachersCount = reader["ActiveTeachers"] != DBNull.Value ? Convert.ToInt32(reader["ActiveTeachers"]) : 0;
+                            activeTotal = reader["ActiveTotal"] != DBNull.Value ? Convert.ToInt32(reader["ActiveTotal"]) : 0;
                         }
                     }
                 }
@@ -83,8 +101,7 @@ namespace Codercept
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AdminDashboard DB Error]: {ex.Message}");
-                // Graceful fallback to default values on connection error
-                PopulateStatisticLiterals(9, 3, 6, 454, 5, 3, 3, 2, 5);
+                PopulateStatisticLiterals(0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
         }
 
@@ -111,21 +128,11 @@ namespace Codercept
         private void LoadPendingApplications()
         {
             DataTable dtPending = new DataTable();
+            int totalPending = 0;
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback mock data
-                dtPending.Columns.Add("UserId", typeof(string));
-                dtPending.Columns.Add("FullName", typeof(string));
-                dtPending.Columns.Add("Email", typeof(string));
-                dtPending.Columns.Add("Role", typeof(string));
-                dtPending.Columns.Add("AppliedDate", typeof(DateTime));
-
-                dtPending.Rows.Add("USR_003", "Emma Wilson", "emma.wilson@codelearn.edu", "Teacher", DateTime.Parse("2024-08-20"));
-                dtPending.Rows.Add("USR_009", "James Wilson", "james.w@student.edu", "Learner", DateTime.Parse("2024-08-28"));
-                dtPending.Rows.Add("USR_011", "David Brown", "david.b@student.edu", "Learner", DateTime.Parse("2024-08-25"));
-
-                BindPendingRepeater(dtPending);
+                BindPendingRepeater(dtPending, 0);
                 return;
             }
 
@@ -133,12 +140,65 @@ namespace Codercept
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    // Select only the top 3 pending records ordered by submission date
+                    conn.Open();
+
+                    string countQuery = @"
+                        SELECT COUNT(*) FROM (
+                            SELECT t.TeacherId FROM [dbo].[Teacher] t LEFT JOIN [dbo].[Application] a ON t.ApplicationId = a.ApplicationId WHERE t.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teacher')
+                            UNION
+                            SELECT ta.TA_Id FROM [dbo].[Teaching_Assistant] ta LEFT JOIN [dbo].[Application] a ON ta.ApplicationId = a.ApplicationId WHERE ta.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teaching Assistant')
+                            UNION
+                            SELECT a.ApplicationId FROM [dbo].[Application] a WHERE a.ApprovalStatus = 'Pending'
+                                AND NOT EXISTS (SELECT 1 FROM [dbo].[Teacher] t WHERE t.ApplicationId = a.ApplicationId)
+                                AND NOT EXISTS (SELECT 1 FROM [dbo].[Teaching_Assistant] ta WHERE ta.ApplicationId = a.ApplicationId)
+                        ) p";
+
+                    using (SqlCommand countCmd = new SqlCommand(countQuery, conn))
+                    {
+                        totalPending = Convert.ToInt32(countCmd.ExecuteScalar());
+                    }
+
                     string query = @"
-                        SELECT TOP 3 UserId, FullName, Email, Role, CreatedAt AS AppliedDate
-                        FROM Users
-                        WHERE Status = 'Pending' AND IsDeleted = 0
-                        ORDER BY CreatedAt ASC";
+                        SELECT TOP 3 * FROM (
+                            SELECT 
+                                t.TeacherId AS UserId,
+                                t.Name AS FullName,
+                                t.Email,
+                                'Teacher' AS Role,
+                                'teacher' AS RoleCategory,
+                                ISNULL(a.DateSubmitted, t.DateJoined) AS AppliedDate
+                            FROM [dbo].[Teacher] t
+                            LEFT JOIN [dbo].[Application] a ON t.ApplicationId = a.ApplicationId
+                            WHERE t.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teacher')
+
+                            UNION
+
+                            SELECT 
+                                ta.TA_Id AS UserId,
+                                ta.Name AS FullName,
+                                ta.Email,
+                                'Teaching Assistant' AS Role,
+                                'assistant' AS RoleCategory,
+                                ISNULL(a.DateSubmitted, ta.DateJoined) AS AppliedDate
+                            FROM [dbo].[Teaching_Assistant] ta
+                            LEFT JOIN [dbo].[Application] a ON ta.ApplicationId = a.ApplicationId
+                            WHERE ta.AccStatus = 'Pending' OR (a.ApprovalStatus = 'Pending' AND a.RoleApplied = 'Teaching Assistant')
+
+                            UNION
+
+                            SELECT
+                                a.ApplicationId AS UserId,
+                                'Applicant #' + CAST(a.ApplicationId AS VARCHAR) AS FullName,
+                                'Pending Registration' AS Email,
+                                a.RoleApplied AS Role,
+                                CASE WHEN a.RoleApplied = 'Teacher' THEN 'teacher' ELSE 'assistant' END AS RoleCategory,
+                                a.DateSubmitted AS AppliedDate
+                            FROM [dbo].[Application] a
+                            WHERE a.ApprovalStatus = 'Pending'
+                              AND NOT EXISTS (SELECT 1 FROM [dbo].[Teacher] t WHERE t.ApplicationId = a.ApplicationId)
+                              AND NOT EXISTS (SELECT 1 FROM [dbo].[Teaching_Assistant] ta WHERE ta.ApplicationId = a.ApplicationId)
+                        ) pending
+                        ORDER BY AppliedDate ASC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
@@ -147,17 +207,22 @@ namespace Codercept
                     }
                 }
 
-                BindPendingRepeater(dtPending);
+                BindPendingRepeater(dtPending, totalPending);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AdminDashboard Pending Error]: {ex.Message}");
+                BindPendingRepeater(dtPending, 0);
             }
         }
 
-        private void BindPendingRepeater(DataTable dtPending)
+        private void BindPendingRepeater(DataTable dtPending, int totalPending)
         {
             litShowingPendingCount.Text = dtPending.Rows.Count.ToString();
+            litTotalPendingCount.Text = totalPending.ToString();
+            litViewAllPendingCount.Text = totalPending.ToString();
+            litBannerPendingCount.Text = totalPending.ToString();
+            litPendingApprovals.Text = totalPending.ToString();
 
             if (dtPending.Rows.Count > 0)
             {
@@ -173,29 +238,14 @@ namespace Codercept
             }
         }
 
-        private void LoadPinnedAnnouncements()
+        private void LoadRecentAnnouncements()
         {
-            DataTable dtPinned = new DataTable();
+            DataTable dtRecent = new DataTable();
+            int totalRecentCount = 0;
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback mock data
-                dtPinned.Columns.Add("Title", typeof(string));
-                dtPinned.Columns.Add("Content", typeof(string));
-                dtPinned.Columns.Add("CardType", typeof(string));
-
-                dtPinned.Rows.Add(
-                    "New C++ Module Now Available!",
-                    "We are excited to announce the launch of \"Data Structures with C++\" by Prof. Michael Torres. Enroll today to master linked lists, trees, and hash tables from scratch.",
-                    "success"
-                );
-                dtPinned.Rows.Add(
-                    "Scheduled Maintenance — Sept 5, 2024",
-                    "The platform will undergo scheduled maintenance on September 5th from 2:00 AM to 4:00 AM UTC. Some features may be temporarily unavailable during this period.",
-                    "warning"
-                );
-
-                BindPinnedRepeater(dtPinned);
+                BindRecentRepeater(dtRecent, 0);
                 return;
             }
 
@@ -203,48 +253,65 @@ namespace Codercept
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    // Fetch up to top 2 pinned announcements
+                    conn.Open();
+
+                    string countQuery = @"
+                        SELECT COUNT(*) 
+                        FROM [dbo].[Notification]";
+
+                    using (SqlCommand countCmd = new SqlCommand(countQuery, conn))
+                    {
+                        totalRecentCount = Convert.ToInt32(countCmd.ExecuteScalar());
+                    }
+
                     string query = @"
-                        SELECT TOP 2 Title, Content, CardType
-                        FROM Announcements
-                        WHERE IsPinned = 1
-                        ORDER BY CreatedAt DESC";
+                        SELECT TOP 3 
+                            Title, 
+                            Content, 
+                            Type,
+                            CASE 
+                                WHEN LOWER(Type) LIKE '%warn%' THEN 'warning'
+                                WHEN LOWER(Type) LIKE '%announc%' OR LOWER(Type) LIKE '%success%' THEN 'success'
+                                ELSE 'info'
+                            END AS CardType
+                        FROM [dbo].[Notification]
+                        ORDER BY DateTime DESC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
                     {
-                        adapter.Fill(dtPinned);
+                        adapter.Fill(dtRecent);
                     }
                 }
 
-                BindPinnedRepeater(dtPinned);
+                BindRecentRepeater(dtRecent, totalRecentCount);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[AdminDashboard Pinned Error]: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[AdminDashboard Recent Error]: {ex.Message}");
+                BindRecentRepeater(dtRecent, 0);
             }
         }
 
-        private void BindPinnedRepeater(DataTable dtPinned)
+        private void BindRecentRepeater(DataTable dtRecent, int totalRecentCount)
         {
-            litShowingPinnedCount.Text = dtPinned.Rows.Count.ToString();
-            litTotalPinnedCount.Text = dtPinned.Rows.Count.ToString();
+            litShowingRecentCount.Text = dtRecent.Rows.Count.ToString();
+            litTotalRecentCount.Text = totalRecentCount.ToString();
 
-            if (dtPinned.Rows.Count > 0)
+            if (dtRecent.Rows.Count > 0)
             {
-                rptPinnedAnnouncements.DataSource = dtPinned;
-                rptPinnedAnnouncements.DataBind();
-                pnlNoPinned.Visible = false;
+                rptRecentAnnouncements.DataSource = dtRecent;
+                rptRecentAnnouncements.DataBind();
+                pnlNoRecent.Visible = false;
             }
             else
             {
-                rptPinnedAnnouncements.DataSource = null;
-                rptPinnedAnnouncements.DataBind();
-                pnlNoPinned.Visible = true;
+                rptRecentAnnouncements.DataSource = null;
+                rptRecentAnnouncements.DataBind();
+                pnlNoRecent.Visible = true;
             }
         }
 
-        // Helper method: Extracts two-letter initials for user avatars (e.g., "Emma Wilson" -> "EW")
         protected string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName))
@@ -257,10 +324,9 @@ namespace Codercept
             return (names[0][0].ToString() + names[names.Length - 1][0].ToString()).ToUpper();
         }
 
-        // Helper method: Maps card type to FontAwesome icons
         protected string GetAnnouncementIcon(string cardType)
         {
-            switch (cardType.ToLower())
+            switch ((cardType ?? "").ToLower())
             {
                 case "success": return "fa-solid fa-check";
                 case "warning": return "fa-solid fa-triangle-exclamation";

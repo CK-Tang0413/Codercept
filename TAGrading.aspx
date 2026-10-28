@@ -1,0 +1,94 @@
+<%@ Page Title="Grade Assessments - Codercept" Language="C#" MasterPageFile="~/TASite.master" AutoEventWireup="true" CodeBehind="TAGrading.aspx.cs" Inherits="Codercept.TAGrading" %>
+<%@ MasterType VirtualPath="~/TASite.master" %>
+
+<asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
+    <style>
+        .tp-app .exam-selector-panel .grading-course-grid--grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    </style>
+</asp:Content>
+
+<asp:Content ID="ContentMain" ContentPlaceHolderID="cphMain" runat="server">
+    <div class="exam-select-heading">
+        <span class="exam-heading-icon grading-heading-icon"><%= TeacherIcons.Svg("grade", 23) %></span>
+        <span class="eyebrow">PROVISIONAL GRADING</span>
+        <h1>Select a course</h1>
+        <p>Choose a course to review learner submissions and submit provisional grades.</p>
+    </div>
+
+    <%-- Search / filter / grid-list / pagination: client-side (data-tp-cl-*) over the rendered cards --%>
+    <section class="exam-selector-panel" data-tp-cardlist data-tp-cl-toggle data-tp-page-size="4" data-tp-grid-class="grading-course-grid">
+        <div class="selector-toolbar">
+            <label class="input-wrap">
+                <span class="sr-only">Search courses</span>
+                <%= TeacherIcons.Svg("search", 18) %>
+                <input aria-label="Search courses" placeholder="Search courses..." type="search" data-tp-cl-search />
+            </label>
+            <div class="selector-actions">
+                <div class="filter-wrap">
+                    <button type="button" class="button button--ghost" data-tp-cl-filter-toggle><%= TeacherIcons.Svg("filter", 17) %><span>Filter</span></button>
+                    <div class="filter-popover grading-filter-popover" data-tp-cl-filter hidden>
+                        <div class="filter-popover-heading">
+                            <strong>Submission status</strong>
+                            <button type="button" class="clear-filter" data-tp-cl-clear>Clear</button>
+                        </div>
+                        <button type="button" class="exam-filter-option" data-tp-cl-opt="Pending"><span>Pending submissions only</span><span data-tp-cl-check hidden><%= TeacherIcons.Svg("check", 14) %></span></button>
+                    </div>
+                </div>
+                <div class="view-toggle" aria-label="Course view">
+                    <button type="button" aria-label="Grid view" class="is-active" data-tp-cl-view="grid"><%= TeacherIcons.Svg("grid", 17) %></button>
+                    <button type="button" aria-label="List view" data-tp-cl-view="list"><%= TeacherIcons.Svg("list", 18) %></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grading-course-grid grading-course-grid--grid" data-tp-cl-grid>
+            <% for (int i = 0; i < Courses.Count; i++) {
+                TeacherCourse c = Courses[i];
+                TACourseGradingStats stats = StatsOf(c.Id);
+                int pending = stats.ToMark + stats.Draft;
+            %>
+            <a class="grading-course-card" href="TAGradeAssessments.aspx?course=<%= c.Id %>" data-tp-cl-item data-title="<%: c.Title %>" data-status="<%= pending > 0 ? "Pending" : "None" %>">
+                <div class="course-thumbnail course-thumbnail--<%= c.Theme %> grading-course-thumbnail">
+                    <span><%: c.Glyph %></span>
+                    <i class="code-symbol code-symbol--one">{ }</i>
+                    <span class="pending-floating-badge"><%= stats.ToMark > 0 ? stats.ToMark + " to mark" : (stats.Draft > 0 ? stats.Draft + " in draft" : (stats.Reviewed > 0 ? stats.Reviewed + " reviewed" : "All caught up")) %></span>
+                </div>
+                <div class="grading-course-content">
+                    <h3><%: c.Title %></h3>
+                    <div class="select-course-footer" style="flex-wrap: wrap; gap: 6px;">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <% if (stats.ToMark > 0) { %><span class="badge badge--warning"><%= stats.ToMark %> to mark</span><% } %>
+                            <% if (stats.Draft > 0) { %><span class="badge badge--secondary"><%= stats.Draft %> draft</span><% } %>
+                            <% if (stats.Reviewed > 0) { %><span class="badge badge--indigo"><%= stats.Reviewed %> reviewed</span><% } %>
+                            <% if (stats.ToMark == 0 && stats.Draft == 0 && stats.Reviewed == 0) { %><span class="badge badge--success">All caught up</span><% } %>
+                        </div>
+                        <span style="margin-left: auto;"><%= TeacherIcons.Svg("arrow", 14) %>Start grading</span>
+                    </div>
+                </div>
+            </a>
+            <% } %>
+        </div>
+
+        <% if (Courses.Count == 0) { %>
+        <div class="empty-state" style="padding: 3rem 1.5rem; text-align: center;">
+            <span class="empty-icon"><%= TeacherIcons.Svg("grade", 24) %></span>
+            <h3>No courses assigned to your qualified subjects</h3>
+            <p>You currently do not have any courses assigned under your qualified programming languages.</p>
+        </div>
+        <% } %>
+
+        <div class="empty-state" data-tp-cl-empty hidden>
+            <span class="empty-icon"><%= TeacherIcons.Svg("search", 20) %></span>
+            <h3>No courses found</h3>
+            <p>Try a different search or clear the current filter.</p>
+        </div>
+
+        <div class="selector-pagination">
+            <button type="button" aria-label="Previous courses" data-tp-cl-prev><%= TeacherIcons.Svg("chevron", 17) %></button>
+            <span data-tp-cl-count><strong>1</strong> of 1</span>
+            <button type="button" aria-label="Next courses" data-tp-cl-next><%= TeacherIcons.Svg("chevron", 17) %></button>
+        </div>
+    </section>
+</asp:Content>

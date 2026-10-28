@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,6 +16,15 @@ namespace Codercept
             // Code that runs on application startup
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            // Initialize automated weekly purge service for deleted user records
+            UserPurgeService.StartScheduledPurge();
+        }
+
+        void Application_End(object sender, EventArgs e)
+        {
+            // Cleanup automated weekly purge service
+            UserPurgeService.StopScheduledPurge();
         }
     }
 }

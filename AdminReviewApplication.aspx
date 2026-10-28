@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -199,7 +199,10 @@
                     
                     <!-- Navigation / Back row -->
                     <div class="breadcrumb-row">
-                        <a href="AdminUserManagement.aspx" class="btn-back">
+                        <asp:HiddenField ID="hfApplicantUserId" runat="server" />
+                    <asp:HiddenField ID="hfApplicantRole" runat="server" />
+                    <asp:HiddenField ID="hfApplicationId" runat="server" />
+                    <a href="AdminUserManagement.aspx?tab=pending" class="btn-back">
                             <i class="fa-solid fa-arrow-left"></i> Back to User Management
                         </a>
                         <span class="status-pill">
@@ -210,13 +213,13 @@
                     <!-- Applicant Header Card -->
                     <div class="applicant-header-card">
                         <div class="applicant-identity">
-                            <div class="applicant-avatar">EW</div>
+                            <div class="applicant-avatar"><asp:Literal ID="litAvatarInitials" runat="server">EW</asp:Literal></div>
                             <div class="applicant-meta">
                                 <h2>
                                     <asp:Literal ID="litFullName" runat="server" Text="Emma Wilson"></asp:Literal>
-                                    <span class="role-badge badge-teacher">Teacher Applicant</span>
+                                    <asp:Literal ID="litRoleBadge" runat="server"><span class="role-badge badge-teacher">Teacher Applicant</span></asp:Literal>
                                 </h2>
-                                <p><asp:Literal ID="litEmail" runat="server" Text="emma.wilson@codelearn.edu"></asp:Literal> &bull; Applied on 2024-08-20</p>
+                                <p><asp:Literal ID="litEmail" runat="server" Text="emma.wilson@codelearn.edu"></asp:Literal> &bull; <asp:Literal ID="litAppliedDate" runat="server">Applied on 2024-08-20</asp:Literal></p>
                             </div>
                         </div>
                     </div>
@@ -232,27 +235,23 @@
 
                             <div class="info-row">
                                 <span class="info-label">Applied Role</span>
-                                <span class="info-value">Teacher</span>
+                                <span class="info-value"><asp:Literal ID="litAppliedRole" runat="server">Teacher</asp:Literal></span>
                             </div>
 
                             <div class="info-row">
                                 <span class="info-label">Highest Qualification Level</span>
-                                <span class="info-value">Master of Science in Computer Science</span>
+                                <span class="info-value"><asp:Literal ID="litQualificationName" runat="server">Master of Science in Computer Science</asp:Literal></span>
                             </div>
 
                             <div class="info-row">
                                 <span class="info-label">Subject Area / Specialization</span>
-                                <span class="info-value">Software Engineering & Distributed Systems</span>
+                                <span class="info-value"><asp:Literal ID="litSpecialization" runat="server">Software Engineering &amp; Distributed Systems</asp:Literal></span>
                             </div>
 
                             <div class="info-row" style="align-items: flex-start;">
                                 <span class="info-label">Proficient Programming Languages</span>
                                 <div class="chip-group">
-                                    <span class="lang-chip highlight">Java</span>
-                                    <span class="lang-chip highlight">Python</span>
-                                    <span class="lang-chip highlight">C++</span>
-                                    <span class="lang-chip">Kotlin</span>
-                                    <span class="lang-chip">SQL</span>
+                                    <asp:Literal ID="litLanguages" runat="server"></asp:Literal>
                                 </div>
                             </div>
                         </div>
@@ -264,33 +263,7 @@
                             </div>
 
                             <div class="docs-list">
-                                <!-- Degree Certificate -->
-                                <div class="doc-item">
-                                    <div class="doc-left">
-                                        <div class="doc-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                                        <div class="doc-meta">
-                                            <h5>Degree Certificate</h5>
-                                            <p>PDF &bull; 2.4 MB</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-view-doc" onclick="openDocModal('Master of Science Degree Certificate', 'cert-sample.pdf')">
-                                        <i class="fa-solid fa-eye"></i> View
-                                    </button>
-                                </div>
-
-                                <!-- Academic Transcript -->
-                                <div class="doc-item">
-                                    <div class="doc-left">
-                                        <div class="doc-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                                        <div class="doc-meta">
-                                            <h5>Official Transcript</h5>
-                                            <p>PDF &bull; 1.8 MB</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-view-doc" onclick="openDocModal('Official Academic Transcript', 'transcript-sample.pdf')">
-                                        <i class="fa-solid fa-eye"></i> View
-                                    </button>
-                                </div>
+                                <asp:Literal ID="litDocuments" runat="server"></asp:Literal>
                             </div>
                         </div>
                     </div>

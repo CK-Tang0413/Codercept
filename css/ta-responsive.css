@@ -1,0 +1,148 @@
+/* Responsive layout for the Teaching Assistant pages only (loaded after global.css).
+   Desktop (>1024px): full sidebar.
+   Tablet  (769-1024px): icon rail; expands over the content on hover (mouse) or via the toggle (touch).
+   Phone   (<=768px): sidebar hidden behind a hamburger button in a top bar. */
+
+.dashboard-layout .main-content { min-width: 0; }
+.dashboard-layout .grading-footer { flex-wrap: wrap; }
+.dashboard-layout .footer-actions { flex-wrap: wrap; }
+
+/* The wrapper and extra controls are invisible on desktop */
+.ta-sidebar-slot { display: contents; }
+.ta-topbar, .ta-backdrop, .ta-menu-toggle { display: none; }
+
+.ta-sidebar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; }
+.ta-sidebar-head .brand { margin-bottom: 0; }
+.nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.ta-menu-toggle { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.4rem; border-radius: 8px; align-items: center; justify-content: center; }
+.ta-menu-toggle:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.06); }
+.sign-out { border: none; background: none; cursor: pointer; }
+
+/* Signed-in user card at the bottom of the sidebar */
+.user-info { gap: 0.85rem; padding: 0.7rem 0.85rem; margin-bottom: 0.75rem; border: 1px solid var(--border-light); border-radius: 12px; background: rgba(255, 255, 255, 0.03); transition: background 0.2s, border-color 0.2s; }
+.user-info:hover { background: var(--accent-transparent); border-color: rgba(124, 58, 237, 0.45); }
+.user-info .avatar { width: 40px; height: 40px; flex-shrink: 0; background: var(--accent-primary); color: #fff; font-size: 1rem; }
+.user-details { min-width: 0; }
+.user-details h4 { font-size: 0.92rem; font-weight: 600; line-height: 1.3; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-details p { margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sign-out { width: 100%; padding: 0.6rem 0.85rem; border-radius: 10px; font-size: 0.9rem; }
+.sign-out:hover { background: rgba(239, 68, 68, 0.1); }
+
+/* ---------- Tablet: vertical icon rail, overlays content when expanded ---------- */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .ta-sidebar-slot { display: block; position: relative; width: 76px; flex-shrink: 0; z-index: 60; }
+
+    .ta-sidebar-slot .sidebar {
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 76px;
+        padding: 1.5rem 0.75rem;
+        overflow: hidden;
+        transition: width 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ta-sidebar-slot.ta-open .sidebar,
+    .ta-sidebar-slot:has(:focus-visible) .sidebar {
+        width: 260px;
+        padding: 1.5rem;
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Collapsed rail: icons only */
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .nav-label,
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .user-details { display: none; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .ta-sidebar-head { flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .nav-item,
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .sign-out { justify-content: center; padding-left: 0; padding-right: 0; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)) .user-info { justify-content: center; padding: 0; border-color: transparent; background: none; }
+
+    .ta-rail-toggle { display: inline-flex; }
+    .nav-label { white-space: nowrap; }
+
+    .ta-backdrop.ta-open { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 55; }
+}
+
+/* Mouse devices: hovering the rail expands it as an overlay (the toggle then only pins/closes it) */
+@media (max-width: 1024px) and (min-width: 769px) and (hover: hover) {
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .sidebar {
+        width: 260px;
+        padding: 1.5rem;
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .nav-label { display: inline; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .user-details { display: block; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .ta-sidebar-head { flex-direction: row; gap: 0; margin-bottom: 2.5rem; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .nav-item { justify-content: flex-start; padding-left: 1rem; padding-right: 1rem; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .sign-out { justify-content: flex-start; padding-left: 0.5rem; padding-right: 0.5rem; }
+    .ta-sidebar-slot:not(.ta-open):not(:has(:focus-visible)):hover .user-info { justify-content: flex-start; padding: 0.5rem; }
+
+    .ta-sidebar-slot:not(.ta-open):not(:hover) .ta-rail-toggle { display: none; }
+}
+
+/* ---------- Phone: hamburger + off-canvas sidebar ---------- */
+@media (max-width: 768px) {
+    body, html { overflow: auto; }
+
+    .dashboard-layout {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding-top: 56px;
+    }
+
+    .ta-topbar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 56px;
+        padding: 0 0.75rem;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-light);
+        z-index: 40;
+    }
+
+    .ta-topbar .ta-menu-toggle { display: inline-flex; }
+    .ta-topbar-brand { display: flex; align-items: center; gap: 0.6rem; color: var(--text-primary); font-weight: 700; font-size: 1.1rem; text-decoration: none; }
+    .ta-topbar-brand img { height: 28px; width: auto; }
+
+    .ta-sidebar-slot { display: block; position: fixed; top: 0; left: 0; bottom: 0; width: 0; z-index: 60; }
+
+    .ta-sidebar-slot .sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: 270px;
+        max-width: 85vw;
+        overflow-y: auto;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: none;
+    }
+
+    .ta-sidebar-slot.ta-open .sidebar { transform: translateX(0); box-shadow: 8px 0 32px rgba(0, 0, 0, 0.6); }
+
+    /* Inside the drawer the toggle acts as a close button */
+    .ta-sidebar-head .ta-rail-toggle { display: inline-flex; }
+
+    .ta-backdrop.ta-open { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 55; }
+
+    .dashboard-layout .main-content { overflow: visible; padding: 1.25rem 1rem; }
+    .dashboard-layout .panel { overflow-x: auto; min-width: 0; }
+    .dashboard-layout .grading-footer { justify-content: flex-end; }
+    .dashboard-layout .total-score { flex: 1 1 100%; }
+}
+
+/* Code blocks (shared by the forum and the grading view) */
+.code-wrap { position: relative; margin: 0.6rem 0; }
+.code-lang { position: absolute; top: 0.35rem; right: 0.6rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.code-block { margin: 0; padding: 0.85rem 1rem; background: #0b0f1a; border: 1px solid var(--border-light); border-radius: 8px; overflow-x: auto; white-space: pre; tab-size: 4; }
+.code-block code { font-family: Consolas, "Courier New", monospace; font-size: 0.82rem; line-height: 1.55; color: #e2e8f0; }
+
+/* Slim dark scrollbar shared by the TA list and content panes */
+.queue-list, .grading-body, .post-list, .thread-body { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
+.queue-list::-webkit-scrollbar, .grading-body::-webkit-scrollbar, .post-list::-webkit-scrollbar, .thread-body::-webkit-scrollbar { width: 8px; }
+.queue-list::-webkit-scrollbar-track, .grading-body::-webkit-scrollbar-track, .post-list::-webkit-scrollbar-track, .thread-body::-webkit-scrollbar-track { background: transparent; }
+.queue-list::-webkit-scrollbar-thumb, .grading-body::-webkit-scrollbar-thumb, .post-list::-webkit-scrollbar-thumb, .thread-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 8px; }
+.queue-list::-webkit-scrollbar-thumb:hover, .grading-body::-webkit-scrollbar-thumb:hover, .post-list::-webkit-scrollbar-thumb:hover, .thread-body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }

@@ -6240,6 +6240,16 @@
   border-color: #c4b5fd;
 }
 
+.tp-app .forum-post-card.is-flagged {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.tp-app .forum-post-card.is-flagged:hover,
+.tp-app .forum-post-card.is-flagged.is-selected {
+  border-color: #ef4444;
+}
+
 .tp-app .forum-post-card h2 {
   color: #111827;
   font-size: 22px;

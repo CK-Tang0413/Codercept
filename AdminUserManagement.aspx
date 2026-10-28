@@ -87,6 +87,7 @@
     <form id="form1" runat="server">
         <asp:HiddenField ID="hfDeleteTargetUserId" runat="server" />
         <asp:HiddenField ID="hfDeleteTargetRole" runat="server" />
+        <asp:HiddenField ID="hfCurrentFilter" runat="server" Value="all" />
 
         <div style="display: flex; height: 100vh; overflow: hidden;">
             <uc:AdminSidebar runat="server" ID="SidebarCtrl" />
@@ -95,7 +96,7 @@
                 <div class="page-header-row">
                     <div class="page-header">
                         <h1>User Management</h1>
-                        <p id="userCountText">12 registered users</p>
+                        <p id="userCountText"><asp:Literal ID="litUserCount" runat="server">0</asp:Literal> registered users</p>
                     </div>
 
                     <asp:Panel ID="pnlSuperAdminAction" runat="server">
@@ -120,15 +121,21 @@
                     <div class="tab" onclick="filterUsers('assistant', this)">Teaching Assistants</div>
                     <div class="tab" onclick="filterUsers('learner', this)">Learners</div>
                     <div class="tab" onclick="filterUsers('deleted', this)">
-                         Deleted (<span id="deletedCount">0</span>)
+                         Deleted (<span id="deletedCount"><asp:Literal ID="litDeletedCount" runat="server">0</asp:Literal></span>)
                     </div>
                 </div>
 
-                <!-- Weekly Purge Notice -->
-                <div id="deletedNoticeBanner" class="deleted-notice-banner">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <div>
-                        <strong>Weekly Data Purge Policy:</strong> Accounts in this section are scheduled for permanent purge every Sunday.
+                <!-- Automated Weekly Purge Notice -->
+                <div id="deletedNoticeBanner" class="deleted-notice-banner" style="justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 20px; color: #f87171;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #FF0000; margin-bottom: 2px;">Automated Weekly Purge Active</div>
+                            <div style="font-size: 12px; color: #FF0000; line-height: 1.4;">
+                                Accounts marked as "Deleted" are automatically and permanently removed from database table records every week.
+                                <asp:Literal ID="litPurgeScheduleInfo" runat="server" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -149,14 +156,19 @@
                                      data-id='<%# Eval("UserId") %>'
                                      data-role='<%# Eval("RoleCategory").ToString().ToLower() %>'
                                      data-status='<%# Eval("AccStatus").ToString().ToLower() %>'
-                                     data-name='<%# Eval("Name") %>'
-                                     data-email='<%# Eval("Email") %>'
-                                     data-joined='<%# Eval("DateJoined", "{0:yyyy-MM-dd}") %>'
-                                     data-age='<%# Eval("Age") %>'
-                                     data-region='<%# Eval("Region") %>'
-                                     data-teachinglevel='<%# Eval("TeachingLevel") %>'
-                                     data-qualification='<%# Eval("QualificationName") %>'
-                                     data-credential='<%# Eval("QualificationDocument") %>'>
+                                     data-name='<%# HttpUtility.HtmlAttributeEncode(Eval("Name")?.ToString() ?? "") %>'
+                                     data-email='<%# HttpUtility.HtmlAttributeEncode(Eval("Email")?.ToString() ?? "") %>'
+                                     data-joined='<%# Eval("DateJoined") != DBNull.Value && Eval("DateJoined") != null ? Eval("DateJoined", "{0:yyyy-MM-dd}") : "N/A" %>'
+                                     data-age='<%# Eval("Age") != DBNull.Value && Eval("Age") != null ? Eval("Age") : "N/A" %>'
+                                     data-region='<%# HttpUtility.HtmlAttributeEncode(Eval("Region")?.ToString() ?? "N/A") %>'
+                                     data-teachinglevel='<%# HttpUtility.HtmlAttributeEncode(Eval("TeachingLevel")?.ToString() ?? "N/A") %>'
+                                     data-qualification='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationName")?.ToString() ?? "N/A") %>'
+                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationDocument")?.ToString() ?? "") %>'
+                                     data-subject='<%# HttpUtility.HtmlAttributeEncode(Eval("SubjectTeaching")?.ToString() ?? "N/A") %>'
+                                     data-address='<%# HttpUtility.HtmlAttributeEncode(Eval("Address")?.ToString() ?? "N/A") %>'
+                                     data-occupation='<%# HttpUtility.HtmlAttributeEncode(Eval("Occupation")?.ToString() ?? "N/A") %>'
+                                     data-progress='<%# HttpUtility.HtmlAttributeEncode(Eval("ProgressCourses")?.ToString() ?? "None in progress") %>'
+                                     data-completed='<%# HttpUtility.HtmlAttributeEncode(Eval("CompletedCourses")?.ToString() ?? "None completed") %>'>
                                     
                                     <div class="col-user">
                                         <div class="avatar" style='<%# Eval("RoleCategory").ToString().ToLower() == "admin" ? "background-color: var(--accent-rose-bg); color: var(--accent-rose);" : "" %>'>
@@ -180,7 +192,7 @@
                                         </span>
                                     </div>
 
-                                    <div class="col-joined"><%# Eval("DateJoined", "{0:yyyy-MM-dd}") %></div>
+                                    <div class="col-joined"><%# Eval("DateJoined") != DBNull.Value && Eval("DateJoined") != null ? Eval("DateJoined", "{0:yyyy-MM-dd}") : "-" %></div>
 
                                     <div class="col-actions">
                                         <%# Eval("AccStatus").ToString().ToLower() == "pending" 
@@ -208,7 +220,7 @@
                                             </button>" : "" %>
 
                                         <%# Eval("AccStatus").ToString().ToLower() == "deleted" 
-                                            ? "<span class='retention-text'><i class='fa-solid fa-hourglass-half'></i> Purge in 7d</span>" 
+                                            ? "<span class='retention-text'><i class='fa-solid fa-clock-rotate-left'></i> Auto-purged weekly</span>" 
                                             : "" 
                                         %>
                                     </div>
@@ -230,7 +242,7 @@
                                 <i class="fa-solid fa-user-xmark"></i>
                             </div>
                             <h3>Move User to Deleted?</h3>
-                            <p>Are you sure you want to deactivate and schedule <strong id="deleteUserTargetName" style="color:var(--text-primary);">this user</strong> for deletion? They will be retained in Deleted Accounts for 7 days before permanent purge.</p>
+                            <p>Are you sure you want to deactivate and schedule <strong id="deleteUserTargetName" style="color:var(--text-primary);">this user</strong> for deletion? They will be retained in Deleted Accounts and automatically removed from database table records every week.</p>
                             <div class="modal-actions" style="justify-content: center; gap: 14px;">
                                 <button type="button" class="btn-cancel" onclick="closeCustomUserDeleteModal()">Cancel</button>
                                 <asp:Button ID="btnConfirmSoftDelete" runat="server" Text="Confirm & Delete" 
@@ -248,6 +260,26 @@
 
                     document.addEventListener('DOMContentLoaded', () => {
                         updateCounts();
+
+                        const hf = document.getElementById('<%= hfCurrentFilter.ClientID %>');
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const savedFilter = (hf && hf.value && hf.value.trim() !== '') ? hf.value.trim().toLowerCase() : '';
+                        const urlFilter = (urlParams.get('filter') || urlParams.get('tab') || '').toLowerCase();
+                        const targetFilter = savedFilter || urlFilter || 'all';
+
+                        let matchedTab = null;
+                        document.querySelectorAll('.tab').forEach(tab => {
+                            const onclickAttr = tab.getAttribute('onclick') || '';
+                            if (onclickAttr.toLowerCase().includes(`'${targetFilter}'`)) {
+                                matchedTab = tab;
+                            }
+                        });
+
+                        if (matchedTab) {
+                            filterUsers(targetFilter, matchedTab);
+                        } else {
+                            filterUsers('all', document.querySelector('.tab'));
+                        }
                     });
 
                     function openCustomUserDeleteModal(userId, roleCategory, userName) {
@@ -275,13 +307,22 @@
 
                     function filterUsers(filterType, clickedTab) {
                         currentFilter = filterType;
+                        const hf = document.getElementById('<%= hfCurrentFilter.ClientID %>');
+                        if (hf) hf.value = filterType;
+
                         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                        clickedTab.classList.add('active');
+                        if (clickedTab) clickedTab.classList.add('active');
 
                         const banner = document.getElementById('deletedNoticeBanner');
                         if (banner) banner.style.display = (filterType === 'deleted') ? 'flex' : 'none';
 
                         applyFilters();
+
+                        try {
+                            const newUrl = new URL(window.location.href);
+                            newUrl.searchParams.set('tab', filterType);
+                            window.history.replaceState({ path: newUrl.href }, '', newUrl.href);
+                        } catch (e) {}
                     }
 
                     function handleSearch() {

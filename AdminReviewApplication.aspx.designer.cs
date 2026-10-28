@@ -33,6 +33,42 @@ namespace Codercept
         protected global::Codercept.Admin_Sidebar SidebarCtrl;
 
         /// <summary>
+        /// hfApplicantUserId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfApplicantUserId;
+
+        /// <summary>
+        /// hfApplicantRole control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfApplicantRole;
+
+        /// <summary>
+        /// hfApplicationId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfApplicationId;
+
+        /// <summary>
+        /// litAvatarInitials control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAvatarInitials;
+
+        /// <summary>
         /// litFullName control.
         /// </summary>
         /// <remarks>
@@ -42,6 +78,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litFullName;
 
         /// <summary>
+        /// litRoleBadge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRoleBadge;
+
+        /// <summary>
         /// litEmail control.
         /// </summary>
         /// <remarks>
@@ -49,6 +94,60 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litEmail;
+
+        /// <summary>
+        /// litAppliedDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAppliedDate;
+
+        /// <summary>
+        /// litAppliedRole control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAppliedRole;
+
+        /// <summary>
+        /// litQualificationName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litQualificationName;
+
+        /// <summary>
+        /// litSpecialization control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSpecialization;
+
+        /// <summary>
+        /// litLanguages control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litLanguages;
+
+        /// <summary>
+        /// litDocuments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litDocuments;
 
         /// <summary>
         /// txtAdminRemarks control.

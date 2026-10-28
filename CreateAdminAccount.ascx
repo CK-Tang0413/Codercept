@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CreateAdminAccount.ascx.cs" Inherits="Codercept.CreateAdminAccount" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CreateAdminAccount.ascx.cs" Inherits="Codercept.CreateAdminAccount" %>
 
 <!-- Add New Admin Modal Overlay -->
 <div class="modal-overlay" id="addAdminModal">
@@ -19,7 +19,7 @@
         <!-- Form Fields -->
         <div class="admin-form-group">
             <label class="form-label" for="<%= txtAdminFullName.ClientID %>">Full Name <span style="color: var(--danger-red);">*</span></label>
-            <asp:TextBox ID="txtAdminFullName" runat="server" CssClass="form-control" placeholder="e.g. Sarah Jenkins"></asp:TextBox>
+            <asp:TextBox ID="txtAdminFullName" runat="server" CssClass="form-control" placeholder="e.g. Sarah Jenkins" oninput="updatePredefinedPassword()"></asp:TextBox>
         </div>
 
         <div class="admin-form-group">
@@ -30,23 +30,24 @@
         <div class="admin-form-group">
             <label class="form-label" for="<%= ddlAdminRole.ClientID %>">Role Privilege Level <span style="color: var(--danger-red);">*</span></label>
             <asp:DropDownList ID="ddlAdminRole" runat="server" CssClass="form-control form-select">
-                <asp:ListItem Value="Admin" Text="Standard Admin (Platform & User Management)" Selected="True"></asp:ListItem>
+                <asp:ListItem Value="Admin" Text="Standard Admin (Platform &amp; User Management)" Selected="True"></asp:ListItem>
             </asp:DropDownList>
         </div>
 
         <div class="admin-form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label class="form-label" for="<%= txtAdminPassword.ClientID %>" style="margin-bottom: 0;">Temporary Password <span style="color: var(--danger-red);">*</span></label>
-                <button type="button" class="btn-text-action" onclick="generateRandomAdminPassword()">
-                    <i class="fa-solid fa-dice"></i> Generate Random
+                <button type="button" class="btn-text-action" onclick="generatePredefinedAdminPassword()">
+                    <i class="fa-solid fa-key"></i> Generate Predefined
                 </button>
             </div>
             <div style="position: relative;">
-                <asp:TextBox ID="txtAdminPassword" runat="server" CssClass="form-control" placeholder="Minimum 8 characters..." style="padding-right: 40px;"></asp:TextBox>
+                <asp:TextBox ID="txtAdminPassword" runat="server" CssClass="form-control" placeholder="&lt;userFirstName&gt;@1234" style="padding-right: 40px;"></asp:TextBox>
                 <button type="button" class="btn-pwd-toggle" onclick="toggleAdminPasswordVisibility()" title="Toggle visibility">
                     <i class="fa-regular fa-eye" id="pwdToggleIcon"></i>
                 </button>
             </div>
+            <span style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; display: block;">Format: &lt;userFirstName&gt;@1234 (alias symbol '@')</span>
         </div>
 
         <!-- Modal Actions Footer -->
@@ -86,16 +87,32 @@ function openAddAdminModal() {
         }
     }
 
-    function generateRandomAdminPassword() {
-        const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
-        let generated = '';
-        for (let i = 0; i < 12; i++) {
-            generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    function getCalculatedPredefinedPassword() {
+        const nameInput = document.getElementById('<%= txtAdminFullName.ClientID %>');
+        const name = nameInput ? nameInput.value.trim() : '';
+        let firstName = 'Admin';
+        if (name) {
+            const parts = name.split(/\s+/);
+            if (parts.length > 0 && parts[0].length > 0) {
+                firstName = parts[0];
+            }
         }
+        return firstName + '@1234';
+    }
+
+    function updatePredefinedPassword() {
         const pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
         if (pwdInput) {
+            pwdInput.value = getCalculatedPredefinedPassword();
+        }
+    }
+
+    function generatePredefinedAdminPassword() {
+        const predefined = getCalculatedPredefinedPassword();
+        const pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
+        if (pwdInput) {
+            pwdInput.value = predefined;
             pwdInput.type = 'text';
-            pwdInput.value = generated;
             const icon = document.getElementById('pwdToggleIcon');
             if (icon) {
                 icon.classList.remove('fa-eye');
@@ -107,7 +124,8 @@ function openAddAdminModal() {
     function validateNewAdminForm() {
         const name = document.getElementById('<%= txtAdminFullName.ClientID %>').value.trim();
         const email = document.getElementById('<%= txtAdminEmail.ClientID %>').value.trim();
-        const pwd = document.getElementById('<%= txtAdminPassword.ClientID %>').value.trim();
+        let pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
+        let pwd = pwdInput ? pwdInput.value.trim() : '';
 
         if (!name) {
             alert('Please enter the administrator\'s full name.');
@@ -121,10 +139,9 @@ function openAddAdminModal() {
             return false;
         }
 
-        if (!pwd || pwd.length < 8) {
-            alert('Password must be at least 8 characters in length.');
-            document.getElementById('<%= txtAdminPassword.ClientID %>').focus();
-            return false;
+        if (!pwd) {
+            pwd = getCalculatedPredefinedPassword();
+            pwdInput.value = pwd;
         }
 
         return true;

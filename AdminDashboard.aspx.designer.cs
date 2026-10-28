@@ -177,39 +177,39 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litActiveSubTotal;
 
         /// <summary>
-        /// litShowingPinnedCount control.
+        /// litShowingRecentCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litShowingPinnedCount;
+        protected global::System.Web.UI.WebControls.Literal litShowingRecentCount;
 
         /// <summary>
-        /// litTotalPinnedCount control.
+        /// litTotalRecentCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalPinnedCount;
+        protected global::System.Web.UI.WebControls.Literal litTotalRecentCount;
 
         /// <summary>
-        /// rptPinnedAnnouncements control.
+        /// rptRecentAnnouncements control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptPinnedAnnouncements;
+        protected global::System.Web.UI.WebControls.Repeater rptRecentAnnouncements;
 
         /// <summary>
-        /// pnlNoPinned control.
+        /// pnlNoRecent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoPinned;
+        protected global::System.Web.UI.WebControls.Panel pnlNoRecent;
     }
 }

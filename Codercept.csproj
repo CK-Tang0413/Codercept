@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -204,6 +204,7 @@
     <Content Include="CreateAdminAccount.ascx" />
     <Content Include="css\admin-portal.css" />
     <Content Include="css\global.css" />
+    <Content Include="css\ta-responsive.css" />
     <Content Include="css\teacher-portal.css" />
     <Content Include="Database\database_setup.sql" />
     <Content Include="favicon.ico" />
@@ -257,6 +258,15 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="signIn.aspx" />
     <Content Include="signUp.aspx" />
+    <Content Include="TACourses.aspx" />
+    <Content Include="TACourseView.aspx" />
+    <Content Include="TADashboard.aspx" />
+    <Content Include="TAForumModeration.aspx" />
+    <Content Include="TAGradeAssessments.aspx" />
+    <Content Include="TAGrading.aspx" />
+    <Content Include="TAProfile.aspx" />
+    <Content Include="TASideBar.ascx" />
+    <Content Include="TASite.master" />
     <Content Include="TeacherAccount.aspx" />
     <Content Include="TeacherBreadcrumb.ascx" />
     <Content Include="TeacherChapterAdd.aspx" />
@@ -465,6 +475,71 @@
     <Compile Include="signUp.aspx.designer.cs">
       <DependentUpon>signUp.aspx</DependentUpon>
     </Compile>
+    <Compile Include="TAHelpers.cs" />
+    <Compile Include="TACourses.aspx.cs">
+      <DependentUpon>TACourses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TACourses.aspx.designer.cs">
+      <DependentUpon>TACourses.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TACourseView.aspx.cs">
+      <DependentUpon>TACourseView.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TACourseView.aspx.designer.cs">
+      <DependentUpon>TACourseView.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TADashboard.aspx.cs">
+      <DependentUpon>TADashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TADashboard.aspx.designer.cs">
+      <DependentUpon>TADashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TAForumModeration.aspx.cs">
+      <DependentUpon>TAForumModeration.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TAForumModeration.aspx.designer.cs">
+      <DependentUpon>TAForumModeration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TAGradeAssessments.aspx.cs">
+      <DependentUpon>TAGradeAssessments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TAGradeAssessments.aspx.designer.cs">
+      <DependentUpon>TAGradeAssessments.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TAGrading.aspx.cs">
+      <DependentUpon>TAGrading.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TAGrading.aspx.designer.cs">
+      <DependentUpon>TAGrading.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TAGradingData.cs" />
+    <Compile Include="TAProfile.aspx.cs">
+      <DependentUpon>TAProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TAProfile.aspx.designer.cs">
+      <DependentUpon>TAProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TASideBar.ascx.cs">
+      <DependentUpon>TASideBar.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TASideBar.ascx.designer.cs">
+      <DependentUpon>TASideBar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="TASite.master.cs">
+      <DependentUpon>TASite.master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TASite.master.designer.cs">
+      <DependentUpon>TASite.master</DependentUpon>
+    </Compile>
     <Compile Include="TeacherAccount.aspx.cs">
       <DependentUpon>TeacherAccount.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -668,6 +743,7 @@
     <Compile Include="TeacherSampleData.cs" />
     <Compile Include="TeacherStatsData.cs" />
     <Compile Include="TeacherAccountData.cs" />
+    <Compile Include="UserPurgeService.cs" />
     <Compile Include="TeacherSideBar.ascx.cs">
       <DependentUpon>TeacherSideBar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

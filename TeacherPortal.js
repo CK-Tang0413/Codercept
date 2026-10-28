@@ -1231,6 +1231,8 @@
                 var postCard = action.closest("[data-tp-forum-post]");
                 qs("[data-tp-moderate-title]").textContent = postCard.getAttribute("data-title");
                 qs("[data-tp-moderate-post]").value = action.getAttribute("data-tp-forum-action");
+                // an already flagged post cannot be flagged again, only hidden
+                qs('[data-tp-moderate="flag"]').disabled = action.getAttribute("data-flagged") === "1";
                 openModal("tpModerateModal");
                 return;
             }
@@ -1246,8 +1248,8 @@
             if (reply) { setReplying(reply.getAttribute("data-tp-forum-reply"), reply.getAttribute("data-name")); replyInput.focus(); return; }
         });
 
-        // Flag / Hide in the moderate dialog (outside the forum root): a reason is required. TODO (backend): post the reason and action
-        // (data-tp-moderate = "flag" or "hide", for the post in data-tp-moderate-post) instead of only closing the dialog.
+        // Flag / Hide in the moderate dialog (outside the forum root): a reason is required. The buttons are submit buttons, so with a reason
+        // the form posts (tpForumAction = moderate:flag / moderate:hide) and the server saves it; without one nothing is sent.
         document.addEventListener("click", function (e) {
             var button = e.target instanceof Element ? e.target.closest("[data-tp-moderate]") : null;
             if (!button) return;
@@ -1257,9 +1259,7 @@
             var empty = reason.value.trim().length === 0;
             wrap.classList.toggle("has-error", empty);
             qs("small", wrap).textContent = empty ? "Enter the reason for this action." : "";
-            if (empty) { reason.focus(); return; }
-            closeModal(modal);
-            toast("Moderation is not connected yet, so nothing was changed.");
+            if (empty) { e.preventDefault(); reason.focus(); }
         });
 
         // Enter in the reply box sends the reply instead of triggering whichever submit button comes first

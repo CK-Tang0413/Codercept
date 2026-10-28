@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -12,7 +12,8 @@ namespace Codercept
 {
     public partial class Admin_Community : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+            ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -34,15 +35,13 @@ namespace Codercept
                 dt.Columns.Add("Content", typeof(string));
                 dt.Columns.Add("Type", typeof(string));
                 dt.Columns.Add("DateTime", typeof(DateTime));
-                dt.Columns.Add("IsPinned", typeof(bool));
 
                 dt.Rows.Add(
                     1,
                     "New C++ Module Now Available!",
                     "We are excited to announce the launch of \"Data Structures with C++\" by Prof. Michael Torres. Enroll today to master linked lists, trees, and hash tables from scratch with interactive code sandboxes and real-world projects designed for all skill levels.",
                     "Announcement",
-                    DateTime.Now.AddDays(-2),
-                    true
+                    DateTime.Now.AddDays(-2)
                 );
 
                 dt.Rows.Add(
@@ -50,8 +49,7 @@ namespace Codercept
                     "Python Hackathon 2026 Invitation",
                     "Join us for the CodeLearn National Python Marathon this coming weekend! You will collaborate in teams to solve competitive programming tasks, optimize neuroevolution models, and earn official platform badges and certificates.",
                     "Invitation",
-                    DateTime.Now.AddDays(-1),
-                    false
+                    DateTime.Now.AddDays(-1)
                 );
 
                 BindRepeater(dt);
@@ -64,7 +62,7 @@ namespace Codercept
                 {
                     conn.Open();
 
-                    // Query mapped to [dbo].[Notification], ordering pinned records first
+                    // Query mapped to [dbo].[Notification], ordered by latest first
                     string query = @"
                         SELECT NotificationId, Title, Content, Type, DateTime
                         FROM [dbo].[Notification]
@@ -151,48 +149,17 @@ namespace Codercept
             LoadAnnouncements();
         }
 
-        // 2. Command handling: Pin/Unpin & Delete
+        // 2. Command handling: Delete
         protected void rptAnnouncements_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             int notificationId = Convert.ToInt32(e.CommandArgument);
 
-            if (e.CommandName == "TogglePin")
-            {
-                TogglePinStatus(notificationId);
-            }
-            else if (e.CommandName == "DeleteAnnouncement")
+            if (e.CommandName == "DeleteAnnouncement")
             {
                 DeleteAnnouncement(notificationId);
             }
 
             LoadAnnouncements();
-        }
-
-        private void TogglePinStatus(int notificationId)
-        {
-            if (string.IsNullOrEmpty(connectionString)) return;
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    conn.Open();
-                    string query = @"
-                        SELECT NotificationId, Title, Content, Type, DateTime
-                        FROM [dbo].[Notification]
-                        ORDER BY DateTime DESC";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", notificationId);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[AdminCommunity Pin Error]: {ex.Message}");
-            }
         }
 
         private void DeleteAnnouncement(int notificationId)
