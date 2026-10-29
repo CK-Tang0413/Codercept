@@ -35,9 +35,18 @@ namespace Codercept
     public static class TeacherForumData
     {
         /// <summary>The posts of Forum f the signed-in teacher may see. A hidden post (Forum.IsHidden) is not shown to anyone, so it is never visible here.</summary>
-        private const string Visible =
-            "(f.IsHidden = 0 AND (f.TeacherId = @TeacherId OR EXISTS (SELECT 1 FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
-            "WHERE lp.LearnerId = f.LearnerId AND c.TeacherId = @TeacherId)))";
+        private const string Visible = "(f.IsHidden = 0 AND " + Mine + ")";
+
+        /// <summary>The posts of Forum f the signed-in teacher owns or that were written by a learner enrolled in one of their courses, hidden or not.</summary>
+        private const string Mine =
+            "(f.TeacherId = @TeacherId OR EXISTS (SELECT 1 FROM LearnerProgress lp INNER JOIN Course c ON c.CourseId = lp.CourseId " +
+            "WHERE lp.LearnerId = f.LearnerId AND c.TeacherId = @TeacherId))";
+
+        /// <summary>The post has a 'Hide' row in Moderate_Forum.</summary>
+        private const string HasHideRow = "EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide')";
+
+        /// <summary>The post is flagged: Forum.IsFlagged is set or it has a 'Flag' row in Moderate_Forum.</summary>
+        private const string IsFlaggedSql = "(f.IsFlagged = 1 OR EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag'))";
 
         /// <summary>The longest reason a moderator can give (the dialog allows 500).</summary>
         public const int MaxReasonLength = 500;
@@ -57,11 +66,19 @@ namespace Codercept
         /// <summary>The longest excerpt shown on a post card.</summary>
         private const int ExcerptLength = 110;
 
-        /// <summary>The posts the signed-in teacher can see, newest first, each with its replies in the order they were written.</summary>
-        public static List<TeacherForumPost> GetPosts()
+        /// <summary>
+        /// The posts the signed-in teacher can see, newest first, each with its replies in the order they were written.
+        /// filter "all" = Active discussions (flagged ones included, hidden ones not); "flagged" = only the flagged ones; "hidden" = the hidden
+        /// ones (with the reason they were hidden), which are the teacher's own and those of learners in their courses.
+        /// </summary>
+        public static List<TeacherForumPost> GetPosts(string filter = "all")
         {
             List<TeacherForumPost> posts = new List<TeacherForumPost>();
             int teacherId = TeacherDb.GetTeacherId();
+
+            string scope = Visible + " AND NOT " + HasHideRow;
+            if (filter == "flagged") scope += " AND " + IsFlaggedSql;
+            else if (filter == "hidden") scope = Mine + " AND (f.IsHidden = 1 OR " + HasHideRow + ")";
             using (SqlConnection con = TeacherDb.GetConnection())
             {
                 con.Open();
@@ -69,9 +86,9 @@ namespace Codercept
                 using (SqlCommand cmd = new SqlCommand(
                     "SELECT f.PostId, f.Title, f.Content, f.Tags, " +
                     "(SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason, " +
-                    "f.IsFlagged " +
-                    "FROM Forum f WHERE " + Visible + " " +
-                    "AND NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide') " +
+                    "f.IsFlagged, " +
+                    "(SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide' ORDER BY m.DateModerate DESC) AS HideReason " +
+                    "FROM Forum f WHERE " + scope + " " +
                     "ORDER BY f.DatePosted DESC, f.PostId DESC", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
@@ -90,6 +107,8 @@ namespace Codercept
                                 Flagged = isFlagged,
                                 IsFlagged = isFlagged,
                                 FlagReason = flagReason,
+                                IsHidden = filter == "hidden",
+                                HideReason = reader.IsDBNull(6) ? null : reader.GetString(6),
                                 Comments = new List<TeacherForumComment>()
                             });
                         }
@@ -104,7 +123,7 @@ namespace Codercept
                     "FROM Post_Reply r INNER JOIN Forum f ON f.PostId = r.PostId " +
                     "LEFT JOIN Learner l ON l.LearnerId = r.LearnerId LEFT JOIN Teacher t ON t.TeacherId = r.TeacherId " +
                     "LEFT JOIN Teaching_Assistant ta ON ta.TA_Id = r.TA_Id " +
-                    "WHERE " + Visible + " ORDER BY r.ThreadId", con))
+                    "WHERE " + (filter == "hidden" ? Mine : Visible) + " ORDER BY r.ThreadId", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -133,14 +152,66 @@ namespace Codercept
             return posts;
         }
 
-        public static void DismissFlag(int postId)
+        /// <summary>
+        /// Takes the flag off a post: only a post this teacher can see (their own, or a learner's in their courses), so a forged id changes
+        /// nothing. Returns false when there was no such post.
+        /// </summary>
+        public static bool DismissFlag(int postId)
         {
+            int teacherId = TeacherDb.GetTeacherId();
             using (SqlConnection con = TeacherDb.GetConnection())
-            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'; UPDATE [dbo].[Forum] SET IsFlagged = 0 WHERE PostId = @PostId;", con))
             {
-                cmd.Parameters.AddWithValue("@PostId", postId);
                 con.Open();
-                cmd.ExecuteNonQuery();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    using (SqlCommand check = new SqlCommand("SELECT COUNT(*) FROM Forum f WITH (UPDLOCK, HOLDLOCK) WHERE f.PostId = @PostId AND " + Visible, con, tx))
+                    {
+                        check.Parameters.AddWithValue("@PostId", postId);
+                        check.Parameters.AddWithValue("@TeacherId", teacherId);
+                        if ((int)check.ExecuteScalar() == 0) return false;
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'; UPDATE [dbo].[Forum] SET IsFlagged = 0 WHERE PostId = @PostId;", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        cmd.ExecuteNonQuery();
+                    }
+                    tx.Commit();
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Brings a hidden post back: only a hidden post this teacher can see (their own, or a learner's in their courses), so a forged id
+        /// changes nothing. Clears Forum.IsHidden and removes the 'Hide' row in one transaction. Returns false when there was no such post.
+        /// </summary>
+        public static bool Unhide(int postId)
+        {
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            {
+                con.Open();
+                using (SqlTransaction tx = con.BeginTransaction())
+                {
+                    using (SqlCommand check = new SqlCommand(
+                        "SELECT COUNT(*) FROM Forum f WITH (UPDLOCK, HOLDLOCK) WHERE f.PostId = @PostId AND " + Mine + " AND (f.IsHidden = 1 OR " + HasHideRow + ")", con, tx))
+                    {
+                        check.Parameters.AddWithValue("@PostId", postId);
+                        check.Parameters.AddWithValue("@TeacherId", teacherId);
+                        if ((int)check.ExecuteScalar() == 0) return false;
+                    }
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE [dbo].[Forum] SET IsHidden = 0 WHERE PostId = @PostId; DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Hide';", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@PostId", postId);
+                        cmd.ExecuteNonQuery();
+                    }
+                    tx.Commit();
+                    return true;
+                }
             }
         }
 

@@ -853,3 +853,390 @@ VALUES
     (DATEADD(HOUR, -26, GETDATE()), DATEADD(HOUR, -24, GETDATE()), NULL, NULL, @JayveeId),
     (DATEADD(HOUR, -4, GETDATE()),  DATEADD(HOUR, -2, GETDATE()),  NULL, NULL, @JayveeId),
     (DATEADD(DAY, -2, GETDATE()),   DATEADD(MINUTE, 50, DATEADD(DAY, -2, GETDATE())), NULL, NULL, @MarcusId);
+
+DECLARE @SdQ INT, @SdCourse INT, @SdChapter INT, @SdTest INT, @SdAttempt INT, @SdPost INT, @SdReply INT;
+DECLARE @SdAlvin INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'alvinchong@edu.com.my');
+DECLARE @SdPriya INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'priyanair@edu.com.my');
+DECLARE @SdDaniel INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'danielwong@edu.com.my');
+DECLARE @SdMeiling INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'meilingtan@edu.com.my');
+DECLARE @SdHafiz INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'hafizrahman@edu.com.my');
+DECLARE @SdBryan INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'bryanyeong@edu.com.my');
+DECLARE @SdSarah INT = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'sarahlim@edu.com.my');
+
+-- Teachers (BCrypt cost-12 hashes of Teacher1234!)
+INSERT INTO [dbo].[Teacher] ([Name], [Email], [Password], [Age], [Region], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
+VALUES
+    (N'Alvin Chong', N'alvinchong@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 38, N'Selangor, Malaysia', N'Advanced', N'Active', '2025-11-02', NULL),
+    (N'Priya Nair', N'priyanair@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 31, N'Kuala Lumpur, Malaysia', N'Advanced', N'Active', '2025-12-18', NULL),
+    (N'Daniel Wong', N'danielwong@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 35, N'Ipoh, Malaysia', N'Intermediate', N'Active', '2026-02-05', NULL),
+    (N'Mei Ling Tan', N'meilingtan@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 28, N'Melaka, Malaysia', N'Intermediate', N'Active', '2026-04-22', NULL),
+    (N'Hafiz Rahman', N'hafizrahman@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 41, N'Kuantan, Malaysia', N'Advanced', N'Active', '2026-05-30', NULL),
+    (N'Grace Lee', N'gracelee@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 27, N'Kuching, Malaysia', N'Beginner', N'Active', '2026-10-25', NULL),
+    (N'Omar Farouk', N'omarfarouk@edu.com.my', '$2a$12$DTZsw.PZ6U47OVy70S7GQuuBDfswuCSHBAunIoBdyT23NcEcyv9UG', 45, N'Kota Kinabalu, Malaysia', N'Advanced', N'Inactive', '2025-09-14', NULL);
+
+SET @SdAlvin = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'alvinchong@edu.com.my');
+SET @SdPriya = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'priyanair@edu.com.my');
+SET @SdDaniel = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'danielwong@edu.com.my');
+SET @SdMeiling = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'meilingtan@edu.com.my');
+SET @SdHafiz = (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'hafizrahman@edu.com.my');
+
+-- Subjects: more learning domains
+INSERT INTO [dbo].[Subject] ([SubjectName], [SubjectType]) VALUES (N'Web Development', 'Domain'), (N'Databases', 'Domain'), (N'Cybersecurity', 'Domain'), (N'Algorithms', 'Domain');
+
+-- Learners (BCrypt cost-12 hashes of Learner1234!)
+INSERT INTO [dbo].[Learner] ([Name], [Email], [Password], [DateJoined], [AccStatus], [Age], [Address], [Occupation])
+VALUES
+    (N'Aisyah Rahman', N'aisyah.rahman@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -40, GETDATE()), 'Active', 22, N'Selangor, Malaysia', N'Student'),
+    (N'Ben Tan', N'bentan88@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -37, GETDATE()), 'Active', 27, N'Penang, Malaysia', N'Software Tester'),
+    (N'Chen Wei', N'chenwei.lee@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -34, GETDATE()), 'Active', 24, N'Johor, Malaysia', N'Student'),
+    (N'Divya Menon', N'divya.menon@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -31, GETDATE()), 'Active', 29, N'Kuala Lumpur, Malaysia', N'Data Analyst'),
+    (N'Ethan Lim', N'ethanlim2002@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -28, GETDATE()), 'Active', 20, N'Melaka, Malaysia', N'Student'),
+    (N'Farah Aziz', N'farah.aziz@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -25, GETDATE()), 'Active', 26, N'Perak, Malaysia', N'Teacher'),
+    (N'Gavin Ooi', N'gavinooi@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -22, GETDATE()), 'Active', 31, N'Sabah, Malaysia', N'Engineer'),
+    (N'Hana Yusof', N'hana.yusof@gmail.com', '$2a$12$9m57m1vam.62oR6GuYghKuf58vk12mGPFwmpicVTfVVlZDHpOzxFu', DATEADD(DAY, -19, GETDATE()), 'Active', 23, N'Terengganu, Malaysia', N'Student');
+DECLARE @SdAisyah INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'aisyah.rahman@gmail.com');
+DECLARE @SdBen INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'bentan88@gmail.com');
+DECLARE @SdChen INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'chenwei.lee@gmail.com');
+DECLARE @SdDivya INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'divya.menon@gmail.com');
+DECLARE @SdEthan INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'ethanlim2002@gmail.com');
+DECLARE @SdFarah INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'farah.aziz@gmail.com');
+DECLARE @SdGavin INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'gavinooi@gmail.com');
+DECLARE @SdHana INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'hana.yusof@gmail.com');
+
+-- Courses (with their language and domains), then the chapters of three of them
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -45, GETDATE()), DATEADD(DAY, -20, GETDATE()), N'Web Apps with Python and Flask', N'Build and deploy small web applications with Flask: routes, templates, forms and a database.', N'Medium', N'28 hours', @SdAlvin);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'Python', N'Web Development');
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -50, GETDATE()), DATEADD(DAY, -15, GETDATE()), N'Advanced Python Patterns', N'Go beyond the basics with decorators, generators, context managers and clean, testable Python.', N'Hard', N'22 hours', @SdPriya);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'Python');
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -35, GETDATE()), DATEADD(DAY, -10, GETDATE()), N'Java Collections and Streams', N'Use lists, sets, maps and the Streams API to process data in clear, efficient Java code.', N'Medium', N'18 hours', @SdPriya);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'Java');
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -28, GETDATE()), DATEADD(DAY, -9, GETDATE()), N'Databases with Python', N'Design tables, write SQL queries and connect a database to a Python program.', N'Easy', N'16 hours', @SdDaniel);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'Python', N'Databases');
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -18, GETDATE()), DATEADD(DAY, -6, GETDATE()), N'C Pointers Workshop', N'A hands-on workshop that makes pointers, arrays and memory in C easy to reason about.', N'Medium', N'12 hours', @SdHafiz);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'C', N'Algorithms');
+INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
+VALUES (DATEADD(DAY, -14, GETDATE()), DATEADD(DAY, -3, GETDATE()), N'Cybersecurity Basics with Python', N'Learn common threats and write small Python tools that check passwords, hashes and network ports.', N'Medium', N'20 hours', @SdMeiling);
+SET @SdCourse = SCOPE_IDENTITY();
+INSERT INTO [dbo].[CourseSubject] ([CourseId], [SubjectId])
+SELECT @SdCourse, [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] IN (N'Python', N'Cybersecurity');
+
+INSERT INTO [dbo].[Chapter] ([DateCreation], [DateUpdate], [ChapterNum], [ChapterTitle], [ChapterDescription], [ChapterDuration], [ChapterMediaLink], [CourseId], [TeacherId])
+VALUES
+    (DATEADD(DAY, -45, GETDATE()), DATEADD(DAY, -40, GETDATE()), 1, N'Introduction to Flask', N'Set up Flask, run a development server and return your first page.', N'3 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdAlvin),
+    (DATEADD(DAY, -43, GETDATE()), DATEADD(DAY, -36, GETDATE()), 2, N'Routes and Templates', N'Map URLs to functions and build pages with Jinja templates.', N'4 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdAlvin),
+    (DATEADD(DAY, -50, GETDATE()), DATEADD(DAY, -44, GETDATE()), 1, N'Decorators', N'Write functions that wrap other functions, with and without arguments.', N'4 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), @SdPriya),
+    (DATEADD(DAY, -48, GETDATE()), DATEADD(DAY, -40, GETDATE()), 2, N'Generators and Iterators', N'Produce values lazily with yield and build your own iterators.', N'3.5 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), @SdPriya),
+    (DATEADD(DAY, -35, GETDATE()), DATEADD(DAY, -30, GETDATE()), 1, N'Lists, Sets and Maps', N'Choose and use the right collection for the job.', N'3 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), @SdPriya),
+    (DATEADD(DAY, -33, GETDATE()), DATEADD(DAY, -26, GETDATE()), 2, N'Streams in Practice', N'Filter, map and collect data with the Streams API.', N'4 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), @SdPriya);
+
+-- Subchapters (duration in minutes)
+INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [SubChapterDuration], [ChapterId], [TeacherId])
+VALUES
+    (DATEADD(DAY, -30, GETDATE()), DATEADD(DAY, -20, GETDATE()), 1, N'Your First Java Program', N'Write, compile and run a Hello World program.', NULL, 15, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass') AND [ChapterNum] = 1), @SdBryan),
+    (DATEADD(DAY, -31, GETDATE()), DATEADD(DAY, -21, GETDATE()), 2, N'Primitive Types', N'The eight primitive types and when to use each.', NULL, 20, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass') AND [ChapterNum] = 1), @SdBryan),
+    (DATEADD(DAY, -32, GETDATE()), DATEADD(DAY, -22, GETDATE()), 1, N'Classes and Objects', N'Create a class, add fields and methods and make objects from it.', NULL, 25, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass') AND [ChapterNum] = 2), @SdBryan),
+    (DATEADD(DAY, -33, GETDATE()), DATEADD(DAY, -23, GETDATE()), 1, N'Reading a CSV File', N'Load a CSV file into a pandas DataFrame.', NULL, 20, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python') AND [ChapterNum] = 1), @SdBryan),
+    (DATEADD(DAY, -34, GETDATE()), DATEADD(DAY, -24, GETDATE()), 2, N'First Look at the Data', N'Use head, info and describe to understand a dataset.', NULL, 15, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python') AND [ChapterNum] = 1), @SdBryan),
+    (DATEADD(DAY, -35, GETDATE()), DATEADD(DAY, -25, GETDATE()), 1, N'Compiling with gcc', N'Compile and run a C program from the command line.', NULL, 15, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials') AND [ChapterNum] = 1), @SdSarah),
+    (DATEADD(DAY, -36, GETDATE()), DATEADD(DAY, -26, GETDATE()), 2, N'The main Function', N'What main does and how a C program starts and ends.', NULL, 10, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials') AND [ChapterNum] = 1), @SdSarah),
+    (DATEADD(DAY, -37, GETDATE()), DATEADD(DAY, -27, GETDATE()), 1, N'What is a Pointer?', N'Addresses, pointer variables and dereferencing in C++.', NULL, 25, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C++ Algorithms & Data Structures') AND [ChapterNum] = 1), @SdSarah),
+    (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -28, GETDATE()), 1, N'Installing Flask', N'Create a virtual environment and install Flask.', NULL, 10, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask') AND [ChapterNum] = 1), @SdAlvin),
+    (DATEADD(DAY, -39, GETDATE()), DATEADD(DAY, -29, GETDATE()), 2, N'Hello, Flask', N'Return a message from your first route.', NULL, 15, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask') AND [ChapterNum] = 1), @SdAlvin),
+    (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -30, GETDATE()), 1, N'Functions as Objects', N'Pass functions around like any other value.', NULL, 20, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns') AND [ChapterNum] = 1), @SdPriya),
+    (DATEADD(DAY, -41, GETDATE()), DATEADD(DAY, -31, GETDATE()), 1, N'The yield Keyword', N'Turn a function into a generator with yield.', NULL, 20, (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns') AND [ChapterNum] = 2), @SdPriya);
+
+-- Quizzes (multiple choice only; a chapter has a quiz OR an assessment, never both)
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Control Flow Quiz', N'Check your understanding of if statements and loops.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals') AND [ChapterNum] = 3), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which keyword starts a loop that runs while a condition is true?', 'MCQ', 3, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'for', 0, 1, @SdQ), (N'while', 1, 2, @SdQ), (N'if', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'What does range(3) produce?', 'MCQ', 2, 2, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'1, 2, 3', 0, 1, @SdQ), (N'0, 1, 2', 1, 2, @SdQ), (N'0, 1, 2, 3', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Java Basics Quiz', N'Check your understanding of Java syntax and types.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass') AND [ChapterNum] = 1), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which method is the entry point of a Java program?', 'MCQ', 3, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'start()', 0, 1, @SdQ), (N'main()', 1, 2, @SdQ), (N'run()', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which type stores true or false?', 'MCQ', 2, 2, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'boolean', 1, 1, @SdQ), (N'int', 0, 2, @SdQ), (N'String', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Loading Data Quiz', N'Check how data is loaded into pandas.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python') AND [ChapterNum] = 1), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which pandas function reads a CSV file?', 'MCQ', 3, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'read_csv', 1, 1, @SdQ), (N'open_csv', 0, 2, @SdQ), (N'load_file', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'What is a pandas DataFrame?', 'MCQ', 2, 2, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'A table of rows and columns', 1, 1, @SdQ), (N'A single number', 0, 2, @SdQ), (N'A picture', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Introduction to C Quiz', N'Check what you learned about your first C program.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials') AND [ChapterNum] = 1), @SdSarah);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which header declares printf?', 'MCQ', 3, 1, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'<stdlib.h>', 0, 1, @SdQ), (N'<stdio.h>', 1, 2, @SdQ), (N'<math.h>', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which symbol ends a C statement?', 'MCQ', 2, 2, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N';', 1, 1, @SdQ), (N':', 0, 2, @SdQ), (N'.', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Pointers Quiz', N'Check your understanding of pointers in C++.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C++ Algorithms & Data Structures') AND [ChapterNum] = 1), @SdSarah);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which operator gives the address of a variable?', 'MCQ', 3, 1, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'&', 1, 1, @SdQ), (N'*', 0, 2, @SdQ), (N'->', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'What does *p do for a pointer p?', 'MCQ', 2, 2, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Reads the value p points to', 1, 1, @SdQ), (N'Deletes p', 0, 2, @SdQ), (N'Prints p', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Flask Basics Quiz', N'Check the basics of a Flask application.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask') AND [ChapterNum] = 1), @SdAlvin);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which decorator maps a URL to a function in Flask?', 'MCQ', 3, 1, @SdAlvin, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'@app.route', 1, 1, @SdQ), (N'@app.url', 0, 2, @SdQ), (N'@route.app', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which command installs Flask?', 'MCQ', 2, 2, @SdAlvin, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'pip install flask', 1, 1, @SdQ), (N'install flask', 0, 2, @SdQ), (N'python flask', 0, 3, @SdQ);
+INSERT INTO [dbo].[Quiz] ([DateCreation], [DateUpdate], [QuizTitle], [QuizDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -22, GETDATE()), DATEADD(DAY, -18, GETDATE()), N'Decorators Quiz', N'Check how decorators work.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns') AND [ChapterNum] = 1), @SdPriya);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'What does a decorator receive?', 'MCQ', 3, 1, @SdPriya, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'A function', 1, 1, @SdQ), (N'A database', 0, 2, @SdQ), (N'A file path', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [QuizId]) VALUES (N'Which symbol applies a decorator?', 'MCQ', 2, 2, @SdPriya, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'@', 1, 1, @SdQ), (N'#', 0, 2, @SdQ), (N'$', 0, 3, @SdQ);
+
+-- Assessments (multiple choice, fill-in-the-blank and coding; the last two are marked by the teacher)
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -21, GETDATE()), DATEADD(DAY, -17, GETDATE()), N'OOP Assessment', N'Show that you can model a small class in Java.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass') AND [ChapterNum] = 2), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [AssessmentId]) VALUES (N'Which keyword creates a subclass in Java?', 'MCQ', 2, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'extends', 1, 1, @SdQ), (N'implements', 0, 2, @SdQ), (N'inherits', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [ModelAnswer], [MarkingGuide], [TeacherId], [AssessmentId]) VALUES (N'Write a class Dog with a method bark() that prints Woof.', 'Coding', 8, 2, N'class Dog {' + CHAR(13) + CHAR(10) + N'    void bark() {' + CHAR(13) + CHAR(10) + N'        System.out.println("Woof");' + CHAR(13) + CHAR(10) + N'    }' + CHAR(13) + CHAR(10) + N'}', N'3 marks for the class, 3 marks for the method, 2 marks for printing Woof.', @SdBryan, @SdTest);
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -21, GETDATE()), DATEADD(DAY, -17, GETDATE()), N'Data Cleaning Assessment', N'Clean a small dataset and describe it.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python') AND [ChapterNum] = 2), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [AssessmentId]) VALUES (N'Which pandas method removes rows with missing values?', 'MCQ', 2, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'dropna', 1, 1, @SdQ), (N'fillna', 0, 2, @SdQ), (N'isna', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [AssessmentId]) VALUES (N'The ____ method shows summary statistics for a DataFrame.', 'FillBlank', 3, 2, N'describe, describe()', @SdBryan, @SdTest);
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -21, GETDATE()), DATEADD(DAY, -17, GETDATE()), N'Variables in C Assessment', N'Declare and print variables in C.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials') AND [ChapterNum] = 2), @SdSarah);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [AssessmentId]) VALUES (N'Which type stores a single character in C?', 'MCQ', 2, 1, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'char', 1, 1, @SdQ), (N'string', 0, 2, @SdQ), (N'text', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [ModelAnswer], [MarkingGuide], [TeacherId], [AssessmentId]) VALUES (N'Declare an int called age with the value 20 and print it with printf.', 'Coding', 8, 2, N'int age = 20;' + CHAR(13) + CHAR(10) + N'printf("%d", age);', N'3 marks for the declaration, 3 marks for printf, 2 marks for the correct %d format.', @SdSarah, @SdTest);
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -21, GETDATE()), DATEADD(DAY, -17, GETDATE()), N'Routes Assessment', N'Write and explain a simple Flask route.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask') AND [ChapterNum] = 2), @SdAlvin);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [AssessmentId]) VALUES (N'What does Jinja do in a Flask app?', 'MCQ', 2, 1, @SdAlvin, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Renders HTML templates', 1, 1, @SdQ), (N'Stores files', 0, 2, @SdQ), (N'Compiles code', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [ModelAnswer], [MarkingGuide], [TeacherId], [AssessmentId]) VALUES (N'Write a Flask route /hello that returns the text Hello.', 'Coding', 8, 2, N'@app.route("/hello")' + CHAR(13) + CHAR(10) + N'def hello():' + CHAR(13) + CHAR(10) + N'    return "Hello"', N'3 marks for the route decorator, 3 marks for the function, 2 marks for returning the text.', @SdAlvin, @SdTest);
+INSERT INTO [dbo].[Assessment] ([DateCreation], [DateUpdate], [AssessmentTitle], [AssessmentDescription], [ChapterId], [TeacherId]) VALUES (DATEADD(DAY, -21, GETDATE()), DATEADD(DAY, -17, GETDATE()), N'Generators Assessment', N'Write and explain a generator.', (SELECT [ChapterId] FROM [dbo].[Chapter] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns') AND [ChapterNum] = 2), @SdPriya);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [AssessmentId]) VALUES (N'A function that uses ____ instead of return produces a generator.', 'FillBlank', 3, 1, N'yield', @SdPriya, @SdTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [ModelAnswer], [MarkingGuide], [TeacherId], [AssessmentId]) VALUES (N'Write a generator count_up(n) that yields the numbers 1 to n.', 'Coding', 7, 2, N'def count_up(n):' + CHAR(13) + CHAR(10) + N'    for i in range(1, n + 1):' + CHAR(13) + CHAR(10) + N'        yield i', N'3 marks for the loop, 2 marks for yield, 2 marks for the correct range.', @SdPriya, @SdTest);
+
+-- Final exams (one per course): one multiple choice and one fill-in-the-blank question, 5 marks each
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Java Programming Masterclass.', 50, 90, 1, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which keyword prevents a class from being extended?', 'MCQ', 5, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'final', 1, 1, @SdQ), (N'static', 0, 2, @SdQ), (N'abstract', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'The ____ keyword creates a new object in Java.', 'FillBlank', 5, 2, N'new', @SdBryan, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Data Analysis with Python.', 50, 75, 0, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python'), @SdBryan);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which library is used for data frames in Python?', 'MCQ', 5, 1, @SdBryan, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'pandas', 1, 1, @SdQ), (N'flask', 0, 2, @SdQ), (N'turtle', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'A ____ is a table of rows and columns in pandas.', 'FillBlank', 5, 2, N'DataFrame, dataframe', @SdBryan, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for C++ Algorithms & Data Structures.', 60, 120, 1, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C++ Algorithms & Data Structures'), @SdSarah);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which container is a dynamic array in C++?', 'MCQ', 5, 1, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'vector', 1, 1, @SdQ), (N'map', 0, 2, @SdQ), (N'set', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'The ____ operator accesses a member through a pointer.', 'FillBlank', 5, 2, N'->', @SdSarah, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Machine Learning with Python.', 50, 90, 0, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Machine Learning with Python'), @SdSarah);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'What are the inputs a model learns from called?', 'MCQ', 5, 1, @SdSarah, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'features', 1, 1, @SdQ), (N'outputs', 0, 2, @SdQ), (N'bugs', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'In supervised learning each example has a ____.', 'FillBlank', 5, 2, N'label', @SdSarah, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Web Apps with Python and Flask.', 50, 60, 0, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdAlvin);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which function starts the Flask development server?', 'MCQ', 5, 1, @SdAlvin, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'app.run()', 1, 1, @SdQ), (N'app.start()', 0, 2, @SdQ), (N'flask.go()', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'Flask templates are written with the ____ engine.', 'FillBlank', 5, 2, N'Jinja, Jinja2', @SdAlvin, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Advanced Python Patterns.', 60, 90, 1, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), @SdPriya);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which keyword makes a function produce values one at a time?', 'MCQ', 5, 1, @SdPriya, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'yield', 1, 1, @SdQ), (N'return', 0, 2, @SdQ), (N'pass', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'A ____ wraps another function to add behaviour.', 'FillBlank', 5, 2, N'decorator', @SdPriya, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Java Collections and Streams.', 50, 75, 1, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), @SdPriya);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which collection does not allow duplicates?', 'MCQ', 5, 1, @SdPriya, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Set', 1, 1, @SdQ), (N'List', 0, 2, @SdQ), (N'ArrayList', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'The ____ interface stores key-value pairs in Java.', 'FillBlank', 5, 2, N'Map', @SdPriya, @SdTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId]) VALUES (DATEADD(DAY, -12, GETDATE()), NULL, 'Final Course Examination', N'Final exam for Databases with Python.', 50, 60, 0, 1, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Databases with Python'), @SdDaniel);
+SET @SdTest = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [TeacherId], [ExamId]) VALUES (N'Which SQL command reads rows from a table?', 'MCQ', 5, 1, @SdDaniel, @SdTest);
+SET @SdQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'SELECT', 1, 1, @SdQ), (N'INSERT', 0, 2, @SdQ), (N'DELETE', 0, 3, @SdQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [TeacherId], [ExamId]) VALUES (N'The ____ keyword filters rows in a SQL query.', 'FillBlank', 5, 2, N'WHERE, where', @SdDaniel, @SdTest);
+
+-- Enrolments (ChapNum = the chapter the learner is on)
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate])
+VALUES
+    (@SdAisyah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), 3, DATEADD(DAY, -30, GETDATE())),
+    (@SdAisyah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), 2, DATEADD(DAY, -14, GETDATE())),
+    (@SdBen, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), 1, DATEADD(DAY, -20, GETDATE())),
+    (@SdBen, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), 1, DATEADD(DAY, -18, GETDATE())),
+    (@SdChen, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials'), 2, DATEADD(DAY, -22, GETDATE())),
+    (@SdChen, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), 2, DATEADD(DAY, -16, GETDATE())),
+    (@SdDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), 1, DATEADD(DAY, -12, GETDATE())),
+    (@SdDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), 2, DATEADD(DAY, -25, GETDATE())),
+    (@SdEthan, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), 1, DATEADD(DAY, -10, GETDATE())),
+    (@SdEthan, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), 1, DATEADD(DAY, -8, GETDATE())),
+    (@SdFarah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), 3, DATEADD(DAY, -34, GETDATE())),
+    (@SdFarah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), 2, DATEADD(DAY, -17, GETDATE())),
+    (@SdGavin, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), 2, DATEADD(DAY, -26, GETDATE())),
+    (@SdGavin, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), 2, DATEADD(DAY, -9, GETDATE())),
+    (@SdHana, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials'), 1, DATEADD(DAY, -11, GETDATE())),
+    (@SdHana, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), 2, DATEADD(DAY, -13, GETDATE()));
+
+-- Attempts in every AttemptStatus. A completed attempt with no Result is waiting for the teacher to grade it.
+-- Quiz: Control Flow Quiz, graded
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @SdAisyah, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 3, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 2, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -3, GETDATE()), 'completed', @SdFarah, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 3, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'incorrect', 0, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (3, 'C', 60, N'', @SdAttempt);
+-- Java Basics Quiz: incomplete (the learner stopped)
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'incomplete', @SdBen, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Java Basics Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+-- Introduction to C Quiz: submitted, the teacher has started grading it
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(HOUR, -6, GETDATE()), 'completed', @SdChen, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'pending', 0, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, N'');
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'', @SdSarah, NULL, @SdAttempt);
+-- Variables in C Assessment: in progress
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -1, GETDATE()), 'in_progress', @SdChen, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Variables in C Assessment'));
+SET @SdAttempt = SCOPE_IDENTITY();
+-- Flask Basics Quiz: graded F
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -1, GETDATE()), 'completed', @SdEthan, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'incorrect', 0, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (2, 'F', 40, N'', @SdAttempt);
+-- Routes Assessment: submitted and waiting (a teaching assistant has reviewed it)
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(HOUR, -8, GETDATE()), 'completed', @SdHana, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 2), N'@app.route("/hello")' + CHAR(13) + CHAR(10) + N'def hello():' + CHAR(13) + CHAR(10) + N'    return "Hello"', 'pending', 0, N'');
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Provisional marks suggested: MCQ correct, the coding answer follows the marking guide.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = 'marcus.ta@edu.com.my'), @SdAttempt);
+-- Decorators Quiz: graded A
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @SdDivya, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 3, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
+-- OOP Assessment: graded B (the coding answer got 5 of 8)
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -3, GETDATE()), 'completed', @SdGavin, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment'));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 2), N'class Dog { void bark() { System.out.println("Woof"); } }', 'partial', 5, N'Correct idea. Make the method public if other classes will call it.');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (7, 'B', 70, N'Q2: Correct idea. Make the method public if other classes will call it.', @SdAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdBryan, NULL, @SdAttempt);
+-- Final exams: Python (graded A, certificate), Advanced Python (graded A, certificate), C (graded F), Python (in progress)
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -5, GETDATE()), 'completed', @SdFarah, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 5, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdBryan, NULL, @SdAttempt);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'completed', @SdDivya, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 5, N'');
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 2), N'decorator', 'correct', 5, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'A', 100, N'', @SdAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdPriya, NULL, @SdAttempt);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @SdHana, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')));
+SET @SdAttempt = SCOPE_IDENTITY();
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'incorrect', 0, N'');
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (0, 'F', 0, N'', @SdAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdSarah, NULL, @SdAttempt);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(HOUR, -3, GETDATE()), 'in_progress', @SdAisyah, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')));
+SET @SdAttempt = SCOPE_IDENTITY();
+
+-- Certificates (issued by the teacher after a passed final exam)
+INSERT INTO [dbo].[Certificate] ([Issuer], [IssueDate], [LearnerId], [CourseId]) VALUES
+    ('Bryan Yeong', DATEADD(DAY, -5, GETDATE()), @SdFarah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')),
+    ('Priya Nair', DATEADD(DAY, -4, GETDATE()), @SdDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'));
+
+-- Course reviews
+INSERT INTO [dbo].[Course_Review] ([CourseFeedBack], [Rating], [SubmissionDate], [CourseId], [LearnerId]) VALUES
+    (N'Clear explanations and good exercises.', 5, DATEADD(DAY, -4, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @SdFarah),
+    (N'Great pace for beginners.', 4.5, DATEADD(DAY, -6, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @SdAisyah),
+    (N'Streams finally make sense.', 4, DATEADD(DAY, -3, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), @SdGavin),
+    (N'Decorators were explained perfectly.', 5, DATEADD(DAY, -2, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), @SdDivya),
+    (N'Good content, but I wanted more exercises.', 3.5, DATEADD(DAY, -5, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdHana),
+    (N'Easy to follow.', 4, DATEADD(DAY, -4, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdEthan);
+
+-- Forum posts and replies (a teacher sees their own posts and those of learners enrolled in their courses)
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'How do list comprehensions work?', N'I keep seeing [x * 2 for x in numbers] in examples. How is a list comprehension different from a normal for loop?', DATEADD(DAY, -3, GETDATE()), @SdAisyah, N'Python,Lists', NULL);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Think of it as a for loop written on one line.', 'No', NULL, @SdPost, @SdFarah, NULL, NULL);
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Exactly. Read it from the left: build x * 2 for every x in numbers. The result is a new list.', 'Yes', DATEADD(DAY, -1, GETDATE()), @SdPost, NULL, @SdBryan, (SELECT [ThreadId] FROM [dbo].[Post_Reply] WHERE [PostId] = @SdPost AND [ReplyComment] = N'Think of it as a for loop written on one line.'));
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'That makes sense now, thank you!', 'No', NULL, @SdPost, @SdAisyah, NULL, (SELECT [ThreadId] FROM [dbo].[Post_Reply] WHERE [PostId] = @SdPost AND [ReplyComment] = N'Exactly. Read it from the left: build x * 2 for every x in numbers. The result is a new list.'));
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Why does my Flask route return 404?', N'I added @app.route("/about") but the page shows Not Found.', DATEADD(DAY, -2, GETDATE()), @SdEthan, N'Flask,Errors', NULL);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Restart the development server after you add a route, and check that the function name is unique.', 'No', NULL, @SdPost, NULL, @SdAlvin, NULL);
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Segmentation fault when using pointers', N'My program crashes with a segmentation fault when I print *p. What might be wrong?', DATEADD(DAY, -1, GETDATE()), @SdChen, N'C,Pointers', NULL);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Check that p points to valid memory before you dereference it. A pointer that was never assigned is the usual cause.', 'Yes', DATEADD(DAY, -1, GETDATE()), @SdPost, NULL, @SdSarah, NULL);
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'I had the same problem: I forgot to set p = &x.', 'No', NULL, @SdPost, @SdHana, NULL, NULL);
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'ArrayList or LinkedList?', N'When should I use a LinkedList instead of an ArrayList in Java?', DATEADD(DAY, -4, GETDATE()), @SdGavin, N'Java,Collections', NULL);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Use ArrayList by default. A LinkedList only helps when you insert or remove a lot in the middle of a big list.', 'No', NULL, @SdPost, NULL, @SdPriya, NULL);
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'What does yield actually do?', N'I understand return, but yield confuses me. Does the function stop?', DATEADD(DAY, -2, GETDATE()), @SdDivya, N'Python,Generators', NULL);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'It pauses the function and gives back one value. The next call carries on from the same place.', 'Yes', DATEADD(DAY, -1, GETDATE()), @SdPost, NULL, @SdPriya, NULL);
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Welcome to Web Apps with Python and Flask', N'Introduce yourself and share the first small site you would like to build.', DATEADD(DAY, -9, GETDATE()), NULL, N'Announcement', @SdAlvin);
+SET @SdPost = SCOPE_IDENTITY();
+INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'I would like to build a simple to-do list.', 'No', NULL, @SdPost, @SdAisyah, NULL, NULL);
+INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Office hours this week', N'I will answer questions about Advanced Python Patterns and Java Collections on Thursday evening in this forum.', DATEADD(DAY, -1, GETDATE()), NULL, N'Announcement,Java,Python', @SdPriya);
+SET @SdPost = SCOPE_IDENTITY();
+
+-- Teaching subjects of the teachers
+INSERT INTO [dbo].[EducatorSubject] ([TeacherId], [TA_Id], [SubjectId]) VALUES
+    (@SdBryan, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Python')),
+    (@SdBryan, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Java')),
+    (@SdSarah, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'C')),
+    (@SdSarah, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'C++')),
+    (@SdAlvin, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Web Development')),
+    (@SdPriya, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Python')),
+    (@SdPriya, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Java')),
+    (@SdDaniel, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Databases')),
+    (@SdHafiz, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Algorithms')),
+    (@SdMeiling, NULL, (SELECT [SubjectId] FROM [dbo].[Subject] WHERE [SubjectName] = N'Cybersecurity'));
+
+PRINT 'Extra teacher sample data inserted.';

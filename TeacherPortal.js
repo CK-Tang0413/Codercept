@@ -1409,7 +1409,15 @@
             qsa("[data-tp-forum-post]", root).forEach(function (card) {
                 var on = card.getAttribute("data-tp-forum-post") === id;
                 card.classList.toggle("is-selected", on);
-                if (on) title.textContent = card.getAttribute("data-title");
+                if (on) {
+                    title.textContent = card.getAttribute("data-title");
+                    // the "Flagged" badge in the discussion header belongs to the post shown: only a flagged post has it
+                    var flagBadge = qs("[data-tp-forum-flagbadge]", root);
+                    if (flagBadge) {
+                        flagBadge.hidden = card.getAttribute("data-flagged-post") !== "1";
+                        flagBadge.title = "Flagged: " + (card.getAttribute("data-flag-reason") || "");
+                    }
+                }
             });
             qsa("[data-tp-forum-thread]", root).forEach(function (t) { t.hidden = t.getAttribute("data-tp-forum-thread") !== id; });
             selected.value = id;
@@ -1439,6 +1447,9 @@
                 openModal("tpModerateModal");
                 return;
             }
+
+            // "Unhide" / "Dismiss flag" on a card are submit buttons of their own: let them post without choosing the post
+            if (t.closest("[data-tp-forum-card-submit]")) return;
 
             var card = t.closest("[data-tp-forum-post]");
             if (card) { select(card.getAttribute("data-tp-forum-post"), true); return; }
