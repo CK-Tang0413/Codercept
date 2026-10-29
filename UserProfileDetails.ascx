@@ -23,6 +23,28 @@
     </div>
 </div>
 
+<!-- Document Viewer Modal for User Profile (nested z-index so it overlays profile modal) -->
+<div class="modal-overlay" id="userProfileDocModal" style="z-index: 2200;">
+    <div class="modal-box large">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 id="userProfileDocModalTitle" style="color: var(--text-primary); font-size: 18px; font-weight: 600;">Document Viewer</h3>
+            <button type="button" class="btn-view-doc" onclick="closeUserProfileDocModal()"><i class="fa-solid fa-xmark"></i> Close</button>
+        </div>
+
+        <!-- Dynamic Container that switches based on file extension -->
+        <div id="userProfileDynamicPreviewContainer" style="flex: 1; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #0b0c10; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
+            <!-- Content injected via JavaScript -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+            <a id="btnUserProfileDocExternal" href="#" class="btn-view-doc" target="_blank">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab
+            </a>
+            <button type="button" class="btn-modal-cancel" onclick="closeUserProfileDocModal()">Done Reading</button>
+        </div>
+    </div>
+</div>
+
 <script>
 function escapeHtml(text) {
     if (!text) return '';
@@ -32,6 +54,27 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function resolveClientDocUrl(rawDoc) {
+    if (!rawDoc || !rawDoc.trim() || rawDoc.trim().toLowerCase() === 'n/a' || rawDoc.trim().toLowerCase() === 'none') {
+        return '';
+    }
+    var clean = rawDoc.trim().replace(/\\/g, '/');
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+        return clean;
+    }
+    if (clean.startsWith('~/')) {
+        clean = clean.substring(1);
+    }
+    if (!clean.startsWith('/')) {
+        if (clean.startsWith('media/') || clean.startsWith('UploadedCertificates/')) {
+            clean = '/' + clean;
+        } else {
+            clean = '/media/uploads/qualifications/' + clean;
+        }
+    }
+    return clean;
 }
 
 function renderCourseListChips(courseStr, emptyText, iconClass, chipStyle) {
@@ -45,6 +88,57 @@ function renderCourseListChips(courseStr, emptyText, iconClass, chipStyle) {
     return `<div class="chip-group" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px;">` +
         items.map(name => `<span class="lang-chip" style="${chipStyle} font-size: 12px; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center;"><i class="${iconClass}" style="margin-right: 6px;"></i>${escapeHtml(name)}</span>`).join('') +
         `</div>`;
+}
+
+function openUserProfileDocModal(docTitle, fileUrl) {
+    var titleEl = document.getElementById('userProfileDocModalTitle');
+    if (titleEl) titleEl.innerText = docTitle;
+
+    var btnExternal = document.getElementById('btnUserProfileDocExternal');
+    if (btnExternal) btnExternal.href = fileUrl;
+
+    var container = document.getElementById('userProfileDynamicPreviewContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    var cleanUrl = (fileUrl || '').split('?')[0].split('#')[0];
+    var ext = cleanUrl.split('.').pop().toLowerCase();
+
+    if (ext === 'pdf') {
+        container.innerHTML = '<iframe src="' + fileUrl + '" style="width: 100%; height: 100%; min-height: 500px; border: none;"></iframe>';
+    }
+    else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+        container.innerHTML = '<img src="' + fileUrl + '" alt="' + escapeHtml(docTitle) + '" style="max-width: 100%; max-height: 500px; object-fit: contain; padding: 10px;" />';
+    }
+    else if (['doc', 'docx'].includes(ext)) {
+        container.innerHTML = 
+            '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">' +
+                '<i class="fa-regular fa-file-word" style="font-size: 54px; color: #3b82f6; margin-bottom: 16px;"></i>' +
+                '<h4 style="color: var(--text-primary); margin-bottom: 8px;">Word Document (.' + ext + ')</h4>' +
+                '<p style="font-size: 13px; max-width: 380px; margin-bottom: 18px;">Word documents cannot be previewed natively in the browser without an external viewer plugin.</p>' +
+                '<a href="' + fileUrl + '" download class="btn-decision btn-approve-lg" style="text-decoration: none;">' +
+                    '<i class="fa-solid fa-download"></i> Download & View File' +
+                '</a>' +
+            '</div>';
+    }
+    else {
+        container.innerHTML = 
+            '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">' +
+                '<i class="fa-regular fa-file" style="font-size: 54px; color: var(--accent-purple); margin-bottom: 16px;"></i>' +
+                '<h4 style="color: var(--text-primary); margin-bottom: 8px;">Document (.' + ext + ')</h4>' +
+                '<a href="' + fileUrl + '" download class="btn-view-doc" style="margin-top: 10px;">' +
+                    '<i class="fa-solid fa-download"></i> Download File' +
+                '</a>' +
+            '</div>';
+    }
+
+    var modal = document.getElementById('userProfileDocModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeUserProfileDocModal() {
+    var modal = document.getElementById('userProfileDocModal');
+    if (modal) modal.classList.remove('active');
 }
 
 function openUserProfileModal(button) {
@@ -106,7 +200,53 @@ function openUserProfileModal(button) {
         const qual = row.getAttribute('data-qualification') || 'N/A';
         const spec = row.getAttribute('data-specialization') || 'N/A';
         const langs = (row.getAttribute('data-languages') || 'Java, Python, C++').split(',');
-        const credFile = row.getAttribute('data-credential') || 'credential_document.pdf';
+
+        const rawCred = (row.getAttribute('data-credential') || '').trim();
+        const credUrl = resolveClientDocUrl(rawCred);
+        let credFileName = (row.getAttribute('data-credential-name') || '').trim();
+        if (!credFileName && credUrl) {
+            const parts = credUrl.split('/');
+            credFileName = parts[parts.length - 1] || 'Credential Document';
+        }
+
+        const ext = credFileName.split('.').pop().toLowerCase();
+        let iconClass = 'fa-regular fa-file-pdf';
+        if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) iconClass = 'fa-regular fa-file-image';
+        else if (['doc', 'docx'].includes(ext)) iconClass = 'fa-regular fa-file-word';
+
+        let docPreviewHtml = '';
+        if (credUrl) {
+            docPreviewHtml = `
+                <div class="info-section-title"><i class="fa-solid fa-file-lines"></i> Verification Document</div>
+                <div class="doc-item-preview">
+                    <div class="doc-item-left">
+                        <i class="${escapeHtml(iconClass)}"></i>
+                        <div>
+                            <span style="font-size:13px; font-weight:500;">${escapeHtml(credFileName)}</span>
+                            <p style="font-size:11px; color:var(--text-secondary);">${escapeHtml(ext.toUpperCase())} &bull; Attached Document</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn-view-doc" onclick="openUserProfileDocModal('${escapeHtml(credFileName).replace(/'/g, "\\'")}', '${escapeHtml(credUrl).replace(/'/g, "\\'")}')" title="Preview Document">
+                            <i class="fa-solid fa-eye"></i> View
+                        </button>
+                        <a href="${escapeHtml(credUrl)}" class="btn-action" target="_blank" title="Open file in new tab">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open File
+                        </a>
+                    </div>
+                </div>
+            `;
+        } else {
+            docPreviewHtml = `
+                <div class="info-section-title"><i class="fa-solid fa-file-lines"></i> Verification Document</div>
+                <div class="doc-item-preview" style="color: var(--text-secondary); font-size: 13px; padding: 12px 16px;">
+                    <div class="doc-item-left">
+                        <i class="fa-solid fa-circle-info" style="color: var(--text-secondary); font-size: 16px;"></i>
+                        <span>No verification document uploaded.</span>
+                    </div>
+                </div>
+            `;
+        }
 
         const langChips = langs.map(l => `<span class="lang-chip">${escapeHtml(l.trim())}</span>`).join('');
 
@@ -137,17 +277,7 @@ function openUserProfileModal(button) {
                     </div>
                 </div>
 
-                <div class="info-section-title"><i class="fa-solid fa-file-pdf"></i> Verification Document</div>
-                <div class="doc-item-preview">
-                    <div class="doc-item-left">
-                        <i class="fa-regular fa-file-pdf"></i>
-                        <div>
-                            <span style="font-size:13px; font-weight:500;">${escapeHtml(credFile)}</span>
-                            <p style="font-size:11px; color:var(--text-secondary);">Credential Verification Document</p>
-                        </div>
-                    </div>
-                    <a href="#" class="btn-action" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open File</a>
-                </div>
+                ${docPreviewHtml}
             `;
     } else if (role === 'admin') {
         container.innerHTML = `
@@ -177,6 +307,10 @@ window.addEventListener('click', function (e) {
     const modal = document.getElementById('userProfileModal');
     if (e.target === modal) {
         closeUserProfileModal();
+    }
+    const docModal = document.getElementById('userProfileDocModal');
+    if (e.target === docModal) {
+        closeUserProfileDocModal();
     }
 });
 </script>

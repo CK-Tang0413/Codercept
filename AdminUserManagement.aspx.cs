@@ -26,6 +26,14 @@ namespace Codercept
 
             bool isSuperAdmin = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase) ||
                                 userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase);
+            bool isAdmin = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+
+            if (!isSuperAdmin && !isAdmin)
+            {
+                Response.Redirect("AdminDashboard.aspx");
+                return;
+            }
+
             pnlSuperAdminAction.Visible = isSuperAdmin;
             if (CreateAdminAccountCtrl != null)
             {
@@ -39,9 +47,51 @@ namespace Codercept
 
                 LoadAllUsers();
                 UpdatePurgeBannerInfo();
+                CheckQueryStringNotifications();
             }
         }
 
+
+        private void CheckQueryStringNotifications()
+        {
+            string msg = Request.QueryString["msg"];
+            if (string.IsNullOrEmpty(msg) || pnlNotification == null) return;
+
+            string email = Request.QueryString["email"];
+            string safeEmail = !string.IsNullOrEmpty(email) ? HttpUtility.HtmlEncode(email) : "the specified address";
+
+            if (msg.Equals("admin_created", StringComparison.OrdinalIgnoreCase))
+            {
+                pnlNotification.Visible = true;
+                pnlNotification.CssClass = "alert-banner alert-success";
+                litNotificationIcon.Text = "<i class=\"fa-solid fa-circle-check\" style=\"color: #10b981;\"></i>";
+                litNotificationMessage.Text = $"<strong>Administrator Account Created!</strong> An email containing the temporary password has been sent to <strong>{safeEmail}</strong>.";
+            }
+            else if (msg.Equals("admin_created_email_failed", StringComparison.OrdinalIgnoreCase))
+            {
+                string err = Request.QueryString["err"];
+                string errDetails = !string.IsNullOrEmpty(err) ? $" (Reason: {HttpUtility.HtmlEncode(err)})" : "";
+                pnlNotification.Visible = true;
+                pnlNotification.CssClass = "alert-banner alert-warning";
+                litNotificationIcon.Text = "<i class=\"fa-solid fa-triangle-exclamation\" style=\"color: #f59e0b;\"></i>";
+                litNotificationMessage.Text = $"<strong>Administrator Account Created:</strong> The account was successfully created, but the system encountered an issue sending the temporary password email to <strong>{safeEmail}</strong>{errDetails}. Please provide the temporary password to the administrator manually.";
+            }
+            else if (msg.Equals("application_approved", StringComparison.OrdinalIgnoreCase))
+            {
+                pnlNotification.Visible = true;
+                pnlNotification.CssClass = "alert-banner alert-success";
+                litNotificationIcon.Text = "<i class=\"fa-solid fa-circle-check\" style=\"color: #10b981;\"></i>";
+                litNotificationMessage.Text = "<strong>Application Approved!</strong> The educator account is now active, and an approval confirmation email has been dispatched.";
+            }
+            else if (msg.Equals("application_rejected", StringComparison.OrdinalIgnoreCase))
+            {
+                pnlNotification.Visible = true;
+                pnlNotification.CssClass = "alert-banner alert-danger";
+                litNotificationIcon.Text = "<i class=\"fa-solid fa-circle-xmark\" style=\"color: #ef4444;\"></i>";
+                litNotificationMessage.Text = "<strong>Application Rejected.</strong> The applicant has been notified of the decision via email.";
+            }
+        }
+
         private void UpdatePurgeBannerInfo()
         {
             if (litPurgeScheduleInfo != null)
@@ -104,7 +154,7 @@ namespace Codercept
                             t.Region, 
                             t.TeachingLevel, 
                             ISNULL(t.QualificationName, a.QualificationName) AS QualificationName, 
-                            ISNULL(t.QualificationDocument, a.CredentialDocument) AS QualificationDocument,
+                            COALESCE(NULLIF(t.QualificationDocument, ''), NULLIF(a.CredentialDocument, '')) AS QualificationDocument,
                             (
                                 SELECT STRING_AGG(s.SubjectName, ', ')
                                 FROM [dbo].[EducatorSubject] es
@@ -132,7 +182,7 @@ namespace Codercept
                             ta.Region, 
                             ta.TeachingLevel, 
                             ISNULL(ta.QualificationName, a.QualificationName) AS QualificationName, 
-                            ISNULL(ta.QualificationDocument, a.CredentialDocument) AS QualificationDocument,
+                            COALESCE(NULLIF(ta.QualificationDocument, ''), NULLIF(a.CredentialDocument, '')) AS QualificationDocument,
                             (
                                 SELECT STRING_AGG(s.SubjectName, ', ')
                                 FROM [dbo].[EducatorSubject] es
