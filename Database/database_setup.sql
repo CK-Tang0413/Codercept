@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS [dbo].[User_Log];
 DROP TABLE IF EXISTS [dbo].[Qualification];
 DROP TABLE IF EXISTS [dbo].[ForumRead];
 DROP TABLE IF EXISTS [dbo].[Post_Reply];
-DROP TABLE IF EXISTS [dbo].[Forum_Escalation];
+DROP TABLE IF EXISTS [dbo].[Teacher_AiUsage];
 DROP TABLE IF EXISTS [dbo].[Moderate_Forum];
 DROP TABLE IF EXISTS [dbo].[Forum];
 DROP TABLE IF EXISTS [dbo].[EducatorSubject];
@@ -391,6 +391,20 @@ CREATE TABLE [dbo].[Moderate_Forum] (
     CONSTRAINT [FK_ModerateForum_Forum] FOREIGN KEY ([PostId]) REFERENCES [dbo].[Forum] ([PostId]),
     CONSTRAINT [FK_ModerateForum_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
     CONSTRAINT [FK_ModerateForum_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
+);
+
+-- One row for every call the teacher AI assistant sends to Groq (who, which feature, how it ended, tokens, time). Never the text of a question or an answer.
+CREATE TABLE [dbo].[Teacher_AiUsage] (
+    [UsageId]     INT           IDENTITY (1, 1) NOT NULL,
+    [TeacherId]   INT           NOT NULL,
+    [Feature]     NVARCHAR (10) NOT NULL, -- 'course', 'chapter' or 'chat'
+    [Outcome]     NVARCHAR (20) NOT NULL, -- 'ok' or the name of the error
+    [TotalTokens] INT           NULL,
+    [DurationMs]  INT           NOT NULL,
+    [DateUsed]    DATETIME      NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT [PK_TeacherAiUsage] PRIMARY KEY CLUSTERED ([UsageId] ASC),
+    CONSTRAINT [CK_TeacherAiUsage_Feature] CHECK ([Feature] IN ('course', 'chapter', 'chat')),
+    CONSTRAINT [FK_TeacherAiUsage_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId])
 );
 
 CREATE TABLE [dbo].[Post_Reply] (
@@ -839,5 +853,3 @@ VALUES
     (DATEADD(HOUR, -26, GETDATE()), DATEADD(HOUR, -24, GETDATE()), NULL, NULL, @JayveeId),
     (DATEADD(HOUR, -4, GETDATE()),  DATEADD(HOUR, -2, GETDATE()),  NULL, NULL, @JayveeId),
     (DATEADD(DAY, -2, GETDATE()),   DATEADD(MINUTE, 50, DATEADD(DAY, -2, GETDATE())), NULL, NULL, @MarcusId);
-
-

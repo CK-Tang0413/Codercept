@@ -18,6 +18,9 @@
             <h1><%: Labels.Title %></h1>
             <p><%: Labels.Hint %></p>
         </div>
+        <% if (CanSuggest) { %>
+        <button type="button" class="button button--secondary" data-tp-open-modal="tpAiChapterModal"><%= TeacherIcons.Svg("sparkle", 17) %><span>Suggest with AI</span></button>
+        <% } %>
     </div>
 
     <%-- A chapter has one quiz or one assessment: when it already has one, the teacher is sent to edit it instead --%>
@@ -45,7 +48,7 @@
                     <div class="form-fields">
                         <label id="fldTeacherContentTitle" runat="server" class="form-field">
                             <span>Title <b>*</b></span>
-                            <asp:TextBox ID="txtTeacherContentTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off"></asp:TextBox>
+                            <asp:TextBox ID="txtTeacherContentTitle" runat="server" ValidateRequestMode="Disabled" MaxLength="50" autocomplete="off" data-tp-ai-title="1"></asp:TextBox>
                             <small id="hintTeacherContentTitle" runat="server" data-ok="Use a clear title that describes this content." data-err="Enter a title of 4 to 50 characters.">Use a clear title that describes this content.</small>
                         </label>
                         <div class="form-field">
@@ -60,7 +63,7 @@
                         <asp:Panel ID="pnlTeacherDuration" runat="server" CssClass="form-field duration-field" Visible="false">
                             <span>Duration <b>*</b></span>
                             <div class="suffix-input">
-                                <asp:TextBox ID="txtTeacherContentDuration" runat="server" TextMode="Number" min="1" placeholder="0"></asp:TextBox>
+                                <asp:TextBox ID="txtTeacherContentDuration" runat="server" TextMode="Number" min="1" placeholder="0" data-tp-ai-duration="1"></asp:TextBox>
                                 <span><%= DurationUnit %></span>
                             </div>
                         </asp:Panel>
@@ -101,4 +104,26 @@
             </div>
         </div>
     </asp:Panel>
+</asp:Content>
+
+<asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
+    <% if (CanSuggest) { %>
+    <%-- "Suggest with AI": the course (and its chapters) is read on the server; the suggestion only fills this form, the teacher edits and creates the chapter as usual. --%>
+    <div class="modal-backdrop" role="presentation" id="tpAiChapterModal" data-tp-modal data-tp-region="tpAiChapterModal" data-tp-ai-chapter="<%= CourseId %>" hidden>
+        <div class="modal ai-modal" role="dialog" aria-modal="true" aria-labelledby="tpAiChapterModalTitle">
+            <h2 id="tpAiChapterModalTitle">Suggest with AI</h2>
+            <p>The assistant looks at this course and its existing chapters, then suggests the next chapter: a title, description and duration.</p>
+            <label class="portal-form-field">
+                <span>Your idea (optional)</span>
+                <textarea rows="3" maxlength="1000" placeholder="e.g. Error handling, or leave empty to let the assistant choose" aria-label="Your chapter idea" data-tp-ai-idea data-tp-clear-on-close data-tp-autofocus></textarea>
+                <small></small>
+            </label>
+            <p class="ai-note">This replaces the title, description and duration you have typed. Check the suggestion before you create the chapter.</p>
+            <div class="modal-actions">
+                <button type="button" class="button button--ghost" data-tp-close-modal><span>Cancel</span></button>
+                <button type="button" class="button button--primary" data-tp-ai-run><%= TeacherIcons.Svg("sparkle", 17) %><span>Suggest</span></button>
+            </div>
+        </div>
+    </div>
+    <% } %>
 </asp:Content>

@@ -13,6 +13,9 @@
             <h1>Create a Course</h1>
             <p>Build a clear course foundation before adding chapters, subchapters, and quizzes.</p>
         </div>
+        <% if (TeacherAiSettings.IsReady) { %>
+        <button type="button" class="button button--secondary" data-tp-open-modal="tpAiCourseModal"><%= TeacherIcons.Svg("sparkle", 17) %><span>Suggest with AI</span></button>
+        <% } %>
     </div>
 
     <div class="create-layout" data-tp-course-form>
@@ -113,4 +116,26 @@
             <p class="preview-note"><%= TeacherIcons.Svg("info", 15) %>This preview updates as you complete the form.</p>
         </aside>
     </div>
+</asp:Content>
+
+<asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
+    <% if (TeacherAiSettings.IsReady) { %>
+    <%-- "Suggest with AI": the idea is sent to TeacherAiHandler.ashx; the suggestion only fills this form, the teacher edits and creates the course as usual. --%>
+    <div class="modal-backdrop" role="presentation" id="tpAiCourseModal" data-tp-modal data-tp-region="tpAiCourseModal" data-tp-ai-course hidden>
+        <div class="modal ai-modal" role="dialog" aria-modal="true" aria-labelledby="tpAiCourseModalTitle">
+            <h2 id="tpAiCourseModalTitle">Suggest with AI</h2>
+            <p>Describe the course you want to create. The assistant suggests a title, description, language, difficulty, domains and duration.</p>
+            <label class="portal-form-field">
+                <span>Your idea</span>
+                <textarea rows="4" maxlength="1000" placeholder="e.g. A beginner course on web scraping with Python for data analysts, about 10 hours" aria-label="Your course idea" data-tp-ai-idea data-tp-clear-on-close data-tp-autofocus></textarea>
+                <small></small>
+            </label>
+            <p class="ai-note">This replaces what you have typed or chosen. Check the suggestion before you create the course.</p>
+            <div class="modal-actions">
+                <button type="button" class="button button--ghost" data-tp-close-modal><span>Cancel</span></button>
+                <button type="button" class="button button--primary" data-tp-ai-run><%= TeacherIcons.Svg("sparkle", 17) %><span>Suggest</span></button>
+            </div>
+        </div>
+    </div>
+    <% } %>
 </asp:Content>

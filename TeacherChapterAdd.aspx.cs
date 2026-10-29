@@ -29,6 +29,18 @@ namespace Codercept
             get { return kind == "quiz" || kind == "assessment"; }
         }
 
+        /// <summary>The "Suggest with AI" button is only for a new chapter (not a subchapter, quiz or assessment), and only when the assistant is set up.</summary>
+        protected bool CanSuggest
+        {
+            get { return kind == "chapter" && TeacherAiSettings.IsReady; }
+        }
+
+        /// <summary>The course a new chapter is added to (0 for the other kinds); the assistant reads this course's title and chapters in SQL, for this teacher only.</summary>
+        protected int CourseId
+        {
+            get { return course == null ? 0 : course.Id; }
+        }
+
         /// <summary>quiz | assessment: how the question cards are drawn.</summary>
         protected string QuestionMode
         {

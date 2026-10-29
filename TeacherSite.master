@@ -50,6 +50,29 @@
                 <span data-tp-toast-text></span>
             </div>
 
+            <% if (TeacherAiSettings.IsReady) { %>
+            <%-- Floating assistant: questions go to TeacherAiHandler.ashx (feature "chat"); the answers are shown as plain text --%>
+            <div class="tp-chat" data-tp-chat>
+                <section class="tp-chat-panel" id="tpChatPanel" role="dialog" aria-label="Codercept assistant" data-tp-chat-panel hidden>
+                    <header class="tp-chat-head">
+                        <div>
+                            <strong>Codercept assistant</strong>
+                            <span>Ask how the Teacher Portal works</span>
+                        </div>
+                        <button type="button" class="tp-chat-clear" data-tp-chat-clear>New chat</button>
+                        <button type="button" class="icon-button" aria-label="Close assistant" data-tp-chat-close><%= TeacherIcons.Svg("x", 16) %></button>
+                    </header>
+                    <div class="tp-chat-log" role="log" aria-live="polite" data-tp-chat-log></div>
+                    <div class="tp-chat-form">
+                        <textarea rows="2" maxlength="1000" placeholder="Ask a question..." aria-label="Your question" data-tp-chat-input></textarea>
+                        <button type="button" class="tp-chat-send" aria-label="Send question" data-tp-chat-send><%= TeacherIcons.Svg("send", 17) %></button>
+                    </div>
+                    <p class="tp-chat-note">The assistant can make mistakes. Do not share passwords or personal details.</p>
+                </section>
+                <button type="button" class="tp-chat-launch" aria-label="Open the assistant" aria-expanded="false" aria-controls="tpChatPanel" data-tp-chat-launch><%= TeacherIcons.Svg("message", 22) %></button>
+            </div>
+            <% } %>
+
             <!-- Page-specific modals live inside .tp-app so the scoped styles apply -->
             <asp:ContentPlaceHolder ID="cphModals" runat="server"></asp:ContentPlaceHolder>
         </div>

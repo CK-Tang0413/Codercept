@@ -112,6 +112,7 @@
     <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
@@ -745,6 +746,14 @@
     <Compile Include="TeacherAccountData.cs" />
     <Compile Include="UserPurgeService.cs" />
     <Compile Include="UserLogHelper.cs" />
+    <Compile Include="TeacherAiHandler.ashx.cs">
+      <DependentUpon>TeacherAiHandler.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherAiPrompts.cs" />
+    <Compile Include="TeacherAiReplies.cs" />
+    <Compile Include="TeacherAiClient.cs" />
+    <Compile Include="TeacherAiSettings.cs" />
+    <Compile Include="TeacherAiUsage.cs" />
     <Compile Include="TeacherSideBar.ascx.cs">
       <DependentUpon>TeacherSideBar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -819,6 +828,7 @@
     <Content Include="secrets.config" />
     <Content Include="TeacherLearnerReportPdf.ashx" />
     <Content Include="TeacherCourseStatsPdf.ashx" />
+    <Content Include="TeacherAiHandler.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
