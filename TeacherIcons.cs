@@ -56,6 +56,7 @@ namespace Codercept
             { "print", "<path d='M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2' /><path d='M6 14h12v7H6Z' />" },
             { "external", "<path d='M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5' />" },
             { "send", "<path d='m22 2-7 20-4-9-9-4Z' /><path d='M22 2 11 13' />" },
+            { "sparkle", "<path d='M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z' /><path d='M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8Z' />" },
         };
 
         public static string Svg(string name, int size = 20)

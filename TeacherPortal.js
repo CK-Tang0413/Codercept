@@ -274,6 +274,19 @@
             update();
         });
 
+        // the AI suggestion: title, description, language, difficulty, domains and duration (a language or difficulty the form does not offer is ignored)
+        root._tpFill = function (data) {
+            title.value = data.title || "";
+            desc.value = (data.description || "").slice(0, 300);
+            dur.value = data.durationHours ? String(data.durationHours) : "";
+            if (data.language && Array.prototype.some.call(lang.options, function (o) { return o.value === data.language; })) lang.value = data.language;
+            if (data.difficulty && tones[data.difficulty]) diff.value = data.difficulty;
+            qsa("[data-tp-domains]", root).forEach(function (f) {
+                f.dispatchEvent(new CustomEvent("tp-domains-set", { detail: { names: data.domains || [] } }));
+            });
+            update();
+        };
+
         root._tpValidate = function () {
             submitted = true;
             update();
@@ -285,6 +298,184 @@
     function validateCourseForm() {
         var root = qs("[data-tp-course-form]");
         return root && root._tpValidate ? root._tpValidate() : true;
+    }
+
+    /* ------------------------------------------------------------------ [ai] the assistant (TeacherAiHandler.ashx) */
+    // Posts one request and resolves with the reply body ({ ok: true, data / text }); rejects with an Error whose message is safe to show.
+    function aiCall(feature, payload) {
+        var body = { feature: feature };
+        Object.keys(payload || {}).forEach(function (key) { body[key] = payload[key]; });
+        return fetch("TeacherAiHandler.ashx", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+            body: JSON.stringify(body)
+        }).then(function (response) {
+            return response.json().catch(function () { return null; }).then(function (json) {
+                if (json && json.ok) return json;
+                throw new Error(json && json.message ? json.message : "The assistant is unavailable right now. You can still do this manually.");
+            });
+        }, function () {
+            throw new Error("Could not reach the assistant. Check your connection and try again.");
+        });
+    }
+
+    // Shows "Thinking..." on the run button while a request is open, and keeps a second click from sending another one
+    function aiBusy(button, busy) {
+        var label = qs("span", button);
+        if (busy) { button.setAttribute("data-label", label.textContent); label.textContent = "Thinking..."; }
+        else if (button.hasAttribute("data-label")) label.textContent = button.getAttribute("data-label");
+        button.disabled = busy;
+        button.classList.toggle("is-loading", busy);
+    }
+
+    // "Suggest with AI" on Create a Course: the idea goes to the assistant and the suggestion fills the course form
+    function initAiCourse(modal) {
+        var idea = qs("[data-tp-ai-idea]", modal);
+        var run = qs("[data-tp-ai-run]", modal);
+        var hint = qs("small", idea.closest(".portal-form-field"));
+        var wrap = idea.closest(".portal-form-field");
+
+        function show(message) {
+            wrap.classList.toggle("has-error", !!message);
+            hint.textContent = message || "";
+        }
+
+        run.addEventListener("click", function () {
+            var text = idea.value.trim();
+            if (text.length < 3) { show("Describe the course you want to create first."); idea.focus(); return; }
+            var form = qs("[data-tp-course-form]");
+            if (!form || !form._tpFill) return;
+
+            show("");
+            aiBusy(run, true);
+            aiCall("course", { text: text }).then(function (reply) {
+                aiBusy(run, false);
+                form._tpFill(reply.data);
+                closeModal(modal);
+                toast("Suggestion added. Check it and edit it before you create the course.");
+            }, function (error) {
+                aiBusy(run, false);
+                show(error.message);
+            });
+        });
+    }
+
+    // The floating assistant on every teacher page: the conversation is kept in this tab (sessionStorage) and the last few messages go with each question
+    function initChat(widget) {
+        if (widget._tpChat) return;
+        widget._tpChat = true;
+        var panel = qs("[data-tp-chat-panel]", widget);
+        var launch = qs("[data-tp-chat-launch]", widget);
+        var log = qs("[data-tp-chat-log]", widget);
+        var input = qs("[data-tp-chat-input]", widget);
+        var send = qs("[data-tp-chat-send]", widget);
+        var key = "tp-chat-history";
+        var history = [];
+        var busy = false;
+
+        try {
+            var saved = JSON.parse(sessionStorage.getItem(key) || "[]");
+            if (Array.isArray(saved)) history = saved.filter(function (m) { return m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string"; }).slice(-20);
+        } catch (err) { /* no storage: the chat still works, it just starts empty on each page */ }
+
+        function remember() {
+            try { sessionStorage.setItem(key, JSON.stringify(history.slice(-20))); } catch (err) { /* ignore */ }
+        }
+
+        // textContent only: whatever the model writes is shown as text, never as HTML
+        function bubble(role, text) {
+            var el = document.createElement("div");
+            el.className = "tp-chat-msg tp-chat-msg--" + role;
+            el.textContent = text;
+            log.appendChild(el);
+            log.scrollTop = log.scrollHeight;
+            return el;
+        }
+
+        function draw() {
+            log.textContent = "";
+            bubble("assistant", "Hi! I can answer questions about using the Teacher Portal, such as creating courses, grading, learners or the forum.");
+            history.forEach(function (m) { bubble(m.role, m.content); });
+        }
+
+        function setOpen(open) {
+            panel.hidden = !open;
+            launch.setAttribute("aria-expanded", open ? "true" : "false");
+            if (open) { log.scrollTop = log.scrollHeight; input.focus(); }
+        }
+
+        function ask() {
+            var text = input.value.trim();
+            if (!text || busy) return;
+            busy = true;
+            send.disabled = true;
+            input.value = "";
+            bubble("user", text);
+            var waiting = bubble("assistant", "Thinking...");
+            waiting.classList.add("is-waiting");
+
+            aiCall("chat", { text: text, history: history.slice(-6) }).then(function (reply) {
+                waiting.remove();
+                bubble("assistant", reply.text);
+                history.push({ role: "user", content: text }, { role: "assistant", content: reply.text });
+                remember();
+            }, function (error) {
+                waiting.remove();
+                bubble("error", error.message);
+            }).then(function () {
+                busy = false;
+                send.disabled = false;
+                input.focus();
+            });
+        }
+
+        launch.addEventListener("click", function () { setOpen(panel.hidden); });
+        qs("[data-tp-chat-close]", widget).addEventListener("click", function () { setOpen(false); launch.focus(); });
+        qs("[data-tp-chat-clear]", widget).addEventListener("click", function () { history = []; remember(); draw(); input.focus(); });
+        send.addEventListener("click", ask);
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); ask(); }
+        });
+        panel.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") { setOpen(false); launch.focus(); }
+        });
+        draw();
+    }
+
+    // "Suggest with AI" on Add Chapter: the course id is on the dialog; the suggestion fills the title, description and duration
+    function initAiChapter(modal) {
+        var run = qs("[data-tp-ai-run]", modal);
+        var idea = qs("[data-tp-ai-idea]", modal);
+        var wrap = idea.closest(".portal-form-field");
+        var hint = qs("small", wrap);
+
+        function show(message) {
+            wrap.classList.toggle("has-error", !!message);
+            hint.textContent = message || "";
+        }
+
+        function put(el, value) {
+            if (!el) return;
+            el.value = value;
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        run.addEventListener("click", function () {
+            show("");
+            aiBusy(run, true);
+            aiCall("chapter", { courseId: modal.getAttribute("data-tp-ai-chapter"), text: idea.value.trim() }).then(function (reply) {
+                aiBusy(run, false);
+                put(qs("[data-tp-ai-title]"), reply.data.title || "");
+                put(qs(".rich-editor textarea"), reply.data.description || "");
+                put(qs("[data-tp-ai-duration]"), reply.data.durationHours ? String(reply.data.durationHours) : "");
+                closeModal(modal);
+                toast("Suggestion added. Check it and edit it before you create the chapter.");
+            }, function (error) {
+                aiBusy(run, false);
+                show(error.message);
+            });
+        });
     }
 
     /* ------------------------------------------------------------------ [cardlist] search / filter / grid-list / pages over rendered cards */
@@ -1152,6 +1343,18 @@
                 if (e.inputType === "insertReplacementText" || (!e.inputType && text.value)) commit();
             });
             text.addEventListener("blur", commit);
+            // a suggestion (the AI button) replaces the tags: the names are checked like typed ones, and only the first few fit
+            field.addEventListener("tp-domains-set", function (e) {
+                list = [];
+                ((e.detail && e.detail.names) || []).forEach(function (name) {
+                    name = String(name).replace(/\s+/g, " ").trim();
+                    var exists = list.some(function (d) { return d.toLowerCase() === name.toLowerCase(); });
+                    if (allowed.test(name) && !exists && list.length < max) list.push(name);
+                });
+                text.value = "";
+                error("");
+                render();
+            });
             // the page's "Clear all fields" button empties the tags too
             field.addEventListener("tp-domains-clear", function () { list = []; text.value = ""; error(""); render(); });
             box.addEventListener("click", function (e) { if (e.target === box) text.focus(); });
@@ -1397,6 +1600,9 @@
         qsa("[data-tp-forum]", root).forEach(initForum);
         qsa("[data-tp-tag-source]", root).forEach(initTagPreview);
         qsa("[data-tp-delete-email]", root).forEach(initDeleteAccount);
+        qsa("[data-tp-ai-course]", root).forEach(initAiCourse);
+        qsa("[data-tp-ai-chapter]", root).forEach(initAiChapter);
+        qsa("[data-tp-chat]", root).forEach(initChat);
         qsa("[data-tp-zoom]", root).forEach(initZoom);
         qsa("[data-tp-selector]", root).forEach(initSelector);
         qsa("[data-tp-course-form]", root).forEach(initCourseForm);
@@ -1405,5 +1611,5 @@
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { init(); });
     else init();
 
-    window.TeacherPortal = { toast: toast, openModal: openModal, closeModal: closeModal, setDrawer: setDrawer, validateCourseForm: validateCourseForm };
+    window.TeacherPortal = { ai: aiCall, toast: toast, openModal: openModal, closeModal: closeModal, setDrawer: setDrawer, validateCourseForm: validateCourseForm };
 })();
