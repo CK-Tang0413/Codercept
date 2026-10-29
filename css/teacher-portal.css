@@ -7905,3 +7905,12 @@
 .tp-app .discussion-header {
   padding-block: 10px;
 }
+
+/* the stored file's name is one line: a long name is cut with an ellipsis instead of wrapping or running past the card */
+.tp-app .current-media > a {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -900,6 +900,17 @@
     /* ------------------------------------------------------------------ [media] the stored file of the shown chapter / subchapter */
     // A link to the current file and a "Remove file" toggle (posted in data-tp-media-remove-input); show(path) is called whenever
     // another item is picked. Returns null on pages without the field.
+    // The stored file's name for the link: a short name is shown whole, a long one keeps its start and its extension
+    // ("chapter-02-variables-and-da….png"), so it never wraps or overflows and the teacher still knows which file it is.
+    function shortFileName(path, max) {
+        var name = String(path || "").split("/").pop().split("?")[0];
+        try { name = decodeURIComponent(name); } catch (err) { /* keep the name as it is */ }
+        if (name.length <= max) return name;
+        var dot = name.lastIndexOf(".");
+        var ext = dot > 0 && name.length - dot <= 6 ? name.slice(dot) : "";
+        return name.slice(0, Math.max(6, max - ext.length - 1)).replace(/[-_. ]+$/, "") + "…" + ext;
+    }
+
     function initMediaField() {
         var row = qs("[data-tp-media-row]");
         if (!row) return null;
@@ -924,7 +935,8 @@
                 toggle.textContent = "Remove file";
                 removeInput.value = "";
                 link.setAttribute("href", path || "#");
-                link.textContent = path ? "View current file (" + path.split(".").pop().toLowerCase() + ")" : "";
+                link.textContent = path ? shortFileName(path, 30) : "";
+                link.title = path ? "View current file: " + shortFileName(path, 500) : "";
                 // a file chosen while another item was shown must not be uploaded for this one
                 var chosen = qs("[data-tp-dropzone-input]");
                 if (chosen && chosen.value) { chosen.value = ""; chosen.dispatchEvent(new Event("change")); }
