@@ -28,6 +28,7 @@ namespace Codercept
 
         protected void lnkSignOut_Click(object sender, EventArgs e)
         {
+            UserLogHelper.RecordLogout(Session);
             Session.Clear();
             Session.Abandon();
             Response.Redirect("signIn.aspx");

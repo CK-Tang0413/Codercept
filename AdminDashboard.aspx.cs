@@ -13,6 +13,16 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
+            if (Session["UserId"] == null || string.IsNullOrEmpty(userRole) ||
+                (!userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase) &&
+                 !userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase) &&
+                 !userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+            {
+                Response.Redirect("signIn.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
                 LoadDashboardStatistics();

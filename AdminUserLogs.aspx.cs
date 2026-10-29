@@ -21,13 +21,24 @@ namespace Codercept
             // Retrieve role stored in Session upon authentication
             string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
 
-            // Default fallback for development/testing if session is empty:
-            if (string.IsNullOrEmpty(userRole))
+            // Redirect unauthenticated users
+            if (Session["UserId"] == null || string.IsNullOrEmpty(userRole))
             {
-                userRole = "SuperAdmin";
+                Response.Redirect("signIn.aspx");
+                return;
             }
 
-            IsSuperAdmin = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
+            IsSuperAdmin = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase) ||
+                           userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase);
+
+            bool isAdmin = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+
+            // Allow both SuperAdmin and Admin to access the user log interface; redirect unauthorized roles
+            if (!IsSuperAdmin && !isAdmin)
+            {
+                Response.Redirect("AdminDashboard.aspx");
+                return;
+            }
 
             // Hide the Admin tab on frontend if the user is not a SuperAdmin
             phAdminTab.Visible = IsSuperAdmin;
@@ -179,7 +190,7 @@ namespace Codercept
                     if (!string.IsNullOrWhiteSpace(email) && !uniqueUsers.Contains(email))
                         uniqueUsers.Add(email);
 
-                    if (IsSessionActive(end))
+                    if (IsSessionActive(row["EndDateTime"]))
                         activeSessions++;
 
                     double minutes = (end - start).TotalMinutes;
@@ -227,8 +238,7 @@ namespace Codercept
         protected bool IsSessionActive(object endObj)
         {
             if (endObj == null || endObj == DBNull.Value) return true;
-            DateTime end = Convert.ToDateTime(endObj);
-            return end >= DateTime.Now.AddMinutes(-5);
+            return false;
         }
 
         protected string GetInitials(string name)

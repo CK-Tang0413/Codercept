@@ -424,14 +424,16 @@ CREATE TABLE [dbo].[ForumRead] (
 CREATE TABLE [dbo].[User_Log] (
     [LogId]         INT      IDENTITY (1, 1) NOT NULL,
     [StartDateTime] DATETIME NOT NULL,
-    [EndDateTime]   DATETIME NOT NULL,
+    [EndDateTime]   DATETIME NULL,
     [LearnerId]     INT      NULL,
     [TeacherId]     INT      NULL,
     [TA_Id]         INT      NULL,
+    [AdminId]       INT      NULL,
     PRIMARY KEY CLUSTERED ([LogId] ASC),
     CONSTRAINT [FK_UserLog_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
     CONSTRAINT [FK_UserLog_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
-    CONSTRAINT [FK_UserLog_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
+    CONSTRAINT [FK_UserLog_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id]),
+    CONSTRAINT [FK_UserLog_Admin] FOREIGN KEY ([AdminId]) REFERENCES [dbo].[Admin] ([AdminId])
 );
 
 CREATE TABLE [dbo].[LearnerProgress] (

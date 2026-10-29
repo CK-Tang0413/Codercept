@@ -40,22 +40,40 @@ namespace Codercept
                 // ==========================================
                 // 1. CHECK ADMIN TABLE
                 // ==========================================
-                using (SqlCommand cmd = new SqlCommand("SELECT AdminId, Name, Password, Role FROM [dbo].[Admin] WHERE Email = @Email", con))
+                using (SqlCommand cmd = new SqlCommand("SELECT AdminId, Name, Password, Role, AccStatus FROM [dbo].[Admin] WHERE Email = @Email", con))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
+                            if (reader["AccStatus"].ToString() != "Active")
+                            {
+                                lblEmailError.Text = "Your account is not active.";
+                                return;
+                            }
+
                             // Use BCrypt to safely verify the hashed password
                             if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
                             {
-                                Session["UserId"] = reader["AdminId"];
-                                Session["UserType"] = reader["Role"].ToString(); // Dynamically captures "Admin" or "SuperAdmin"
+                                int adminId = Convert.ToInt32(reader["AdminId"]);
+                                string role = reader["Role"].ToString();
+
+                                Session["UserId"] = adminId;
+                                Session["UserType"] = role; // Dynamically captures "Admin" or "SuperAdmin"
+                                Session["UserRole"] = role;
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
 
-                                Response.Redirect("Admin Dashboard.aspx");
+                                reader.Close();
+
+                                int logId = UserLogHelper.RecordLogin(role, adminId);
+                                if (logId > 0)
+                                {
+                                    Session["LogId"] = logId;
+                                }
+
+                                Response.Redirect("AdminDashboard.aspx");
                             }
                             else
                             {
@@ -84,10 +102,22 @@ namespace Codercept
 
                             if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
                             {
-                                Session["UserId"] = reader["LearnerId"];
+                                int learnerId = Convert.ToInt32(reader["LearnerId"]);
+
+                                Session["UserId"] = learnerId;
                                 Session["UserType"] = "Learner";
+                                Session["UserRole"] = "Learner";
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
+
+                                reader.Close();
+
+                                int logId = UserLogHelper.RecordLogin("Learner", learnerId);
+                                if (logId > 0)
+                                {
+                                    Session["LogId"] = logId;
+                                }
+
                                 Response.Redirect("LearnerDashboard.aspx");
                             }
                             else
@@ -117,10 +147,22 @@ namespace Codercept
 
                             if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
                             {
-                                Session["UserId"] = reader["TeacherId"];
+                                int teacherId = Convert.ToInt32(reader["TeacherId"]);
+
+                                Session["UserId"] = teacherId;
                                 Session["UserType"] = "Teacher";
+                                Session["UserRole"] = "Teacher";
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
+
+                                reader.Close();
+
+                                int logId = UserLogHelper.RecordLogin("Teacher", teacherId);
+                                if (logId > 0)
+                                {
+                                    Session["LogId"] = logId;
+                                }
+
                                 Response.Redirect("TeacherDashboard.aspx");
                             }
                             else
@@ -150,10 +192,22 @@ namespace Codercept
 
                             if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
                             {
-                                Session["UserId"] = reader["TA_Id"];
+                                int taId = Convert.ToInt32(reader["TA_Id"]);
+
+                                Session["UserId"] = taId;
                                 Session["UserType"] = "TA";
+                                Session["UserRole"] = "TA";
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
+
+                                reader.Close();
+
+                                int logId = UserLogHelper.RecordLogin("TA", taId);
+                                if (logId > 0)
+                                {
+                                    Session["LogId"] = logId;
+                                }
+
                                 Response.Redirect("TADashboard.aspx");
                             }
                             else
@@ -176,6 +230,7 @@ namespace Codercept
         {
             // Assign generic guest attributes to bypass the login check securely
             Session["UserType"] = "Guest";
+            Session["UserRole"] = "Guest";
             Session["UserName"] = "Future Coder"; // Used for the dashboard greeting
             Session["UserEmail"] = "";
 

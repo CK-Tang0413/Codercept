@@ -744,6 +744,7 @@
     <Compile Include="TeacherStatsData.cs" />
     <Compile Include="TeacherAccountData.cs" />
     <Compile Include="UserPurgeService.cs" />
+    <Compile Include="UserLogHelper.cs" />
     <Compile Include="TeacherSideBar.ascx.cs">
       <DependentUpon>TeacherSideBar.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

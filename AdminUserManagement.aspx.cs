@@ -17,11 +17,23 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
+            if (Session["UserId"] == null || string.IsNullOrEmpty(userRole))
+            {
+                Response.Redirect("signIn.aspx");
+                return;
+            }
+
+            bool isSuperAdmin = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase) ||
+                                userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase);
+            pnlSuperAdminAction.Visible = isSuperAdmin;
+            if (CreateAdminAccountCtrl != null)
+            {
+                CreateAdminAccountCtrl.Visible = isSuperAdmin;
+            }
+
             if (!IsPostBack)
             {
-                string userRole = Session["UserRole"] as string ?? "SuperAdmin";
-                pnlSuperAdminAction.Visible = userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
-
                 // Automated weekly removal check: removes users with 'Deleted' status automatically every week
                 UserPurgeService.CheckAndPerformPurgeIfNeeded(Server, Application);
 

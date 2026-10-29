@@ -177,7 +177,7 @@
                                     <!-- Session Window -->
                                     <div class="session-window">
                                         <%# Eval("StartDateTime", "{0:MMM dd, yyyy HH:mm}") %>
-                                        <span>to <%# Eval("EndDateTime", "{0:HH:mm}") %></span>
+                                        <span><%# Eval("EndDateTime") != DBNull.Value && Eval("EndDateTime") != null ? "to " + string.Format("{0:HH:mm}", Eval("EndDateTime")) : "Active Session" %></span>
                                     </div>
 
                                     <!-- Duration -->
