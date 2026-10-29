@@ -155,26 +155,36 @@
                 </div>
 
                 <div class="post-form-container">
-                    
+    
                     <div class="form-group">
                         <label>Title</label>
                         <asp:TextBox ID="txtPostTitle" runat="server" CssClass="form-control" placeholder="e.g., What is String in Python?"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvTitle" runat="server" ControlToValidate="txtPostTitle" 
+                            ErrorMessage="Title is required." Display="Dynamic" 
+                            style="color: #f87171; font-size: 0.8rem; margin-top: 0.25rem; display: block;" />
                     </div>
 
                     <div class="form-group">
                         <label>Description</label>
                         <asp:TextBox ID="txtPostDesc" runat="server" CssClass="form-control" TextMode="MultiLine" placeholder="Provide details, code snippets, or background context..."></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvDesc" runat="server" ControlToValidate="txtPostDesc" 
+                            ErrorMessage="Description is required." Display="Dynamic" 
+                            style="color: #f87171; font-size: 0.8rem; margin-top: 0.25rem; display: block;" />
                     </div>
 
                     <div class="form-group">
                         <label>Tags</label>
                         <asp:TextBox ID="txtPostTags" runat="server" CssClass="form-control" placeholder="e.g., Python, Fundamental, Urgent"></asp:TextBox>
-                        <span class="helper-text">Separate tags with commas. Hashtags will be added automatically.</span>
+                        <asp:RequiredFieldValidator ID="rfvTags" runat="server" ControlToValidate="txtPostTags" 
+                            ErrorMessage="At least one tag is required." Display="Dynamic" 
+                            style="color: #f87171; font-size: 0.8rem; margin-top: 0.25rem; display: block;" />
+                        <span class="helper-text">Separate tags with commas.</span>
                     </div>
 
                     <div class="form-actions">
                         <a href="LearnerForum.aspx" class="btn-cancel">Cancel</a>
-                        <asp:Button ID="btnPublishPost" runat="server" Text="Publish Post" CssClass="btn-submit" OnClick="btnPublishPost_Click" />                    </div>
+                        <asp:Button ID="btnPublishPost" runat="server" Text="Publish Post" CssClass="btn-submit" OnClick="btnPublishPost_Click" />                    
+                    </div>
 
                 </div>
 

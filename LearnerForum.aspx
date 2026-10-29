@@ -239,16 +239,18 @@
                 </div>
 
                 <div class="forum-container">
-                    <!-- LEFT PANEL: Posts List -->
+                   <!-- LEFT PANEL: Posts List -->
                     <div class="posts-column">
                         <asp:Repeater ID="rptPosts" runat="server" OnItemCommand="rptPosts_ItemCommand">
                             <ItemTemplate>
                                 <div class="post-card">
                                     <h2 class="post-title"><%# Eval("Title") %></h2>
-                                    <p class="post-desc"><%# Eval("Description") %></p>
-                                    <div class="post-tags"><%# Eval("Tags") %></div>
+                                    <p class="post-desc"><%# Eval("Content") %></p>
+                                    <div class="post-tags">
+                                        <%# GetFormattedTags(Eval("Tags")) %>
+                                    </div>
                                     <div class="action-group">
-                                        <asp:Button ID="btnComment" runat="server" CssClass='<%# Convert.ToBoolean(Eval("IsActive")) ? "btn-action active-comment" : "btn-action" %>' Text='<%# "Comment (" + Eval("CommentCount") + ")" %>' CommandName="SelectPost" CommandArgument='<%# Eval("Id") %>' />
+                                        <asp:Button ID="btnComment" runat="server" CssClass='<%# Convert.ToBoolean(Eval("IsActive")) ? "btn-action active-comment" : "btn-action" %>' Text='<%# "Comment (" + Eval("ReplyCount") + ")" %>' CommandName="SelectPost" CommandArgument='<%# Eval("PostId") %>' />
                                     </div>
                                 </div>
                             </ItemTemplate>
@@ -257,42 +259,45 @@
 
                     <!-- RIGHT PANEL: Comments Section -->
                     <asp:Panel ID="pnlComments" runat="server" CssClass="comments-column" Visible="false">
-    
+
                         <div class="comments-header">
                             Discussion: <asp:Literal ID="litActivePostTitle" runat="server"></asp:Literal>
                         </div>
 
                         <div class="comments-list">
-                            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand">
+                            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand" OnItemDataBound="rptComments_ItemDataBound">
                                 <ItemTemplate>
-                
+
                                     <!-- Dynamic CSS classes for Pinning and Flagging -->
-                                    <div class='comment-item <%# Convert.ToBoolean(Eval("IsPinned")) ? "pinned" : "" %> <%# Convert.ToBoolean(Eval("IsFlagged")) ? "flagged" : "" %>'>
-                    
+                                    <div class='comment-item <%# Eval("IsPinned").ToString() == "Yes" ? "pinned" : "" %>'>
+
                                         <!-- Only show if it's a reply -->
-                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ReplyToName")?.ToString()) %>'>
+                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ParentThreadId").ToString()) %>'>
                                             <div class="reply-context">
-                                                ↳ Replying to <%# Eval("ReplyToName") %>
+                                                ↳ Replying to <%# GetReplyToName(Eval("ParentThreadId")) %>
                                             </div>
                                         </asp:PlaceHolder>
 
                                         <div class="comment-top">
                                             <div class="comment-user">
-                                                <div class="c-avatar"><%# Eval("AvatarInitials") %></div>
+                                                <div class="c-avatar"><%# GetInitials(Eval("AuthorName").ToString()) %></div>
                                                 <div class="c-name"><%# Eval("AuthorName") %></div>
                                             </div>
-                                            <div class='role-badge <%# Eval("RoleCssClass") %>'><%# Eval("RoleDisplay") %></div>
+                                            <div class='role-badge <%# Eval("Role").ToString().ToLower().Replace(" ", "") %>'><%# Eval("Role") %></div>
                                         </div>
-                    
+
                                         <div class="comment-text">
-                                            <asp:Literal runat="server" Visible='<%# Convert.ToBoolean(Eval("IsPinned")) %>' Text="📌 "></asp:Literal>
-                                            <%# Eval("Message") %>
+                                            <asp:Literal runat="server" Visible='<%# Eval("IsPinned").ToString() == "Yes" %>' Text="📌 "></asp:Literal>
+                                            <%# Eval("ReplyComment") %>
                                         </div>
-                    
+
                                         <div class="comment-actions">
-                                            <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("Id") %>' />
-                                            <asp:Button ID="btnPin" runat="server" Text='<%# Convert.ToBoolean(Eval("IsPinned")) ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("Id") %>' />
-                                            <asp:Button ID="btnFlag" runat="server" Text='<%# Convert.ToBoolean(Eval("IsFlagged")) ? "Unflag" : "Flag" %>' CssClass='<%# Convert.ToBoolean(Eval("IsFlagged")) ? "action-btn" : "action-btn action-flag" %>' CommandName="ToggleFlag" CommandArgument='<%# Eval("Id") %>' />
+                                            <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("ThreadId") %>' />
+                        
+                                            <!-- Teachers and TAs see moderation controls (Hidden for Learners) -->
+                                            <asp:PlaceHolder ID="phModControls" runat="server" Visible="false">
+                                                <asp:Button ID="btnPin" runat="server" Text='<%# Eval("IsPinned").ToString() == "Yes" ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("ThreadId") %>' />
+                                            </asp:PlaceHolder>
                                         </div>
                                     </div>
 
@@ -301,14 +306,23 @@
                         </div>
 
                         <!-- Chat Input -->
-                        <div class="comment-input-area">
-                            <asp:HiddenField ID="hfReplyToId" runat="server" />
-                            <asp:TextBox ID="txtComment" runat="server" CssClass="input-chat" placeholder="Type comment here..."></asp:TextBox>
-                            <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send" OnClick="btnSendComment_Click">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
-                                </svg>
-                            </asp:LinkButton>
+                        <div class="comment-input-area" style="flex-direction: column; gap: 0.5rem;">
+    
+                            <!-- Reply Preview Banner (Hidden by default) -->
+                            <asp:Panel ID="pnlReplyPreview" runat="server" Visible="false" style="display: flex; justify-content: space-between; align-items: center; background: rgba(124, 58, 237, 0.1); border: 1px solid var(--accent-border); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; color: var(--accent-light);">
+                                <span>Replying to <strong><asp:Literal ID="litReplyingToUser" runat="server"></asp:Literal></strong></span>
+                                <asp:LinkButton ID="btnCancelReply" runat="server" OnClick="btnCancelReply_Click" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Cancel reply">×</asp:LinkButton>
+                            </asp:Panel>
+
+                            <div style="display: flex; gap: 0.5rem; width: 100%;">
+                                <asp:HiddenField ID="hfReplyToId" runat="server" />
+                                <asp:TextBox ID="txtComment" runat="server" CssClass="input-chat" placeholder="Type comment here..."></asp:TextBox>
+                                <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send" OnClick="btnSendComment_Click">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                                    </svg>
+                                </asp:LinkButton>
+                            </div>
                         </div>
 
                     </asp:Panel>

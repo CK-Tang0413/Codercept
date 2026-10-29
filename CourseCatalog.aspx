@@ -68,9 +68,9 @@
         .lang-badge.cpp { color: var(--catalog-badge-cpp); border-color: rgba(192, 132, 252, 0.3); background: rgba(192, 132, 252, 0.1); }
 
         .level-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid transparent; }
-        .level-badge.beginner { color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2); }
-        .level-badge.intermediate { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); }
-        .level-badge.advanced { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); }
+        .level-badge.easy { color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2); }
+        .level-badge.medium { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); }
+        .level-badge.hard { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); }
         
         /* Course Meta & Footers */
         .course-meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; }
@@ -122,9 +122,9 @@
                     </div>
                     <div class="filter-group">
                         <asp:LinkButton ID="btnLevelAll" runat="server" CssClass="filter-pill active" CommandArgument="All" OnClick="FilterLevel_Click">All Levels</asp:LinkButton>
-                        <asp:LinkButton ID="btnLevelBeginner" runat="server" CssClass="filter-pill" CommandArgument="Beginner" OnClick="FilterLevel_Click">Beginner</asp:LinkButton>
-                        <asp:LinkButton ID="btnLevelIntermediate" runat="server" CssClass="filter-pill" CommandArgument="Intermediate" OnClick="FilterLevel_Click">Intermediate</asp:LinkButton>
-                        <asp:LinkButton ID="btnLevelAdvanced" runat="server" CssClass="filter-pill" CommandArgument="Advanced" OnClick="FilterLevel_Click">Advanced</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelEasy" runat="server" CssClass="filter-pill" CommandArgument="Easy" OnClick="FilterLevel_Click">Easy</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelMedium" runat="server" CssClass="filter-pill" CommandArgument="Medium" OnClick="FilterLevel_Click">Medium</asp:LinkButton>
+                        <asp:LinkButton ID="btnLevelHard" runat="server" CssClass="filter-pill" CommandArgument="Hard" OnClick="FilterLevel_Click">Hard</asp:LinkButton>
                     </div>
                 </div>
 
@@ -136,29 +136,29 @@
                 <div class="course-grid">
                     <asp:Repeater ID="rptCourses" runat="server">
                         <ItemTemplate>
-                            <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
                                 <div class="card-header">
                                     <!-- Dynamic CSS classes based on language and level -->
                                     <span class='lang-badge <%# Eval("LanguageCSS") %>'><%# Eval("Language") %></span>
-                                    <span class='level-badge <%# Eval("Level").ToString().ToLower() %>'><%# Eval("Level") %></span>
+                                    <span class='level-badge <%# Eval("DifficultyLevel").ToString().ToLower() %>'><%# Eval("DifficultyLevel") %></span>
                                 </div>
-                                <h3 class="course-title"><%# Eval("Title") %></h3>
-                                <p class="course-desc"><%# Eval("Description") %></p>
+                                <h3 class="course-title"><%# Eval("CourseTitle") %></h3>
+                                <p class="course-desc"><%# Eval("CourseDescription") %></p>
                                 <div class="course-meta">
                                     <span>📖 <%# Eval("Chapters") %> chapters</span>
-                                    <span>⏱️ <%# Eval("Duration") %></span>
+                                    <span>⏱️ <%# Eval("CourseDuration") %></span>
                                     <span>⭐ <%# Eval("Rating") %></span>
                                 </div>
                                 <div class="card-footer">
-                    
+
                                     <!-- Show if Enrolled -->
                                     <asp:PlaceHolder runat="server" Visible='<%# Convert.ToBoolean(Eval("IsEnrolled")) %>'>
                                         <div class="progress-info">
                                             <span>Progress</span>
-                                            <span><%# Eval("Progress") %>%</span>
+                                            <span><%# Eval("ProgressPercentage") %>%</span>
                                         </div>
                                         <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" style='width: <%# Eval("Progress") %>%;'></div>
+                                            <div class="progress-bar-fill" style='width: <%# Eval("ProgressPercentage") %>%;'></div>
                                         </div>
                                     </asp:PlaceHolder>
 

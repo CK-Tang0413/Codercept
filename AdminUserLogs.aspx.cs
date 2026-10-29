@@ -102,7 +102,7 @@ namespace Codercept
                             COALESCE(t.Region, ta.Region, 'N/A') AS Region,
                             COALESCE(t.TeachingLevel, ta.TeachingLevel, 'N/A') AS TeachingLevel,
                             COALESCE(t.QualificationName, ta.QualificationName, a_t.QualificationName, a_ta.QualificationName, 'N/A') AS QualificationName,
-                            COALESCE(t.QualificationDocument, ta.QualificationDocument, a_t.CredentialDocument, a_ta.CredentialDocument, '') AS QualificationDocument,
+                            COALESCE(NULLIF(t.QualificationDocument, ''), NULLIF(ta.QualificationDocument, ''), NULLIF(a_t.CredentialDocument, ''), NULLIF(a_ta.CredentialDocument, ''), '') AS QualificationDocument,
                             l.Address,
                             l.Occupation,
                             ISNULL(

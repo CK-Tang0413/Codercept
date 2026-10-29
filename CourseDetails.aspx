@@ -216,28 +216,28 @@
                 <div class="chapter-list">
                     <asp:Repeater ID="rptChapters" runat="server">
                         <ItemTemplate>
-                
-                            <a href='<%# GetChapterUrl((string)Eval("Status")) %>' class="chapter-item" style='<%# GetChapterStyle((string)Eval("Status")) %>'>
-                    
+
+                            <a href='<%# GetChapterUrl((string)Eval("Status"), Convert.ToInt32(Eval("ChapterNum"))) %>' class="chapter-item" style='<%# GetChapterStyle((string)Eval("Status")) %>'>
+
                                 <!-- Dynamic Status Icon (Checkmark, Play, Lock, or Number) -->
                                 <div class='ch-status <%# Eval("Status").ToString().ToLower() %>' style='<%# Eval("Status").ToString() == "Active" ? "background: rgba(124, 58, 237, 0.2); color: #c084fc;" : "" %>'>
-                                    <asp:Literal runat="server" Text='<%# GetStatusIcon((string)Eval("Status"), Container.ItemIndex + 1) %>'></asp:Literal>
+                                    <asp:Literal runat="server" Text='<%# GetStatusIcon((string)Eval("Status"), Convert.ToInt32(Eval("ChapterNum"))) %>'></asp:Literal>
                                 </div>
-                    
+
                                 <div class="ch-content">
-                                    <div class="ch-title"><%# Eval("Title") %></div>
+                                    <div class="ch-title"><%# Eval("ChapterTitle") %></div>
                                     <div class="ch-tags">
-                                        <!-- Nested Repeater for Tags -->
-                                        <asp:Repeater DataSource='<%# Eval("Tags") %>' runat="server">
-                                            <ItemTemplate>
-                                                <span class='c-tag <%# Eval("CssClass") %>' style='<%# Eval("CustomStyle") %>'><%# Eval("Icon") %> <%# Eval("Name") %></span>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
+                                        <!-- Inline conditional rendering for the badges -->
+                                        <span class="c-tag theory" style="display: <%# Convert.ToInt32(Eval("SubChapterCount")) > 0 ? "inline-flex" : "none" %>;">📄 Theory</span>
+                                        <span class="c-tag video" style="display: <%# Convert.ToBoolean(Eval("HasVideo")) ? "inline-flex" : "none" %>;">▶️ Video</span>
+                                        <span class="c-tag quiz" style="display: <%# Convert.ToBoolean(Eval("HasQuiz")) ? "inline-flex" : "none" %>;">⚡ Quiz</span>
+                                        <span class="c-tag coding" style="display: <%# Convert.ToBoolean(Eval("HasAssessment")) ? "inline-flex" : "none" %>;">💻 Coding</span>
+                                        <span class="c-tag theory" style="display: <%# Convert.ToBoolean(Eval("HasExam")) ? "inline-flex" : "none" %>; background: rgba(239, 68, 68, 0.15); color: #ef4444;">🎓 Final Exam</span>
                                     </div>
                                 </div>
-                    
+
                                 <div class="ch-meta">
-                                    <span><%# Eval("Duration") %></span>
+                                    <span><%# Eval("ChapterDuration") %></span>
                                     <asp:Literal runat="server" Text='<%# GetActionIcon((string)Eval("Status")) %>'></asp:Literal>
                                 </div>
 

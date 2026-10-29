@@ -60,6 +60,33 @@ namespace Codercept
         protected global::Codercept.Admin_Sidebar SidebarCtrl;
 
         /// <summary>
+        /// pnlNotification control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNotification;
+
+        /// <summary>
+        /// litNotificationIcon control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litNotificationIcon;
+
+        /// <summary>
+        /// litNotificationMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litNotificationMessage;
+
+        /// <summary>
         /// litUserCount control.
         /// </summary>
         /// <remarks>
