@@ -96,31 +96,31 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.LinkButton btnLevelAll;
 
         /// <summary>
-        /// btnLevelBeginner control.
+        /// btnLevelEasy control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnLevelBeginner;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelEasy;
 
         /// <summary>
-        /// btnLevelIntermediate control.
+        /// btnLevelMedium control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnLevelIntermediate;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelMedium;
 
         /// <summary>
-        /// btnLevelAdvanced control.
+        /// btnLevelHard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnLevelAdvanced;
+        protected global::System.Web.UI.WebControls.LinkButton btnLevelHard;
 
         /// <summary>
         /// litResultsCount control.

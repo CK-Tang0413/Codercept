@@ -129,20 +129,25 @@
                     <div class="course-grid">
                         <asp:Repeater ID="rptActiveCourses" runat="server">
                             <ItemTemplate>
-                                <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                                <!-- Changed from "Id" to "CourseId" -->
+                                <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
                                     <div class="card-header">
-                                        <span class="lang-badge"><%# Eval("Language") %></span>
+                                        <!-- Changed from "Language" to "PrimarySubject" -->
+                                        <span class="lang-badge"><%# Eval("PrimarySubject") %></span>
                                     </div>
-                                    <h3 class="course-title"><%# Eval("Title") %></h3>
+            
+                                    <!-- Changed from "Title" to "CourseTitle" -->
+                                    <h3 class="course-title"><%# Eval("CourseTitle") %></h3>
+            
                                     <div class="progress-container">
                                         <div class="progress-info">
                                             <span>Progress</span>
-                                            <span><%# Eval("Progress") %>%</span>
+                                            <span><%# Eval("ProgressPercentage") %>%</span>
                                         </div>
                                         <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" style='width: <%# Eval("Progress") %>%;'></div>
+                                            <div class="progress-bar-fill" style='width: <%# Eval("ProgressPercentage") %>%;'></div>
                                         </div>
-                                        <span class="next-step-text">Next: <%# Eval("NextChapter") %> &rarr;</span>
+                                        <span class="next-step-text">Next: <%# Eval("NextChapterTitle") %> &rarr;</span>
                                     </div>
                                 </a>
                             </ItemTemplate>
@@ -159,13 +164,19 @@
                 <div class="course-grid">
                     <asp:Repeater ID="rptRecommended" runat="server">
                         <ItemTemplate>
-                            <a href='CourseDetails.aspx?id=<%# Eval("Id") %>' class="course-card">
+                            <!-- Changed from "Id" to "CourseId" -->
+                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
                                 <div class="card-header">
                                     <span class="lang-badge"><%# Eval("Language") %></span>
                                     <span class="level-badge"><%# Eval("Level") %></span>
                                 </div>
-                                <h3 class="course-title"><%# Eval("Title") %></h3>
-                                <p class="course-desc"><%# Eval("Description") %></p>
+            
+                                <!-- Changed from "Title" to "CourseTitle" -->
+                                <h3 class="course-title"><%# Eval("CourseTitle") %></h3>
+            
+                                <!-- Changed from "Description" to "CourseDescription" -->
+                                <p class="course-desc"><%# Eval("CourseDescription") %></p>
+            
                                 <div class="course-meta">
                                     <span>📖 <%# Eval("Chapters") %> chapters</span>
                                     <span>⭐ <%# Eval("Rating") %> Rating</span>

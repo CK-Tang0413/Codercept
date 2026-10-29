@@ -1,32 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Web.UI.WebControls;
 
 namespace Codercept
 {
     public partial class CourseCatalog : System.Web.UI.Page
     {
-        // 1. Define the Dummy Data Structure
-        public class DummyCourse
-        {
-            public int Id { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public string Language { get; set; }
-            public string LanguageCSS { get; set; } // Used to match your CSS classes (e.g. "python", "cpp")
-            public string Level { get; set; }
-            public int Chapters { get; set; }
-            public string Duration { get; set; }
-            public string Rating { get; set; }
-            public bool IsEnrolled { get; set; }
-            public int Progress { get; set; }
-            public int EnrolledCount { get; set; }
-        }
+        string connString = ConfigurationManager.ConnectionStrings["Codercept_db"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
             if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
             {
                 Response.Redirect("signIn.aspx");
@@ -35,61 +20,119 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                // Set default filters
                 ViewState["SelectedLang"] = "All";
                 ViewState["SelectedLevel"] = "All";
                 BindCourses();
             }
         }
 
-        // 2. Generate the Dummy Data (Simulating a SQL Fetch)
-        private List<DummyCourse> GetDummyData()
-        {
-            return new List<DummyCourse>
-            {
-                new DummyCourse { Id = 1, Title = "Python for Beginners", Description = "Start your programming journey with Python. Learn syntax, data types, control flow, and functions.", Language = "Python", LanguageCSS = "python", Level = "Beginner", Chapters = 5, Duration = "6h", Rating = "4.8", IsEnrolled = true, Progress = 60, EnrolledCount = 1250 },
-                new DummyCourse { Id = 2, Title = "Java Fundamentals", Description = "Master the fundamentals of Java. Learn OOP concepts, type system, control flow, and basics.", Language = "Java", LanguageCSS = "java", Level = "Beginner", Chapters = 6, Duration = "8h", Rating = "4.6", IsEnrolled = true, Progress = 33, EnrolledCount = 980 },
-                new DummyCourse { Id = 3, Title = "C Programming Essentials", Description = "Master C programming — the language that powers operating systems and embedded systems.", Language = "C", LanguageCSS = "c", Level = "Intermediate", Chapters = 5, Duration = "8h", Rating = "4.5", IsEnrolled = false, Progress = 0, EnrolledCount = 67 },
-                new DummyCourse { Id = 4, Title = "C++ Object-Oriented Programming", Description = "Deep dive into C++ with a focus on OOP principles. Learn classes, inheritance, and polymorphism.", Language = "C++", LanguageCSS = "cpp", Level = "Intermediate", Chapters = 4, Duration = "6h", Rating = "4.7", IsEnrolled = false, Progress = 0, EnrolledCount = 82 },
-                new DummyCourse { Id = 5, Title = "Advanced Python — Data Structures", Description = "Level up with Python by mastering data structures and algorithms. Essential prep for technical interviews.", Language = "Python", LanguageCSS = "python", Level = "Advanced", Chapters = 3, Duration = "5h", Rating = "4.9", IsEnrolled = false, Progress = 0, EnrolledCount = 45 },
-                new DummyCourse { Id = 6, Title = "Data Structures with C++", Description = "Implement fundamental data structures from scratch in C++: linked lists, binary trees, hash tables.", Language = "C++", LanguageCSS = "cpp", Level = "Advanced", Chapters = 3, Duration = "5h", Rating = "4.4", IsEnrolled = false, Progress = 0, EnrolledCount = 38 }
-            };
-        }
-
-        // 3. The Core Filtering Engine
         private void BindCourses()
         {
-            var courses = GetDummyData();
+            int learnerId = 0;
+            if (Session["UserId"] != null && Session["UserType"].ToString() == "Learner")
+            {
+                learnerId = Convert.ToInt32(Session["UserId"]);
+            }
 
-            string searchTerm = txtSearch.Text.Trim().ToLower();
+            string searchTerm = txtSearch.Text.Trim();
             string selectedLang = ViewState["SelectedLang"].ToString();
-            string selectedLevel = ViewState["SelectedLevel"].ToString();
+            string selectedLevel = ViewState["SelectedLevel"].ToString(); // This is now already "Easy", "Medium", or "Hard"
 
-            // Apply Search Filter
-            if (!string.IsNullOrEmpty(searchTerm))
+            using (SqlConnection con = new SqlConnection(connString))
             {
-                courses = courses.Where(c => c.Title.ToLower().Contains(searchTerm) || c.Description.ToLower().Contains(searchTerm)).ToList();
-            }
+                // Dynamic SQL query based on filters
+                string query = @"
+            SELECT 
+                c.CourseId, 
+                c.CourseTitle, 
+                c.CourseDescription, 
+                c.DifficultyLevel,
+                c.CourseDuration,
+                (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as Chapters,
+                ISNULL((SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language'), 'General') as Language,
+                ISNULL((SELECT COUNT(*) FROM LearnerProgress WHERE CourseId = c.CourseId), 0) as EnrolledCount,
+                ISNULL((SELECT ROUND(AVG(Rating), 1) FROM Course_Review WHERE CourseId = c.CourseId), 0.0) as Rating,
+                CASE WHEN lp.LearnerId IS NOT NULL THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END as IsEnrolled,
+                lp.ChapNum as CurrentChapter
+            FROM Course c
+            LEFT JOIN LearnerProgress lp ON c.CourseId = lp.CourseId AND lp.LearnerId = @LearnerId
+            WHERE 1=1 ";
 
-            // Apply Language Filter
-            if (selectedLang != "All")
-            {
-                courses = courses.Where(c => c.Language == selectedLang).ToList();
-            }
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    query += " AND (c.CourseTitle LIKE @SearchTerm OR c.CourseDescription LIKE @SearchTerm) ";
+                }
 
-            // Apply Level Filter
-            if (selectedLevel != "All")
-            {
-                courses = courses.Where(c => c.Level == selectedLevel).ToList();
-            }
+                if (selectedLang != "All")
+                {
+                    if (selectedLang == "C++")
+                        query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') = 'C++' ";
+                    else
+                        query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') LIKE '%' + @Lang + '%' ";
+                }
 
-            // Bind to UI
-            rptCourses.DataSource = courses;
-            rptCourses.DataBind();
-            litResultsCount.Text = $"{courses.Count} course{(courses.Count != 1 ? "s" : "")} found";
+                if (selectedLevel != "All")
+                {
+                    // We no longer need to map the terms; just use selectedLevel directly
+                    query += " AND c.DifficultyLevel = @Level ";
+                }
+
+                query += " ORDER BY c.DateCreation DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+
+                    if (!string.IsNullOrEmpty(searchTerm))
+                        cmd.Parameters.AddWithValue("@SearchTerm", "%" + searchTerm + "%");
+
+                    if (selectedLang != "All")
+                        cmd.Parameters.AddWithValue("@Lang", selectedLang);
+
+                    if (selectedLevel != "All")
+                    {
+                        // Directly pass selectedLevel which is "Easy", "Medium", or "Hard"
+                        cmd.Parameters.AddWithValue("@Level", selectedLevel);
+                    }
+
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    dt.Columns.Add("LanguageCSS", typeof(string));
+                    dt.Columns.Add("ProgressPercentage", typeof(int));
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        string lang = row["Language"].ToString().ToLower();
+                        if (lang.Contains("c++") || lang.Contains("cpp")) row["LanguageCSS"] = "cpp";
+                        else if (lang == "c") row["LanguageCSS"] = "c";
+                        else row["LanguageCSS"] = lang.Replace(" ", "");
+
+                        if (Convert.ToBoolean(row["IsEnrolled"]))
+                        {
+                            int currentChapter = row["CurrentChapter"] != DBNull.Value ? Convert.ToInt32(row["CurrentChapter"]) : 1;
+                            int totalChapters = Convert.ToInt32(row["Chapters"]);
+
+                            int chaptersCompleted = currentChapter - 1;
+                            if (currentChapter > totalChapters) chaptersCompleted = totalChapters;
+
+                            row["ProgressPercentage"] = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
+                        }
+                        else
+                        {
+                            row["ProgressPercentage"] = 0;
+                        }
+                    }
+
+                    rptCourses.DataSource = dt;
+                    rptCourses.DataBind();
+
+                    litResultsCount.Text = $"{dt.Rows.Count} course{(dt.Rows.Count != 1 ? "s" : "")} found";
+                }
+            }
         }
 
-        // 4. Event Handlers
         protected void txtSearch_TextChanged(object sender, EventArgs e)
         {
             BindCourses();
@@ -100,14 +143,11 @@ namespace Codercept
             LinkButton clickedBtn = (LinkButton)sender;
             ViewState["SelectedLang"] = clickedBtn.CommandArgument;
 
-            // Reset UI states
             btnLangAll.CssClass = "filter-pill";
             btnLangPython.CssClass = "filter-pill";
             btnLangJava.CssClass = "filter-pill";
             btnLangC.CssClass = "filter-pill";
             btnLangCpp.CssClass = "filter-pill";
-
-            // Set active class on clicked button
             clickedBtn.CssClass = "filter-pill active";
 
             BindCourses();
@@ -118,11 +158,11 @@ namespace Codercept
             LinkButton clickedBtn = (LinkButton)sender;
             ViewState["SelectedLevel"] = clickedBtn.CommandArgument;
 
-            // Reset UI states
+            // Reset UI states using the new button IDs
             btnLevelAll.CssClass = "filter-pill";
-            btnLevelBeginner.CssClass = "filter-pill";
-            btnLevelIntermediate.CssClass = "filter-pill";
-            btnLevelAdvanced.CssClass = "filter-pill";
+            btnLevelEasy.CssClass = "filter-pill";
+            btnLevelMedium.CssClass = "filter-pill";
+            btnLevelHard.CssClass = "filter-pill";
 
             // Set active class on clicked button
             clickedBtn.CssClass = "filter-pill active";

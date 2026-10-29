@@ -78,6 +78,33 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Repeater rptComments;
 
         /// <summary>
+        /// pnlReplyPreview control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlReplyPreview;
+
+        /// <summary>
+        /// litReplyingToUser control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litReplyingToUser;
+
+        /// <summary>
+        /// btnCancelReply control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCancelReply;
+
+        /// <summary>
         /// hfReplyToId control.
         /// </summary>
         /// <remarks>

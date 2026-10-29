@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 
 namespace Codercept
 {
     public partial class LearnerAddPost : System.Web.UI.Page
     {
+        string connString = ConfigurationManager.ConnectionStrings["Codercept_db"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
@@ -14,41 +17,55 @@ namespace Codercept
             }
         }
 
-        // Add the OnClick event handler for the Submit button
         protected void btnPublishPost_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtPostTitle.Text) || string.IsNullOrWhiteSpace(txtPostDesc.Text))
+            // Enforce that all client/server validation checks passed successfully
+            if (!Page.IsValid)
             {
-                return; // Prevent empty posts
+                return;
             }
 
-            // Format tags (ensure they have hashtags)
+            int learnerId = Convert.ToInt32(Session["UserId"]);
+            string title = txtPostTitle.Text.Trim();
+            string content = txtPostDesc.Text.Trim();
+
+            // Clean tags and store them as comma-separated values
             string rawTags = txtPostTags.Text;
             string formattedTags = "";
             if (!string.IsNullOrWhiteSpace(rawTags))
             {
                 var tagsList = rawTags.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var tag in tagsList)
+                for (int i = 0; i < tagsList.Length; i++)
                 {
-                    formattedTags += "#" + tag.Trim().Replace(" ", "").Replace("#", "") + " ";
+                    formattedTags += tagsList[i].Trim().Replace("#", "");
+                    if (i < tagsList.Length - 1) formattedTags += ",";
                 }
             }
 
-            // Create the new post object using the same structure as the Forum page
-            var newPost = new LearnerForum.DummyPost
+            int newPostId = 0;
+
+            using (SqlConnection con = new SqlConnection(connString))
             {
-                Id = new Random().Next(100, 999), // Random ID
-                Title = txtPostTitle.Text.Trim(),
-                Description = txtPostDesc.Text.Trim(),
-                Tags = formattedTags.Trim(),
-                IsActive = true, // Make it active immediately
-                Comments = new List<LearnerForum.DummyComment>() // Empty comment list
-            };
+                string query = @"
+                    INSERT INTO Forum (Title, Content, DatePosted, LearnerId, Tags, IsFlagged, IsHidden) 
+                    OUTPUT INSERTED.PostId
+                    VALUES (@Title, @Content, GETDATE(), @LearnerId, @Tags, 0, 0)";
 
-            // Store in Session so the Forum page can grab it
-            Session["NewPost"] = newPost;
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@Content", content);
+                    cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                    cmd.Parameters.AddWithValue("@Tags", formattedTags);
 
-            // Redirect back to the forum
+                    con.Open();
+                    newPostId = (int)cmd.ExecuteScalar();
+                    con.Close();
+                }
+            }
+
+            // Store ID in Session so the main Forum page can highlight it immediately
+            Session["NewPostId"] = newPostId;
             Response.Redirect("LearnerForum.aspx");
         }
     }

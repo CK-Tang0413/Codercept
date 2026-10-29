@@ -78,22 +78,22 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.PlaceHolder phCheckmark;
 
         /// <summary>
-        /// pnlVideo control.
+        /// pnlMedia control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlVideo;
+        protected global::System.Web.UI.WebControls.Panel pnlMedia;
 
         /// <summary>
-        /// litVideoTitle control.
+        /// litMediaHtml control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litVideoTitle;
+        protected global::System.Web.UI.WebControls.Literal litMediaHtml;
 
         /// <summary>
         /// pnlTheory control.
@@ -123,6 +123,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Panel pnlQuiz;
 
         /// <summary>
+        /// rptQuizQuestions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptQuizQuestions;
+
+        /// <summary>
         /// pnlCode control.
         /// </summary>
         /// <remarks>
@@ -148,6 +157,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litCodeDesc;
+
+        /// <summary>
+        /// pnlExam control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlExam;
 
         /// <summary>
         /// lnkPrev control.

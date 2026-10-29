@@ -42,6 +42,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtPostTitle;
 
         /// <summary>
+        /// rfvTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvTitle;
+
+        /// <summary>
         /// txtPostDesc control.
         /// </summary>
         /// <remarks>
@@ -51,6 +60,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.TextBox txtPostDesc;
 
         /// <summary>
+        /// rfvDesc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvDesc;
+
+        /// <summary>
         /// txtPostTags control.
         /// </summary>
         /// <remarks>
@@ -58,6 +76,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtPostTags;
+
+        /// <summary>
+        /// rfvTags control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvTags;
 
         /// <summary>
         /// btnPublishPost control.
