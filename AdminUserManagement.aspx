@@ -13,6 +13,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <style>
+        .alert-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+        .alert-banner.alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+        }
+        .alert-banner.alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+        }
+        .alert-banner.alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+        .alert-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .alert-banner-content i {
+            font-size: 18px;
+        }
+        .btn-alert-close {
+            background: none;
+            border: none;
+            color: currentColor;
+            opacity: 0.7;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: opacity 0.2s;
+        }
+        .btn-alert-close:hover { opacity: 1; }
+
         .list-header, .list-row {
             grid-template-columns: 2.5fr 1.5fr 1fr 1fr 1.5fr;
         }
@@ -93,6 +138,17 @@
             <uc:AdminSidebar runat="server" ID="SidebarCtrl" />
             
             <main class="main-content" style="flex: 1; overflow-y: auto;">
+                <!-- Status Feedback Notification Banner -->
+                <asp:Panel ID="pnlNotification" runat="server" Visible="false" CssClass="alert-banner">
+                    <div class="alert-banner-content">
+                        <asp:Literal ID="litNotificationIcon" runat="server" />
+                        <div>
+                            <asp:Literal ID="litNotificationMessage" runat="server" />
+                        </div>
+                    </div>
+                    <button type="button" class="btn-alert-close" onclick="this.closest('.alert-banner').style.display='none';">&times;</button>
+                </asp:Panel>
+
                 <div class="page-header-row">
                     <div class="page-header">
                         <h1>User Management</h1>
@@ -163,7 +219,8 @@
                                      data-region='<%# HttpUtility.HtmlAttributeEncode(Eval("Region")?.ToString() ?? "N/A") %>'
                                      data-teachinglevel='<%# HttpUtility.HtmlAttributeEncode(Eval("TeachingLevel")?.ToString() ?? "N/A") %>'
                                      data-qualification='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationName")?.ToString() ?? "N/A") %>'
-                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationDocument")?.ToString() ?? "") %>'
+                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Codercept.UserProfileDetails.ResolveDocUrl(Eval("QualificationDocument")?.ToString())) %>'
+                                     data-credential-name='<%# HttpUtility.HtmlAttributeEncode(Codercept.UserProfileDetails.GetDocumentFileName(Eval("QualificationDocument")?.ToString())) %>'
                                      data-subject='<%# HttpUtility.HtmlAttributeEncode(Eval("SubjectTeaching")?.ToString() ?? "N/A") %>'
                                      data-address='<%# HttpUtility.HtmlAttributeEncode(Eval("Address")?.ToString() ?? "N/A") %>'
                                      data-occupation='<%# HttpUtility.HtmlAttributeEncode(Eval("Occupation")?.ToString() ?? "N/A") %>'

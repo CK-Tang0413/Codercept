@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 <%@ Register Src="~/UserProfileDetails.ascx" TagPrefix="uc" TagName="UserProfileDetails" %>
 
@@ -145,7 +145,8 @@
                                      data-region='<%# HttpUtility.HtmlAttributeEncode(Eval("Region")?.ToString() ?? "N/A") %>'
                                      data-teachinglevel='<%# HttpUtility.HtmlAttributeEncode(Eval("TeachingLevel")?.ToString() ?? "N/A") %>'
                                      data-qualification='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationName")?.ToString() ?? "N/A") %>'
-                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Eval("QualificationDocument")?.ToString() ?? "") %>'
+                                     data-credential='<%# HttpUtility.HtmlAttributeEncode(Codercept.UserProfileDetails.ResolveDocUrl(Eval("QualificationDocument")?.ToString())) %>'
+                                     data-credential-name='<%# HttpUtility.HtmlAttributeEncode(Codercept.UserProfileDetails.GetDocumentFileName(Eval("QualificationDocument")?.ToString())) %>'
                                      data-subject='<%# HttpUtility.HtmlAttributeEncode(Eval("SubjectTeaching")?.ToString() ?? "N/A") %>'
                                      data-address='<%# HttpUtility.HtmlAttributeEncode(Eval("Address")?.ToString() ?? "N/A") %>'
                                      data-occupation='<%# HttpUtility.HtmlAttributeEncode(Eval("Occupation")?.ToString() ?? "N/A") %>'

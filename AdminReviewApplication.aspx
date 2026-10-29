@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminReviewApplication.aspx.cs" Inherits="Codercept.AdminReviewApplication" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -338,7 +338,7 @@
         // @ts-nocheck
         function openDocModal(docTitle, fileUrl) {
             var titleEl = document.getElementById('docModalTitle');
-            if (titleEl) titleEl.innerText = docTitle;s
+            if (titleEl) titleEl.innerText = docTitle;
 
             var btnExternal = document.getElementById('btnDocExternal');
             if (btnExternal) btnExternal.href = fileUrl;
@@ -347,7 +347,8 @@
             if (!container) return;
             container.innerHTML = '';
 
-            var ext = fileUrl.split('.').pop().toLowerCase();
+            var cleanUrl = (fileUrl || '').split('?')[0].split('#')[0];
+            var ext = cleanUrl.split('.').pop().toLowerCase();
 
             if (ext === 'pdf') {
                 container.innerHTML = '<iframe src="' + fileUrl + '" style="width: 100%; height: 100%; min-height: 500px; border: none;"></iframe>';

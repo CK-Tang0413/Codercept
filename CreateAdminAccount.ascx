@@ -16,10 +16,16 @@
             <button type="button" class="btn-modal-close" onclick="closeAddAdminModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
+        <!-- Server-side Error / Alert within Modal -->
+        <asp:Panel ID="pnlModalError" runat="server" Visible="false" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div><asp:Literal ID="litModalError" runat="server"></asp:Literal></div>
+        </asp:Panel>
+
         <!-- Form Fields -->
         <div class="admin-form-group">
             <label class="form-label" for="<%= txtAdminFullName.ClientID %>">Full Name <span style="color: var(--danger-red);">*</span></label>
-            <asp:TextBox ID="txtAdminFullName" runat="server" CssClass="form-control" placeholder="e.g. Sarah Jenkins" oninput="updatePredefinedPassword()"></asp:TextBox>
+            <asp:TextBox ID="txtAdminFullName" runat="server" CssClass="form-control" placeholder="e.g. Sarah Jenkins" oninput="handleFullNameInput()"></asp:TextBox>
         </div>
 
         <div class="admin-form-group">
@@ -42,12 +48,12 @@
                 </button>
             </div>
             <div style="position: relative;">
-                <asp:TextBox ID="txtAdminPassword" runat="server" CssClass="form-control" placeholder="&lt;userFirstName&gt;@1234" style="padding-right: 40px;"></asp:TextBox>
+                <asp:TextBox ID="txtAdminPassword" runat="server" CssClass="form-control" placeholder="&lt;userFirstName&gt;@1234" style="padding-right: 40px;" oninput="onPasswordInputChanged()"></asp:TextBox>
                 <button type="button" class="btn-pwd-toggle" onclick="toggleAdminPasswordVisibility()" title="Toggle visibility">
                     <i class="fa-regular fa-eye" id="pwdToggleIcon"></i>
                 </button>
             </div>
-            <span style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; display: block;">Format: &lt;userFirstName&gt;@1234 (alias symbol '@')</span>
+            <span style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; display: block;">Format: &lt;userFirstName&gt;@1234 or custom temporary password. This temporary password will be emailed to the administrator.</span>
         </div>
 
         <!-- Modal Actions Footer -->
@@ -60,15 +66,22 @@
 </div>
 
 <script>
-function openAddAdminModal() {
-    document.getElementById('addAdminModal').classList.add('active');
-    const txtName = document.getElementById('<%= txtAdminFullName.ClientID %>');
+    let passwordCustomizedByUser = false;
+
+    function openAddAdminModal() {
+        const modal = document.getElementById('addAdminModal');
+        if (modal) modal.classList.add('active');
+        const txtName = document.getElementById('<%= txtAdminFullName.ClientID %>');
         if (txtName) txtName.focus();
     }
 
     function closeAddAdminModal() {
         const modal = document.getElementById('addAdminModal');
         if (modal) modal.classList.remove('active');
+    }
+
+    function onPasswordInputChanged() {
+        passwordCustomizedByUser = true;
     }
 
     function toggleAdminPasswordVisibility() {
@@ -78,12 +91,16 @@ function openAddAdminModal() {
 
         if (pwdInput.type === 'password' || pwdInput.type === '') {
             pwdInput.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
         } else {
             pwdInput.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
     }
 
@@ -100,14 +117,17 @@ function openAddAdminModal() {
         return firstName + '@1234';
     }
 
-    function updatePredefinedPassword() {
-        const pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
-        if (pwdInput) {
-            pwdInput.value = getCalculatedPredefinedPassword();
+    function handleFullNameInput() {
+        if (!passwordCustomizedByUser) {
+            const pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
+            if (pwdInput) {
+                pwdInput.value = getCalculatedPredefinedPassword();
+            }
         }
     }
 
     function generatePredefinedAdminPassword() {
+        passwordCustomizedByUser = false;
         const predefined = getCalculatedPredefinedPassword();
         const pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
         if (pwdInput) {
@@ -122,26 +142,29 @@ function openAddAdminModal() {
     }
 
     function validateNewAdminForm() {
-        const name = document.getElementById('<%= txtAdminFullName.ClientID %>').value.trim();
-        const email = document.getElementById('<%= txtAdminEmail.ClientID %>').value.trim();
+        const nameInput = document.getElementById('<%= txtAdminFullName.ClientID %>');
+        const emailInput = document.getElementById('<%= txtAdminEmail.ClientID %>');
         let pwdInput = document.getElementById('<%= txtAdminPassword.ClientID %>');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        const email = emailInput ? emailInput.value.trim() : '';
         let pwd = pwdInput ? pwdInput.value.trim() : '';
 
         if (!name) {
             alert('Please enter the administrator\'s full name.');
-            document.getElementById('<%= txtAdminFullName.ClientID %>').focus();
+            if (nameInput) nameInput.focus();
             return false;
         }
 
         if (!email || !email.includes('@') || !email.includes('.')) {
             alert('Please enter a valid email address.');
-            document.getElementById('<%= txtAdminEmail.ClientID %>').focus();
+            if (emailInput) emailInput.focus();
             return false;
         }
 
         if (!pwd) {
             pwd = getCalculatedPredefinedPassword();
-            pwdInput.value = pwd;
+            if (pwdInput) pwdInput.value = pwd;
         }
 
         return true;
