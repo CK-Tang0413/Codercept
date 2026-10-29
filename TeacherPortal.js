@@ -1442,8 +1442,9 @@
                 var postCard = action.closest("[data-tp-forum-post]");
                 qs("[data-tp-moderate-title]").textContent = postCard.getAttribute("data-title");
                 qs("[data-tp-moderate-post]").value = action.getAttribute("data-tp-forum-action");
-                // an already flagged post cannot be flagged again, only hidden
-                qs('[data-tp-moderate="flag"]').disabled = action.getAttribute("data-flagged") === "1";
+                // an already flagged post cannot be flagged again, only hidden (the teaching assistant's dialog has no such button hook, so it is skipped there)
+                var flagButton = qs('[data-tp-moderate="flag"]');
+                if (flagButton) flagButton.disabled = action.getAttribute("data-flagged") === "1";
                 openModal("tpModerateModal");
                 return;
             }

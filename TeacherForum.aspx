@@ -7,8 +7,8 @@
 
 <asp:Content ID="ContentMain" ContentPlaceHolderID="cphMain" runat="server">
     <%-- Choosing a post and the mobile discussion view run client-side (data-tp-forum-*); pin / reply post back
-         as tpForumAction ("pin:post:comment", "reply") and are handled in Page_Load. The Action dialog at the bottom (flag or hide a post,
-         with a reason) is the front end only for now: nothing is posted or saved yet. --%>
+         as tpForumAction ("pin:post:comment", "reply", "unhide:post", "dismissflag:post", "moderate:flag|hide") and are handled in Page_Load.
+         The tabs (?filter=flagged / hidden) show the flagged and the hidden posts. The Action dialog at the bottom flags or hides a post with a reason. --%>
     <div class="forum-screen<%= MobileDiscussion ? " show-discussion" : "" %>" data-tp-forum>
         <input type="hidden" id="hfTeacherForumPost" runat="server" data-tp-forum-selected />
         <input type="hidden" id="hfTeacherForumMobile" runat="server" value="0" data-tp-forum-mobile />
