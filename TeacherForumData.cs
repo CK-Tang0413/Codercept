@@ -67,32 +67,44 @@ namespace Codercept
                 con.Open();
 
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT f.PostId, f.Title, f.Content, f.Tags, f.IsFlagged FROM Forum f WHERE " + Visible + " ORDER BY f.DatePosted DESC, f.PostId DESC", con))
+                    "SELECT f.PostId, f.Title, f.Content, f.Tags, " +
+                    "(SELECT TOP 1 m.ModerateReason FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Flag' ORDER BY m.DateModerate DESC) AS FlagReason, " +
+                    "f.IsFlagged " +
+                    "FROM Forum f WHERE " + Visible + " " +
+                    "AND NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Hide') " +
+                    "ORDER BY f.DatePosted DESC, f.PostId DESC", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
+                            string flagReason = reader.IsDBNull(4) ? null : reader.GetString(4);
+                            bool isFlagged = !string.IsNullOrEmpty(flagReason) || (!reader.IsDBNull(5) && reader.GetBoolean(5));
                             posts.Add(new TeacherForumPost
                             {
                                 Id = reader.GetInt32(0),
                                 Title = reader.GetString(1),
                                 Excerpt = ExcerptOf(reader.GetString(2)),
                                 Tags = TagsOf(reader.IsDBNull(3) ? "" : reader.GetString(3)),
-                                Flagged = reader.GetBoolean(4),
+                                Flagged = isFlagged,
+                                IsFlagged = isFlagged,
+                                FlagReason = flagReason,
                                 Comments = new List<TeacherForumComment>()
                             });
                         }
                     }
                 }
 
-                // teaching-assistant replies (TA_Id) are not shown yet
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT r.ThreadId, r.PostId, r.ReplyComment, r.IsPinned, l.Name, t.Name, r.ParentThreadId " +
+                    "SELECT r.ThreadId, r.PostId, r.ReplyComment, r.IsPinned, " +
+                    "COALESCE(t.Name, ta.Name, l.Name, 'Unknown') AS AuthorName, " +
+                    "CASE WHEN r.TeacherId IS NOT NULL THEN 'TEACHER' WHEN r.TA_Id IS NOT NULL THEN 'TA' ELSE 'LEARNER' END AS Role, " +
+                    "r.ParentThreadId " +
                     "FROM Post_Reply r INNER JOIN Forum f ON f.PostId = r.PostId " +
                     "LEFT JOIN Learner l ON l.LearnerId = r.LearnerId LEFT JOIN Teacher t ON t.TeacherId = r.TeacherId " +
-                    "WHERE r.TA_Id IS NULL AND " + Visible + " ORDER BY r.ThreadId", con))
+                    "LEFT JOIN Teaching_Assistant ta ON ta.TA_Id = r.TA_Id " +
+                    "WHERE " + Visible + " ORDER BY r.ThreadId", con))
                 {
                     cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -102,14 +114,14 @@ namespace Codercept
                             int postId = reader.GetInt32(1);
                             TeacherForumPost post = posts.FirstOrDefault(p => p.Id == postId);
                             if (post == null) continue;
-                            bool byTeacher = !reader.IsDBNull(5);
-                            string name = byTeacher ? reader.GetString(5) : reader.IsDBNull(4) ? "Unknown" : reader.GetString(4);
+                            string name = reader.GetString(4);
+                            string role = reader.GetString(5);
                             post.Comments.Add(new TeacherForumComment
                             {
                                 Id = reader.GetInt32(0),
                                 Name = name,
                                 Initials = name.Substring(0, 1).ToUpperInvariant(),
-                                Role = byTeacher ? "TEACHER" : "LEARNER",
+                                Role = role,
                                 Body = reader.GetString(2),
                                 Pinned = reader.GetString(3) == "Yes",
                                 ParentId = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6)
@@ -119,6 +131,17 @@ namespace Codercept
                 }
             }
             return posts;
+        }
+
+        public static void DismissFlag(int postId)
+        {
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM [dbo].[Moderate_Forum] WHERE PostId = @PostId AND ModerateAction = 'Flag'; UPDATE [dbo].[Forum] SET IsFlagged = 0 WHERE PostId = @PostId;", con))
+            {
+                cmd.Parameters.AddWithValue("@PostId", postId);
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         /// <summary>

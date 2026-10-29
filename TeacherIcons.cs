@@ -20,6 +20,7 @@ namespace Codercept
             { "book", "<path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20' /><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z' />" },
             { "clock", "<circle cx='12' cy='12' r='9' /><path d='M12 7v5l3 2' />" },
             { "message", "<path d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z' /><path d='M8 10h8M8 14h4' />" },
+            { "chat", "<path d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z' /><path d='M8 10h8M8 14h4' />" },
             { "trend", "<path d='m3 17 6-6 4 4 8-8M15 7h6v6' />" },
             { "arrow", "<path d='M5 12h14m-5-5 5 5-5 5' />" },
             { "edit", "<path d='M12 20h9' /><path d='M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z' />" },
