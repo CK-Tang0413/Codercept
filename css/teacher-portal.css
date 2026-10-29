@@ -7822,3 +7822,86 @@
     display: none !important;
   }
 }
+
+/* The Flag / Hide dialog has three buttons: Cancel, Flag and Hide sit in one row (stacked on a very narrow screen like the other dialogs). */
+.tp-app #tpModerateModal .modal-actions {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 420px) {
+  .tp-app #tpModerateModal .modal-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Forum tabs (Active Discussions / Flagged / Hidden), the look of the teaching assistant's forum page */
+.tp-app .forum-heading {
+  flex-wrap: wrap;
+}
+
+.tp-app .forum-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 9999px;
+  background: #f3f4f6;
+}
+
+.tp-app .forum-tab {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tp-app .forum-tab.is-active {
+  color: #4338ca;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.tp-app .forum-tab--flagged.is-active {
+  color: #ef4444;
+}
+
+.tp-app .forum-tab--hidden.is-active {
+  color: #374151;
+}
+
+.tp-app .forum-post-card.is-hidden {
+  border-left: 3px solid #9ca3af;
+  background: #f9fafb;
+}
+
+.tp-app .post-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-app .forum-reason {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.tp-app .forum-readonly-note {
+  margin: 0;
+  padding: 14px 18px;
+  border-top: 1px solid #e9e5f5;
+}
+
+.tp-app .post-card-footer {
+  flex-wrap: wrap;
+}
+
+.tp-app .post-card-actions .post-action {
+  white-space: nowrap;
+}
+
+/* the discussion header keeps some space under its badges when the title wraps */
+.tp-app .discussion-header {
+  padding-block: 10px;
+}

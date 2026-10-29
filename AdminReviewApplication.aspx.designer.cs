@@ -60,6 +60,24 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.HiddenField hfApplicationId;
 
         /// <summary>
+        /// hfApplicantName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfApplicantName;
+
+        /// <summary>
+        /// hfApplicantEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfApplicantEmail;
+
+        /// <summary>
         /// litAvatarInitials control.
         /// </summary>
         /// <remarks>

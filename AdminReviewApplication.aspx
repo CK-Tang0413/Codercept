@@ -202,6 +202,8 @@
                         <asp:HiddenField ID="hfApplicantUserId" runat="server" />
                     <asp:HiddenField ID="hfApplicantRole" runat="server" />
                     <asp:HiddenField ID="hfApplicationId" runat="server" />
+                    <asp:HiddenField ID="hfApplicantName" runat="server" />
+                    <asp:HiddenField ID="hfApplicantEmail" runat="server" />
                     <a href="AdminUserManagement.aspx?tab=pending" class="btn-back">
                             <i class="fa-solid fa-arrow-left"></i> Back to User Management
                         </a>
@@ -301,7 +303,8 @@
                                 OnClientClick="return validateRejectReason();" />
 
                             <asp:Button ID="btnApproveApplication" runat="server" Text="Approve Application" 
-                                CssClass="btn-decision btn-approve-lg" OnClick="btnApproveApplication_Click" />
+                                CssClass="btn-decision btn-approve-lg" OnClick="btnApproveApplication_Click" 
+                                OnClientClick="return confirm('Are you sure you want to approve this application?');" />
                         </div>
                     </div>
                 </div>

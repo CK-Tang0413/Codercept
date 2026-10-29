@@ -17,31 +17,58 @@
 
         <div class="forum-heading">
             <h1>Forum</h1>
+            <nav class="forum-tabs" aria-label="Forum views">
+                <a class="forum-tab<%= CurrentFilter == "all" ? " is-active" : "" %>" href="TeacherForum.aspx">Active Discussions</a>
+                <a class="forum-tab forum-tab--flagged<%= CurrentFilter == "flagged" ? " is-active" : "" %>" href="TeacherForum.aspx?filter=flagged">Flagged</a>
+                <a class="forum-tab forum-tab--hidden<%= CurrentFilter == "hidden" ? " is-active" : "" %>" href="TeacherForum.aspx?filter=hidden">Hidden</a>
+            </nav>
             <a class="button button--primary" href="TeacherForumAdd.aspx"><span>Add new post</span></a>
         </div>
 
         <% if (Posts.Count == 0) { %>
         <article class="chapter-detail-card">
+            <% if (CurrentFilter == "flagged") { %>
+            <p class="summary-empty">No posts are flagged. A post you flag with "Action" appears here.</p>
+            <% } else if (CurrentFilter == "hidden") { %>
+            <p class="summary-empty">No posts are hidden. A post you hide with "Action" appears here, and you can unhide it.</p>
+            <% } else { %>
             <p class="summary-empty">There are no forum posts yet. Posts by learners in your courses appear here, and you can start a discussion with "Add new post".</p>
+            <% } %>
         </article>
         <% } else { %>
         <div class="forum-layout">
             <section class="post-list" aria-label="Forum posts">
                 <% foreach (TeacherForumPost post in Posts) { bool sel = post.Id == SelectedPost.Id; %>
-                <article class="forum-post-card<%= sel ? " is-selected" : "" %><%= (post.IsFlagged || post.Flagged) ? " is-flagged" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>" style="<%= (post.IsFlagged || post.Flagged) ? "border-left: 3px solid #ef4444; background: #fffcfc;" : "" %>">
+                <article class="forum-post-card<%= sel ? " is-selected" : "" %><%= (post.IsFlagged || post.Flagged) && !post.IsHidden ? " is-flagged" : "" %><%= post.IsHidden ? " is-hidden" : "" %>" data-tp-forum-post="<%= post.Id %>" data-title="<%: post.Title %>" data-flagged-post="<%= post.IsFlagged || post.Flagged ? "1" : "0" %>" data-flag-reason="<%: post.FlagReason %>" style="<%= (post.IsFlagged || post.Flagged) && !post.IsHidden ? "border-left: 3px solid #ef4444; background: #fffcfc;" : "" %>">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.35rem;">
                         <h2 style="margin: 0;"><%: post.Title %></h2>
-                        <% if (post.IsFlagged || post.Flagged) { %>
+                        <% if (post.IsHidden) { %>
+                        <span class="badge badge--neutral" title="Hidden: <%: post.HideReason %>" style="flex-shrink: 0;">Hidden</span>
+                        <% } else if (post.IsFlagged || post.Flagged) { %>
                         <span class="badge badge--danger" title="Flagged: <%: post.FlagReason %>" style="flex-shrink: 0;">Flagged</span>
                         <% } %>
                     </div>
                     <p><%: post.Excerpt %></p>
+                    <% if (post.IsHidden && !string.IsNullOrEmpty(post.HideReason)) { %>
+                    <p class="forum-reason">Hidden because: <%: post.HideReason %></p>
+                    <% } else if (CurrentFilter == "flagged" && !string.IsNullOrEmpty(post.FlagReason)) { %>
+                    <p class="forum-reason">Flagged because: <%: post.FlagReason %></p>
+                    <% } %>
                     <div class="post-tags">
                         <% foreach (string tag in post.Tags) { %><span class="tag-chip">#<%: tag %></span><% } %>
                     </div>
                     <div class="post-card-footer">
                         <button type="button" class="comment-count" data-tp-forum-open="<%= post.Id %>">Comment (<%= post.Comments.Count %>)</button>
-                        <button type="button" class="post-action" data-tp-forum-action="<%= post.Id %>" data-flagged="<%= post.Flagged ? "1" : "0" %>" aria-label="Actions for <%: post.Title %>">Action</button>
+                        <span class="post-card-actions">
+                            <% if (post.IsHidden) { %>
+                            <button type="submit" name="tpForumAction" value="unhide:<%= post.Id %>" class="post-action" data-tp-forum-card-submit aria-label="Unhide <%: post.Title %>">Unhide</button>
+                            <% } else if (post.IsFlagged || post.Flagged) { %>
+                            <%-- a flagged or hidden post has no Action button: a flagged one offers "Dismiss flag", a hidden one "Unhide" --%>
+                            <button type="submit" name="tpForumAction" value="dismissflag:<%= post.Id %>" class="post-action" data-tp-forum-card-submit aria-label="Dismiss the flag on <%: post.Title %>">Dismiss flag</button>
+                            <% } else { %>
+                            <button type="button" class="post-action" data-tp-forum-action="<%= post.Id %>" data-flagged="<%= post.Flagged ? "1" : "0" %>" aria-label="Actions for <%: post.Title %>">Action</button>
+                            <% } %>
+                        </span>
                     </div>
                 </article>
                 <% } %>
@@ -53,15 +80,12 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.75rem; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                             <h2 style="margin: 0;">Discussion: <span data-tp-forum-title><%: SelectedPost.Title %></span></h2>
-                            <% if (SelectedPost.IsFlagged) { %>
-                            <span class="badge badge--danger" title="Flagged: <%: SelectedPost.FlagReason %>">Flagged</span>
+                            <%-- always in the page; the page script shows it only while a flagged post is the selected one --%>
+                            <span class="badge badge--danger" data-tp-forum-flagbadge title="Flagged: <%: SelectedPost.FlagReason %>"<%= SelectedPost.IsFlagged || SelectedPost.Flagged ? "" : " hidden" %>>Flagged</span>
+                            <% if (CurrentFilter == "hidden") { %>
+                            <span class="badge badge--neutral">Hidden</span>
                             <% } %>
                         </div>
-                        <% if (SelectedPost.IsFlagged) { %>
-                        <div>
-                            <asp:Button ID="btnTeacherDismissFlag" runat="server" CssClass="button button--secondary" style="padding: 4px 12px; font-size: 12px;" Text="Dismiss Flag" OnClick="btnTeacherDismissFlag_Click" />
-                        </div>
-                        <% } %>
                     </div>
                 </div>
                 <div class="comment-scroll">
@@ -69,7 +93,7 @@
                     <div style="display: contents" data-tp-forum-thread="<%= post.Id %>"<%= post.Id == SelectedPost.Id ? "" : " hidden" %>>
                         <% if (post.Comments.Count == 0) { %>
                         <div class="empty-thread-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center; color: #6b7280;">
-                            <p style="margin: 0; font-size: 14px; color: #6b7280;">No replies yet. Be the first to reply!</p>
+                            <p style="margin: 0; font-size: 14px; color: #6b7280;"><%= CurrentFilter == "hidden" ? "No replies." : "No replies yet. Be the first to reply!" %></p>
                         </div>
                         <% } else { %>
                         <%-- pinned replies first; the rest keep their order (OrderByDescending is stable) --%>
@@ -86,8 +110,10 @@
                                 </div>
                                 <p><% if (c.Pinned) { %><span class="pin-mark" aria-label="Pinned"></span><% } %><%: c.Body %></p>
                                 <div class="comment-actions">
+                                    <% if (CurrentFilter != "hidden") { %>
                                     <button type="button" data-tp-forum-reply="<%= c.Id %>" data-name="<%: c.Name %>">Reply</button>
                                     <button type="submit" name="tpForumAction" value="pin:<%= post.Id %>:<%= c.Id %>"><%= c.Pinned ? "Unpin" : "Pin" %></button>
+                                    <% } %>
                                     <span class="reply-id" title="Reply ID">ID <%= c.Id %></span>
                                 </div>
                             </article>
@@ -97,7 +123,11 @@
                     </div>
                     <% } %>
                 </div>
-                <div class="reply-area">
+                <%-- a hidden post is read-only (the server refuses replies and pins for it too); the box stays in the page, out of sight, so the page script still finds it --%>
+                <% if (CurrentFilter == "hidden") { %>
+                <p class="forum-reason forum-readonly-note">This post is hidden, so it is read-only. Unhide it from its card to reply again.</p>
+                <% } %>
+                <div class="reply-area"<%= CurrentFilter == "hidden" ? " hidden style=\"display: none;\"" : "" %>>
                     <span class="replying-label" data-tp-forum-replying-label hidden>
                         <span data-tp-forum-replying-text></span>
                         <button type="button" class="replying-cancel" aria-label="Cancel reply" data-tp-forum-reply-cancel><%= TeacherIcons.Svg("close", 14) %></button>

@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminUserLogs.aspx.cs" Inherits="Codercept.AdminUserLogs" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 <%@ Register Src="~/UserProfileDetails.ascx" TagPrefix="uc" TagName="UserProfileDetails" %>
 
@@ -220,6 +220,7 @@
         </div>
 
         <script>
+            // @ts-nocheck
             let activeRole = 'all';
 
             function filterRole(role, clickedTab) {

@@ -10,13 +10,12 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using BCrypt.Net;
 
 namespace Codercept
 {
     public partial class AdminReviewApplication : System.Web.UI.Page
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString 
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["Codercept_db"]?.ConnectionString
             ?? ConfigurationManager.ConnectionStrings["CoderceptDB"]?.ConnectionString;
 
         protected string CurrentUserId = "";
@@ -235,16 +234,16 @@ namespace Codercept
                     litFullName.Text = HttpUtility.HtmlEncode(fullName);
                     litEmail.Text = HttpUtility.HtmlEncode(email);
                     litAvatarInitials.Text = GetInitials(fullName);
-                    litRoleBadge.Text = roleCategory == "teacher" 
-                        ? "<span class='role-badge badge-teacher'>Teacher Applicant</span>" 
+                    litRoleBadge.Text = roleCategory == "teacher"
+                        ? "<span class='role-badge badge-teacher'>Teacher Applicant</span>"
                         : "<span class='role-badge badge-ta'>Teaching Assistant Applicant</span>";
                     litAppliedDate.Text = $"Applied on {appliedDate:yyyy-MM-dd}";
                     litAppliedRole.Text = HttpUtility.HtmlEncode(role);
                     litQualificationName.Text = !string.IsNullOrWhiteSpace(qualificationName) ? HttpUtility.HtmlEncode(qualificationName) : "Not Specified";
 
                     // Specialization
-                    string specializationText = domains.Count > 0 
-                        ? string.Join(", ", domains) 
+                    string specializationText = domains.Count > 0
+                        ? string.Join(", ", domains)
                         : (!string.IsNullOrWhiteSpace(teachingLevel) ? $"{teachingLevel} Level Specialization" : "Computer Science & Programming");
                     litSpecialization.Text = HttpUtility.HtmlEncode(specializationText);
 
@@ -266,10 +265,44 @@ namespace Codercept
                     // Verification documents
                     if (!string.IsNullOrWhiteSpace(credentialDoc))
                     {
-                        string resolvedUrl = ResolveUrl(credentialDoc);
-                        string fileName = System.IO.Path.GetFileName(credentialDoc);
+                        string cleanDoc = credentialDoc.Trim().Replace("\\", "/");
+                        string resolvedUrl;
+
+                        if (cleanDoc.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || cleanDoc.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                        {
+                            resolvedUrl = cleanDoc;
+                        }
+                        else if (cleanDoc.StartsWith("~/") || cleanDoc.StartsWith("/"))
+                        {
+                            resolvedUrl = ResolveUrl(cleanDoc);
+                        }
+                        else if (cleanDoc.StartsWith("media/", StringComparison.OrdinalIgnoreCase) || cleanDoc.StartsWith("UploadedCertificates/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            resolvedUrl = ResolveUrl("~/" + cleanDoc);
+                        }
+                        else
+                        {
+                            string qualPath = Server.MapPath("~/media/uploads/qualifications/" + cleanDoc);
+                            if (System.IO.File.Exists(qualPath))
+                            {
+                                resolvedUrl = ResolveUrl("~/media/uploads/qualifications/" + cleanDoc);
+                            }
+                            else
+                            {
+                                string certPath = Server.MapPath("~/UploadedCertificates/" + cleanDoc);
+                                if (System.IO.File.Exists(certPath))
+                                {
+                                    resolvedUrl = ResolveUrl("~/UploadedCertificates/" + cleanDoc);
+                                }
+                                else
+                                {
+                                    resolvedUrl = ResolveUrl("~/media/uploads/qualifications/" + cleanDoc);
+                                }
+                            }
+                        }
+                        string fileName = System.IO.Path.GetFileName(cleanDoc);
                         if (string.IsNullOrWhiteSpace(fileName)) fileName = "Credential Document";
-                        string ext = System.IO.Path.GetExtension(credentialDoc).TrimStart('.').ToLower();
+                        string ext = System.IO.Path.GetExtension(cleanDoc).TrimStart('.').ToLower();
                         string iconClass = "fa-file-pdf";
                         if (new[] { "png", "jpg", "jpeg", "webp", "gif" }.Contains(ext)) iconClass = "fa-file-image";
                         else if (new[] { "doc", "docx" }.Contains(ext)) iconClass = "fa-file-word";
@@ -297,6 +330,8 @@ namespace Codercept
                     hfApplicantUserId.Value = (roleCategory == "teacher" ? actualTeacherId : actualTaId).ToString();
                     hfApplicantRole.Value = roleCategory;
                     hfApplicationId.Value = applicationId.ToString();
+                    hfApplicantName.Value = fullName;
+                    hfApplicantEmail.Value = email;
                 }
             }
             catch (Exception ex)
@@ -308,18 +343,17 @@ namespace Codercept
         protected void btnApproveApplication_Click(object sender, EventArgs e)
         {
             int.TryParse(hfApplicantUserId.Value, out int userId);
-            string roleCategory = hfApplicantRole.Value?.ToLower();
+            string roleCategory = hfApplicantRole.Value?.Trim().ToLower() ?? "";
             int.TryParse(hfApplicationId.Value, out int appId);
             string optionalNotes = txtAdminRemarks.Text.Trim();
+            string recipientName = hfApplicantName.Value?.Trim() ?? "";
+            string recipientEmail = hfApplicantEmail.Value?.Trim() ?? "";
+            string roleTitle = roleCategory == "teacher" ? "Teacher" : "Teaching Assistant";
 
             if (!string.IsNullOrEmpty(connectionString))
             {
                 try
                 {
-                    string recipientName = "";
-                    string recipientEmail = "";
-                    string predefinedPassword = "";
-
                     using (SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
@@ -327,20 +361,132 @@ namespace Codercept
                         {
                             try
                             {
-                                // Retrieve applicant Name and Email from database for 100% accuracy
-                                string selectQuery = (roleCategory == "teacher")
-                                    ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
-                                    : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+                                string appQualName = "";
+                                string appQualDoc = "";
 
-                                using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                // 1. Retrieve QualificationName and CredentialDocument from Application table
+                                if (appId > 0)
                                 {
-                                    selectCmd.Parameters.AddWithValue("@Id", userId);
-                                    using (SqlDataReader r = selectCmd.ExecuteReader())
+                                    string appSelectQuery = "SELECT QualificationName, CredentialDocument, RoleApplied FROM [dbo].[Application] WHERE ApplicationId = @appId";
+                                    using (SqlCommand appSelectCmd = new SqlCommand(appSelectQuery, conn, tx))
                                     {
-                                        if (r.Read())
+                                        appSelectCmd.Parameters.AddWithValue("@appId", appId);
+                                        using (SqlDataReader ar = appSelectCmd.ExecuteReader())
                                         {
-                                            recipientName = r["Name"]?.ToString() ?? "";
-                                            recipientEmail = r["Email"]?.ToString() ?? "";
+                                            if (ar.Read())
+                                            {
+                                                appQualName = ar["QualificationName"] != DBNull.Value ? ar["QualificationName"].ToString() : "";
+                                                appQualDoc = ar["CredentialDocument"] != DBNull.Value ? ar["CredentialDocument"].ToString() : "";
+                                                if (string.IsNullOrEmpty(roleCategory))
+                                                {
+                                                    string roleApplied = ar["RoleApplied"]?.ToString() ?? "";
+                                                    roleCategory = roleApplied.IndexOf("Assistant", StringComparison.OrdinalIgnoreCase) >= 0 ? "assistant" : "teacher";
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // If appId was 0 or not linked, attempt to find ApplicationId from Teacher / Teaching_Assistant table
+                                if (appId <= 0 && userId > 0)
+                                {
+                                    string findAppSql = (roleCategory == "teacher")
+                                        ? "SELECT ApplicationId, QualificationName, QualificationDocument FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                        : "SELECT ApplicationId, QualificationName, QualificationDocument FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+                                    using (SqlCommand findAppCmd = new SqlCommand(findAppSql, conn, tx))
+                                    {
+                                        findAppCmd.Parameters.AddWithValue("@Id", userId);
+                                        using (SqlDataReader far = findAppCmd.ExecuteReader())
+                                        {
+                                            if (far.Read())
+                                            {
+                                                if (far["ApplicationId"] != DBNull.Value)
+                                                    appId = Convert.ToInt32(far["ApplicationId"]);
+                                                if (string.IsNullOrEmpty(appQualName) && far["QualificationName"] != DBNull.Value)
+                                                    appQualName = far["QualificationName"].ToString();
+                                                if (string.IsNullOrEmpty(appQualDoc) && far["QualificationDocument"] != DBNull.Value)
+                                                    appQualDoc = far["QualificationDocument"].ToString();
+                                            }
+                                        }
+                                    }
+
+                                    if (appId > 0 && (string.IsNullOrEmpty(appQualName) || string.IsNullOrEmpty(appQualDoc)))
+                                    {
+                                        string appSelectQuery = "SELECT QualificationName, CredentialDocument FROM [dbo].[Application] WHERE ApplicationId = @appId";
+                                        using (SqlCommand appSelectCmd = new SqlCommand(appSelectQuery, conn, tx))
+                                        {
+                                            appSelectCmd.Parameters.AddWithValue("@appId", appId);
+                                            using (SqlDataReader ar = appSelectCmd.ExecuteReader())
+                                            {
+                                                if (ar.Read())
+                                                {
+                                                    if (string.IsNullOrEmpty(appQualName) && ar["QualificationName"] != DBNull.Value)
+                                                        appQualName = ar["QualificationName"].ToString();
+                                                    if (string.IsNullOrEmpty(appQualDoc) && ar["CredentialDocument"] != DBNull.Value)
+                                                        appQualDoc = ar["CredentialDocument"].ToString();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // If userId was 0, resolve user by ApplicationId
+                                if (userId <= 0 && appId > 0)
+                                {
+                                    if (roleCategory == "teacher" || string.IsNullOrEmpty(roleCategory))
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand("SELECT TeacherId, Name, Email FROM [dbo].[Teacher] WHERE ApplicationId = @appId", conn, tx))
+                                        {
+                                            cmd.Parameters.AddWithValue("@appId", appId);
+                                            using (SqlDataReader r = cmd.ExecuteReader())
+                                            {
+                                                if (r.Read())
+                                                {
+                                                    userId = Convert.ToInt32(r["TeacherId"]);
+                                                    roleCategory = "teacher";
+                                                    if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                    if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (userId <= 0 && (roleCategory == "assistant" || string.IsNullOrEmpty(roleCategory)))
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand("SELECT TA_Id, Name, Email FROM [dbo].[Teaching_Assistant] WHERE ApplicationId = @appId", conn, tx))
+                                        {
+                                            cmd.Parameters.AddWithValue("@appId", appId);
+                                            using (SqlDataReader r = cmd.ExecuteReader())
+                                            {
+                                                if (r.Read())
+                                                {
+                                                    userId = Convert.ToInt32(r["TA_Id"]);
+                                                    roleCategory = "assistant";
+                                                    if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                    if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Retrieve applicant Name and Email from database for accuracy if not yet resolved
+                                if (userId > 0 && (string.IsNullOrEmpty(recipientName) || string.IsNullOrEmpty(recipientEmail)))
+                                {
+                                    string selectQuery = (roleCategory == "teacher")
+                                        ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                        : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+
+                                    using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                    {
+                                        selectCmd.Parameters.AddWithValue("@Id", userId);
+                                        using (SqlDataReader r = selectCmd.ExecuteReader())
+                                        {
+                                            if (r.Read())
+                                            {
+                                                if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                            }
                                         }
                                     }
                                 }
@@ -354,16 +500,9 @@ namespace Codercept
                                     recipientEmail = litEmail.Text?.Trim() ?? "";
                                 }
 
-                                // Derive predefined password: <userfirstname> + alias + 1234
-                                // Format: <userFirstName>@1234 (alias symbol '@') matching CreateAdminAccount
-                                string[] nameParts = recipientName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                                string firstName = nameParts.Length > 0 ? nameParts[0] : (roleCategory == "teacher" ? "Teacher" : "Educator");
-                                predefinedPassword = $"{firstName}@1234";
+                                roleTitle = (roleCategory == "teacher") ? "Teacher" : "Teaching Assistant";
 
-                                // Hash predefined password with BCrypt (Cost Factor 12)
-                                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(predefinedPassword, 12);
-
-                                // 1. Update Application table
+                                // 2. Update Application table: status Approved and DateReviewed
                                 if (appId > 0)
                                 {
                                     string appQuery = "UPDATE [dbo].[Application] SET ApprovalStatus = 'Approved', DateReviewed = GETDATE() WHERE ApplicationId = @appId";
@@ -374,23 +513,40 @@ namespace Codercept
                                     }
                                 }
 
-                                // 2. Update Teacher or Teaching_Assistant table with Active status and hashed predefined password
+                                // 3. Update Teacher or Teaching_Assistant table:
+                                // Write QualificationName and CredentialDocument from Application table into QualificationName and QualificationDocument columns
                                 if (roleCategory == "teacher" && userId > 0)
                                 {
-                                    string tQuery = "UPDATE [dbo].[Teacher] SET AccStatus = 'Active', Password = @Password WHERE TeacherId = @id";
+                                    string tQuery = @"
+                                        UPDATE [dbo].[Teacher] 
+                                        SET AccStatus = 'Active', 
+                                            QualificationName = @QualificationName, 
+                                            QualificationDocument = @QualificationDocument,
+                                            ApplicationId = CASE WHEN (ApplicationId IS NULL OR ApplicationId = 0) AND @appId > 0 THEN @appId ELSE ApplicationId END
+                                        WHERE TeacherId = @id";
                                     using (SqlCommand cmd = new SqlCommand(tQuery, conn, tx))
                                     {
-                                        cmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                        cmd.Parameters.AddWithValue("@QualificationName", string.IsNullOrWhiteSpace(appQualName) ? (object)DBNull.Value : appQualName);
+                                        cmd.Parameters.AddWithValue("@QualificationDocument", string.IsNullOrWhiteSpace(appQualDoc) ? (object)DBNull.Value : appQualDoc);
+                                        cmd.Parameters.AddWithValue("@appId", appId);
                                         cmd.Parameters.AddWithValue("@id", userId);
                                         cmd.ExecuteNonQuery();
                                     }
                                 }
                                 else if (roleCategory == "assistant" && userId > 0)
                                 {
-                                    string taQuery = "UPDATE [dbo].[Teaching_Assistant] SET AccStatus = 'Active', Password = @Password WHERE TA_Id = @id";
+                                    string taQuery = @"
+                                        UPDATE [dbo].[Teaching_Assistant] 
+                                        SET AccStatus = 'Active', 
+                                            QualificationName = @QualificationName, 
+                                            QualificationDocument = @QualificationDocument,
+                                            ApplicationId = CASE WHEN (ApplicationId IS NULL OR ApplicationId = 0) AND @appId > 0 THEN @appId ELSE ApplicationId END
+                                        WHERE TA_Id = @id";
                                     using (SqlCommand cmd = new SqlCommand(taQuery, conn, tx))
                                     {
-                                        cmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                        cmd.Parameters.AddWithValue("@QualificationName", string.IsNullOrWhiteSpace(appQualName) ? (object)DBNull.Value : appQualName);
+                                        cmd.Parameters.AddWithValue("@QualificationDocument", string.IsNullOrWhiteSpace(appQualDoc) ? (object)DBNull.Value : appQualDoc);
+                                        cmd.Parameters.AddWithValue("@appId", appId);
                                         cmd.Parameters.AddWithValue("@id", userId);
                                         cmd.ExecuteNonQuery();
                                     }
@@ -406,8 +562,8 @@ namespace Codercept
                         }
                     }
 
-                    // Send approval announcement email with predefined password
-                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: true, remarks: optionalNotes, temporaryPassword: predefinedPassword);
+                    // 4. Send approval announcement email to user (referencing ForgotPassword.aspx.cs SMTP approach)
+                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: true, remarks: optionalNotes, roleTitle: roleTitle);
                 }
                 catch (Exception ex)
                 {
@@ -421,17 +577,17 @@ namespace Codercept
         protected void btnRejectApplication_Click(object sender, EventArgs e)
         {
             int.TryParse(hfApplicantUserId.Value, out int userId);
-            string roleCategory = hfApplicantRole.Value?.ToLower();
+            string roleCategory = hfApplicantRole.Value?.Trim().ToLower() ?? "";
             int.TryParse(hfApplicationId.Value, out int appId);
             string rejectionReason = txtAdminRemarks.Text.Trim();
+            string recipientName = hfApplicantName.Value?.Trim() ?? "";
+            string recipientEmail = hfApplicantEmail.Value?.Trim() ?? "";
+            string roleTitle = roleCategory == "teacher" ? "Teacher" : "Teaching Assistant";
 
             if (!string.IsNullOrEmpty(connectionString))
             {
                 try
                 {
-                    string recipientName = "";
-                    string recipientEmail = "";
-
                     using (SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
@@ -439,25 +595,88 @@ namespace Codercept
                         {
                             try
                             {
-                                // Retrieve applicant Name and Email for email notification
-                                string selectQuery = (roleCategory == "teacher")
-                                    ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
-                                    : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
-
-                                using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                // If appId was 0 or not linked, attempt to find ApplicationId from Teacher / Teaching_Assistant table
+                                if (appId <= 0 && userId > 0)
                                 {
-                                    selectCmd.Parameters.AddWithValue("@Id", userId);
-                                    using (SqlDataReader r = selectCmd.ExecuteReader())
+                                    string findAppSql = (roleCategory == "teacher")
+                                        ? "SELECT ApplicationId FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                        : "SELECT ApplicationId FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+                                    using (SqlCommand findAppCmd = new SqlCommand(findAppSql, conn, tx))
                                     {
-                                        if (r.Read())
+                                        findAppCmd.Parameters.AddWithValue("@Id", userId);
+                                        object appVal = findAppCmd.ExecuteScalar();
+                                        if (appVal != null && appVal != DBNull.Value)
+                                            appId = Convert.ToInt32(appVal);
+                                    }
+                                }
+
+                                // If userId was 0, resolve user by ApplicationId
+                                if (userId <= 0 && appId > 0)
+                                {
+                                    if (roleCategory == "teacher" || string.IsNullOrEmpty(roleCategory))
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand("SELECT TeacherId, Name, Email FROM [dbo].[Teacher] WHERE ApplicationId = @appId", conn, tx))
                                         {
-                                            recipientName = r["Name"]?.ToString() ?? "";
-                                            recipientEmail = r["Email"]?.ToString() ?? "";
+                                            cmd.Parameters.AddWithValue("@appId", appId);
+                                            using (SqlDataReader r = cmd.ExecuteReader())
+                                            {
+                                                if (r.Read())
+                                                {
+                                                    userId = Convert.ToInt32(r["TeacherId"]);
+                                                    roleCategory = "teacher";
+                                                    if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                    if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (userId <= 0 && (roleCategory == "assistant" || string.IsNullOrEmpty(roleCategory)))
+                                    {
+                                        using (SqlCommand cmd = new SqlCommand("SELECT TA_Id, Name, Email FROM [dbo].[Teaching_Assistant] WHERE ApplicationId = @appId", conn, tx))
+                                        {
+                                            cmd.Parameters.AddWithValue("@appId", appId);
+                                            using (SqlDataReader r = cmd.ExecuteReader())
+                                            {
+                                                if (r.Read())
+                                                {
+                                                    userId = Convert.ToInt32(r["TA_Id"]);
+                                                    roleCategory = "assistant";
+                                                    if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                    if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                                }
+                                            }
                                         }
                                     }
                                 }
 
-                                // 1. Update Application table
+                                // Retrieve applicant Name and Email for email notification if not yet resolved
+                                if (userId > 0 && (string.IsNullOrEmpty(recipientName) || string.IsNullOrEmpty(recipientEmail)))
+                                {
+                                    string selectQuery = (roleCategory == "teacher")
+                                        ? "SELECT Name, Email FROM [dbo].[Teacher] WHERE TeacherId = @Id"
+                                        : "SELECT Name, Email FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @Id";
+
+                                    using (SqlCommand selectCmd = new SqlCommand(selectQuery, conn, tx))
+                                    {
+                                        selectCmd.Parameters.AddWithValue("@Id", userId);
+                                        using (SqlDataReader r = selectCmd.ExecuteReader())
+                                        {
+                                            if (r.Read())
+                                            {
+                                                if (string.IsNullOrEmpty(recipientName)) recipientName = r["Name"]?.ToString() ?? "";
+                                                if (string.IsNullOrEmpty(recipientEmail)) recipientEmail = r["Email"]?.ToString() ?? "";
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (string.IsNullOrWhiteSpace(recipientName)) recipientName = HttpUtility.HtmlDecode(litFullName.Text)?.Trim() ?? "Educator";
+                                if (string.IsNullOrWhiteSpace(recipientEmail)) recipientEmail = litEmail.Text?.Trim() ?? "";
+
+                                roleTitle = (roleCategory == "teacher") ? "Teacher" : "Teaching Assistant";
+
+                                // 1. Update Application table: Rejected status and reason
                                 if (appId > 0)
                                 {
                                     string appQuery = "UPDATE [dbo].[Application] SET ApprovalStatus = 'Rejected', RejectReason = @reason, DateReviewed = GETDATE() WHERE ApplicationId = @appId";
@@ -499,11 +718,8 @@ namespace Codercept
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(recipientName)) recipientName = HttpUtility.HtmlDecode(litFullName.Text)?.Trim() ?? "Educator";
-                    if (string.IsNullOrWhiteSpace(recipientEmail)) recipientEmail = litEmail.Text?.Trim() ?? "";
-
-                    // Send rejection announcement email
-                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: false, remarks: rejectionReason);
+                    // 3. Send rejection announcement email (referencing ForgotPassword.aspx.cs SMTP approach)
+                    SendApplicationDecisionEmail(recipientEmail, recipientName, isApproved: false, remarks: rejectionReason, roleTitle: roleTitle);
                 }
                 catch (Exception ex)
                 {
@@ -514,16 +730,17 @@ namespace Codercept
             Response.Redirect("AdminUserManagement.aspx?tab=pending&msg=application_rejected");
         }
 
-        private void SendApplicationDecisionEmail(string email, string fullName, bool isApproved, string remarks, string temporaryPassword = null)
+        private void SendApplicationDecisionEmail(string email, string fullName, bool isApproved, string remarks, string roleTitle)
         {
             try
             {
+                // Retrieve email credentials safely from secrets.config / Web.config AppSettings (referencing ForgotPassword.aspx.cs)
                 string senderEmail = ConfigurationManager.AppSettings["SenderEmail"];
                 string senderAppPassword = ConfigurationManager.AppSettings["SenderAppPassword"];
 
                 if (string.IsNullOrEmpty(senderEmail) || string.IsNullOrEmpty(senderAppPassword) || string.IsNullOrEmpty(email))
                 {
-                    System.Diagnostics.Debug.WriteLine("[AdminReviewApplication SendEmail]: SenderEmail or SenderAppPassword not configured.");
+                    System.Diagnostics.Debug.WriteLine("[AdminReviewApplication SendEmail]: SenderEmail, SenderAppPassword, or recipient email not configured.");
                     return;
                 }
 
@@ -536,14 +753,10 @@ namespace Codercept
                 if (isApproved)
                 {
                     bodyContent = $@"
-                        <h2 style='color: #6366f1; margin-top: 0;'>Welcome to Codercept!</h2>
+                        <h2 style='color: #7C3AED; margin-top: 0;'>Welcome to Codercept!</h2>
                         <p>Hello <strong>{HttpUtility.HtmlEncode(fullName)}</strong>,</p>
-                        <p>Congratulations! Your educator application for Codercept has been approved. Your account is now active and you can log in to begin teaching on the platform.</p>
-                        <div style='background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #6366f1; padding: 16px; border-radius: 6px; margin: 20px 0;'>
-                            <p style='margin: 0 0 8px 0;'><strong>Login Email:</strong> {HttpUtility.HtmlEncode(email)}</p>
-                            <p style='margin: 0;'><strong>Predefined Password:</strong> <code style='font-size: 16px; font-weight: bold; color: #6366f1;'>{HttpUtility.HtmlEncode(temporaryPassword)}</code></p>
-                        </div>
-                        <p>You can use this predefined password to log in to your account. For security purposes, please change your password after logging in.</p>";
+                        <p>Congratulations! Your educator application for the position of <strong>{HttpUtility.HtmlEncode(roleTitle)}</strong> at Codercept has been approved.</p>
+                        <p>Your account is now active and you can log in to begin teaching on the platform with your registered email and password.</p>";
 
                     if (!string.IsNullOrWhiteSpace(remarks))
                     {
@@ -559,10 +772,11 @@ namespace Codercept
                     bodyContent = $@"
                         <h2 style='color: #ef4444; margin-top: 0;'>Application Review Update</h2>
                         <p>Hello <strong>{HttpUtility.HtmlEncode(fullName)}</strong>,</p>
-                        <p>Thank you for your interest in joining the Codercept educator community. Following our evaluation of your submitted credentials, we regret to inform you that your application has not been approved at this time.</p>
+                        <p>Thank you for your interest in joining the Codercept educator community as a <strong>{HttpUtility.HtmlEncode(roleTitle)}</strong>.</p>
+                        <p>Following our evaluation of your submitted application and credentials, we regret to inform you that your application has not been approved at this time.</p>
                         <div style='background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 12px; margin: 16px 0; border-radius: 6px;'>
                             <strong>Feedback from Review Team:</strong><br/>
-                            {HttpUtility.HtmlEncode(remarks)}
+                            {(string.IsNullOrWhiteSpace(remarks) ? "Submitted qualifications did not meet current verification criteria." : HttpUtility.HtmlEncode(remarks))}
                         </div>";
                 }
 
@@ -573,6 +787,7 @@ namespace Codercept
                     </div>";
                 mail.IsBodyHtml = true;
 
+                // Send the email via Gmail's SMTP server (referencing ForgotPassword.aspx.cs)
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587);
                 smtp.Credentials = new NetworkCredential(senderEmail, senderAppPassword);
                 smtp.EnableSsl = true;

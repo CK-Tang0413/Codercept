@@ -10,10 +10,16 @@ namespace Codercept
         protected TeacherForumPost SelectedPost;
         protected bool MobileDiscussion;
 
+        /// <summary>The tab shown: "all" (Active Discussions), "flagged" or "hidden" (?filter=...).</summary>
+        protected string CurrentFilter = "all";
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            string requested = (Request.QueryString["filter"] ?? "").ToLowerInvariant();
+            CurrentFilter = requested == "flagged" || requested == "hidden" ? requested : "all";
+
             // only the posts this teacher may see (their own, and those of learners enrolled in their courses)
-            Posts = TeacherForumData.GetPosts();
+            Posts = TeacherForumData.GetPosts(CurrentFilter);
             // the teacher is looking at these posts now, so they stop counting as unread on the dashboard
             TeacherForumData.MarkRead(Posts.Select(p => p.Id));
 
@@ -32,7 +38,7 @@ namespace Codercept
         private void ReloadPosts()
         {
             int id = SelectedPost == null ? 0 : SelectedPost.Id;
-            Posts = TeacherForumData.GetPosts();
+            Posts = TeacherForumData.GetPosts(CurrentFilter);
             SelectedPost = Posts.FirstOrDefault(p => p.Id == id) ?? Posts.FirstOrDefault();
         }
 
@@ -71,6 +77,28 @@ namespace Codercept
                 else
                 {
                     Master.ShowToast("That post or comment could not be found, so nothing was saved.");
+                }
+                return;
+            }
+
+            if ((parts[0] == "unhide" || parts[0] == "dismissflag") && parts.Length == 2)
+            {
+                // the post named on the button, and only when it is one of the posts of this tab (the SQL checks the teacher again)
+                int targetId;
+                if (!int.TryParse(parts[1], out targetId) || !Posts.Any(p => p.Id == targetId))
+                {
+                    Master.ShowToast("That post could not be found, so nothing was changed.");
+                    return;
+                }
+                bool unhide = parts[0] == "unhide";
+                if (unhide ? TeacherForumData.Unhide(targetId) : TeacherForumData.DismissFlag(targetId))
+                {
+                    ReloadPosts();
+                    Master.ShowToast(unhide ? "Post unhidden and restored to the forum." : "Post flag has been dismissed.");
+                }
+                else
+                {
+                    Master.ShowToast("That post could not be found, so nothing was changed.");
                 }
                 return;
             }
@@ -129,14 +157,6 @@ namespace Codercept
             if (message == null) return;
             Session.Remove("TeacherFlashToast");
             Master.ShowToast(message);
-        }
-
-        protected void btnTeacherDismissFlag_Click(object sender, EventArgs e)
-        {
-            if (SelectedPost == null) return;
-            TeacherForumData.DismissFlag(SelectedPost.Id);
-            ReloadPosts();
-            Master.ShowToast("Post flag has been dismissed.");
         }
     }
 }
