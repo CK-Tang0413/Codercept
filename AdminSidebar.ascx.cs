@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -10,24 +8,81 @@ namespace Codercept
 {
     public partial class Admin_Sidebar : System.Web.UI.UserControl
     {
+        public bool IsSuperAdmin { get; set; } = false;
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
+            IsSuperAdmin = !string.IsNullOrEmpty(userRole) &&
+                (userRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase) ||
+                 userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase));
+
+            bool isAdmin = !string.IsNullOrEmpty(userRole) &&
+                (IsSuperAdmin || userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+
+            if (phLogsNav != null)
+            {
+                phLogsNav.Visible = isAdmin;
+            }
+
+            if (!IsPostBack)
+            {
+                PopulateProfileInfo();
+            }
         }
 
-        // Add this helper method
+        private void PopulateProfileInfo()
+        {
+            string userName = Session["UserName"] as string;
+            string userEmail = Session["UserEmail"] as string;
+
+            if (!string.IsNullOrEmpty(userName))
+            {
+                litSidebarUserName.Text = HttpUtility.HtmlEncode(userName);
+                litAvatarInitials.Text = HttpUtility.HtmlEncode(GetInitials(userName));
+            }
+            else
+            {
+                litSidebarUserName.Text = IsSuperAdmin ? "Super Admin" : "System Admin";
+                litAvatarInitials.Text = IsSuperAdmin ? "SA" : "AD";
+            }
+
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                litSidebarUserEmail.Text = HttpUtility.HtmlEncode(userEmail);
+            }
+            else
+            {
+                litSidebarUserEmail.Text = IsSuperAdmin ? "superadmin@codercept.edu" : "admin@codercept.edu";
+            }
+        }
+
+        private string GetInitials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "A";
+            string[] parts = name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+            return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+        }
+
+        protected void btnSignOut_Click(object sender, EventArgs e)
+        {
+            UserLogHelper.RecordLogout(Session);
+            Session.Clear();
+            Session.Abandon();
+            Response.Redirect("signIn.aspx");
+        }
+
         protected string GetActiveCssClass(string keyword)
         {
-            // Get the current URL path in lowercase
             string currentPath = Request.Url.AbsolutePath.ToLower();
             string targetKeyword = keyword.ToLower();
 
-            // If viewing the root domain directory, default to highlighting the Dashboard
             if (currentPath == "/" && targetKeyword == "admindashboard")
             {
                 return "active";
             }
 
-            // Check if the URL contains the keyword (e.g. matches "admindashboard" inside "/AdminDashboard")
             if (currentPath.Contains(targetKeyword))
             {
                 return "active";

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="AdminSidebar.ascx.cs" Inherits="Codercept.Admin_Sidebar" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="AdminSidebar.ascx.cs" Inherits="Codercept.Admin_Sidebar" %>
 
 <aside class="sidebar">
     <div class="sidebar-top">
@@ -31,31 +31,40 @@
                     <i class="fa-solid fa-book-open"></i> Courses
                 </a>
             </li>
-            <li>
-                <a href="AdminUserLogs.aspx" class="nav-item <%= Request.Path.Contains("AdminUserLogs") ? "active" : "" %>">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>Activity Logs</span>
-                </a>
-            </li>
+            <asp:PlaceHolder ID="phLogsNav" runat="server">
+                <li>
+                    <a href="AdminUserLogs.aspx" class="nav-item <%= Request.Path.Contains("AdminUserLogs") ? "active" : "" %>">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+            </asp:PlaceHolder>
         </ul>
     </div>
 
     <div class="sidebar-bottom">
-        <!-- 
-            TODO: Replace "#profile-page-placeholder" with the actual routing path 
-            for your user profile interface in ASP.NET (e.g., href="/Admin/Profile") 
-        -->
         <a href="#profile-page-placeholder" class="user-profile">
-            <div class="avatar">SA</div>
+            <div class="avatar"><asp:Literal ID="litAvatarInitials" runat="server">SA</asp:Literal></div>
             <div class="user-info">
-                <h4>System Admin</h4>
-                <p>admin@codelearn.edu</p>
+                <h4><asp:Literal ID="litSidebarUserName" runat="server">System Admin</asp:Literal></h4>
+                <p><asp:Literal ID="litSidebarUserEmail" runat="server">admin@codercept.edu</asp:Literal></p>
             </div>
         </a>
             
-        <button class="sign-out-btn" onclick="handleSignOut()">
+        <asp:LinkButton ID="btnSignOut" runat="server" CssClass="sign-out-btn" style="text-decoration: none;" OnClick="btnSignOut_Click">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             Sign out
-        </button>
+        </asp:LinkButton>
     </div>
 </aside>
+
+<script type="text/javascript">
+    function handleSignOut() {
+        var btn = document.getElementById('<%= btnSignOut.ClientID %>');
+        if (btn) {
+            btn.click();
+        } else {
+            window.location.href = 'signIn.aspx';
+        }
+    }
+</script>

@@ -102,7 +102,7 @@
         .breakdown-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
         .status-text { font-size: 12px; color: var(--success-green); font-weight: 600; }
 
-        /* Pinned Announcements */
+        /* Recent Announcements */
         .announcements-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
         .announcement-card { 
             background-color: var(--bg-panel); 
@@ -189,14 +189,14 @@
                         <ItemTemplate>
                             <div class="approval-item">
                                 <div class="user-details">
-                                    <div class="avatar"><%# GetInitials(Eval("FullName").ToString()) %></div>
+                                    <div class="avatar"><%# GetInitials(Eval("FullName")?.ToString()) %></div>
                                     <div class="user-meta">
                                         <h5><%# Eval("FullName") %></h5>
                                         <p><%# Eval("Email") %><br /><%# Eval("Role") %> &bull; Applied <%# Eval("AppliedDate", "{0:yyyy-MM-dd}") %></p>
                                     </div>
                                 </div>
                                 <div class="action-btns">
-                                    <a href="AdminReviewApplication.aspx?userId=<%# Eval("UserId") %>" class="btn-action-review">
+                                    <a href="AdminReviewApplication.aspx?userId=<%# Eval("UserId") %>&role=<%# Eval("RoleCategory") %>" class="btn-action-review">
                                         <i class="fa-solid fa-file-signature"></i> Review Application
                                     </a>
                                 </div>
@@ -232,23 +232,23 @@
                     </div>
                 </div>
 
-                <!-- Pinned Announcements Section -->
+                <!-- Recent Announcements Section -->
                 <div class="section-header">
                     <div class="section-header-left">
-                        <div class="section-title">Pinned Announcements</div>
+                        <div class="section-title">Recent Announcements</div>
                         <span class="section-subtitle">
-                            (Showing <asp:Literal ID="litShowingPinnedCount" runat="server">0</asp:Literal> of 
-                            <span style="color: var(--accent-purple); font-weight: 500;"><asp:Literal ID="litTotalPinnedCount" runat="server">0</asp:Literal></span>)
+                            (Showing <asp:Literal ID="litShowingRecentCount" runat="server">0</asp:Literal> of 
+                            <span style="color: var(--accent-purple); font-weight: 500;"><asp:Literal ID="litTotalRecentCount" runat="server">0</asp:Literal></span>)
                         </span>
                     </div>
                     <a href="AdminCommunity.aspx" class="section-link">Manage &rarr;</a>
                 </div>
     
                 <div class="announcements-list">
-                    <asp:Repeater ID="rptPinnedAnnouncements" runat="server">
+                    <asp:Repeater ID="rptRecentAnnouncements" runat="server">
                         <ItemTemplate>
                             <div class="announcement-card <%# Eval("CardType") %>">
-                                <div class="announcement-icon"><i class="<%# GetAnnouncementIcon(Eval("CardType").ToString()) %>"></i></div>
+                                <div class="announcement-icon"><i class="<%# GetAnnouncementIcon(Eval("CardType")?.ToString()) %>"></i></div>
                                 <div class="announcement-content">
                                     <h5><%# Eval("Title") %></h5>
                                     <p><%# Eval("Content") %></p>
@@ -257,8 +257,8 @@
                         </ItemTemplate>
                     </asp:Repeater>
 
-                    <asp:Panel ID="pnlNoPinned" runat="server" Visible="false" CssClass="empty-placeholder">
-                        <i class="fa-solid fa-thumbtack" style="margin-right: 6px;"></i> No pinned announcements currently.
+                    <asp:Panel ID="pnlNoRecent" runat="server" Visible="false" CssClass="empty-placeholder">
+                        <i class="fa-solid fa-bullhorn" style="margin-right: 6px;"></i> No recent announcements currently.
                     </asp:Panel>
                 </div>
             </main>

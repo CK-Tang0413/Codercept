@@ -52,11 +52,12 @@ CREATE TABLE [dbo].[Notification] (
 );
 
 CREATE TABLE [dbo].[Admin] (
-    [AdminId]  INT            IDENTITY (1, 1) NOT NULL,
-    [Name]     NVARCHAR (50)  NOT NULL,
-    [Email]    NVARCHAR (50)  NOT NULL,
-    [Password] NVARCHAR (255) NOT NULL,
-    [Role]     NVARCHAR (50)  NOT NULL,
+    [AdminId]   INT            IDENTITY (1, 1) NOT NULL,
+    [Name]      NVARCHAR (50)  NOT NULL,
+    [Email]     NVARCHAR (50)  NOT NULL,
+    [Password]  NVARCHAR (255) NOT NULL,
+    [Role]      NVARCHAR (50)  NOT NULL,
+    [AccStatus] NVARCHAR (50)  NOT NULL DEFAULT 'Active',
     PRIMARY KEY CLUSTERED ([AdminId] ASC),
     UNIQUE NONCLUSTERED ([Email] ASC)
 );
@@ -437,14 +438,16 @@ CREATE TABLE [dbo].[ForumRead] (
 CREATE TABLE [dbo].[User_Log] (
     [LogId]         INT      IDENTITY (1, 1) NOT NULL,
     [StartDateTime] DATETIME NOT NULL,
-    [EndDateTime]   DATETIME NOT NULL,
+    [EndDateTime]   DATETIME NULL,
     [LearnerId]     INT      NULL,
     [TeacherId]     INT      NULL,
     [TA_Id]         INT      NULL,
+    [AdminId]       INT      NULL,
     PRIMARY KEY CLUSTERED ([LogId] ASC),
     CONSTRAINT [FK_UserLog_Learner] FOREIGN KEY ([LearnerId]) REFERENCES [dbo].[Learner] ([LearnerId]),
     CONSTRAINT [FK_UserLog_Teacher] FOREIGN KEY ([TeacherId]) REFERENCES [dbo].[Teacher] ([TeacherId]),
-    CONSTRAINT [FK_UserLog_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id])
+    CONSTRAINT [FK_UserLog_TeachingAssistant] FOREIGN KEY ([TA_Id]) REFERENCES [dbo].[Teaching_Assistant] ([TA_Id]),
+    CONSTRAINT [FK_UserLog_Admin] FOREIGN KEY ([AdminId]) REFERENCES [dbo].[Admin] ([AdminId])
 );
 
 CREATE TABLE [dbo].[LearnerProgress] (
@@ -460,6 +463,12 @@ CREATE TABLE [dbo].[LearnerProgress] (
 -- ==========================================
 -- 3. INSERT MOCK DATA
 -- ==========================================
+
+-- Insert Platform Announcements / Notifications
+INSERT INTO [dbo].[Notification] ([Title], [Content], [Type], [DateTime])
+VALUES 
+    ('New C++ Module Now Available!', 'We are excited to announce the launch of "Data Structures with C++" by Prof. Michael Torres. Enroll today to master linked lists, trees, and hash tables from scratch.', 'Announcement', DATEADD(DAY, -2, GETDATE())),
+    ('Python Hackathon 2026 Invitation', 'Join us for the CodeLearn National Python Marathon this coming weekend! You will collaborate in teams to solve competitive programming tasks, optimize neuroevolution models, and earn official platform badges and certificates.', 'Invitation', DATEADD(HOUR, -6, GETDATE()));
 
 -- Insert SuperAdmin Account
 INSERT INTO [dbo].[Admin] ([Name], [Email], [Password], [Role])

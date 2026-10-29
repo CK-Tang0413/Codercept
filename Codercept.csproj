@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AdminCommunity.aspx" />
+    <Content Include="AdminCourseReviews.aspx" />
     <Content Include="AdminCourses.aspx" />
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminReviewApplication.aspx" />
@@ -308,6 +309,13 @@
     </Compile>
     <Compile Include="AdminCommunity.aspx.designer.cs">
       <DependentUpon>AdminCommunity.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminCourseReviews.aspx.cs">
+      <DependentUpon>AdminCourseReviews.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminCourseReviews.aspx.designer.cs">
+      <DependentUpon>AdminCourseReviews.aspx</DependentUpon>
     </Compile>
     <Compile Include="AdminCourses.aspx.cs">
       <DependentUpon>AdminCourses.aspx</DependentUpon>
@@ -736,6 +744,8 @@
     <Compile Include="TeacherSampleData.cs" />
     <Compile Include="TeacherStatsData.cs" />
     <Compile Include="TeacherAccountData.cs" />
+    <Compile Include="UserPurgeService.cs" />
+    <Compile Include="UserLogHelper.cs" />
     <Compile Include="TeacherAiHandler.ashx.cs">
       <DependentUpon>TeacherAiHandler.ashx</DependentUpon>
     </Compile>
