@@ -42,6 +42,33 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Repeater rptSidebar;
 
         /// <summary>
+        /// pnlWarning control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlWarning;
+
+        /// <summary>
+        /// litWarningMsg control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litWarningMsg;
+
+        /// <summary>
+        /// pnlNormalChapter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNormalChapter;
+
+        /// <summary>
         /// litChNumber control.
         /// </summary>
         /// <remarks>
@@ -123,6 +150,15 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Panel pnlQuiz;
 
         /// <summary>
+        /// lblQuizState control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblQuizState;
+
+        /// <summary>
         /// rptQuizQuestions control.
         /// </summary>
         /// <remarks>
@@ -130,6 +166,15 @@ namespace Codercept
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptQuizQuestions;
+
+        /// <summary>
+        /// btnSubmitQuiz control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmitQuiz;
 
         /// <summary>
         /// pnlCode control.
@@ -159,13 +204,94 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litCodeDesc;
 
         /// <summary>
-        /// pnlExam control.
+        /// lblCodeState control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlExam;
+        protected global::System.Web.UI.WebControls.Label lblCodeState;
+
+        /// <summary>
+        /// txtCodeEditor control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCodeEditor;
+
+        /// <summary>
+        /// btnSubmitAssessment control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmitAssessment;
+
+        /// <summary>
+        /// pnlExamContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlExamContent;
+
+        /// <summary>
+        /// litExamTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litExamTitle;
+
+        /// <summary>
+        /// phExamCheckmark control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phExamCheckmark;
+
+        /// <summary>
+        /// litExamDesc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litExamDesc;
+
+        /// <summary>
+        /// lblExamState control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblExamState;
+
+        /// <summary>
+        /// rptExamQuestions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptExamQuestions;
+
+        /// <summary>
+        /// btnSubmitExam control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmitExam;
 
         /// <summary>
         /// lnkPrev control.
@@ -186,12 +312,21 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Literal litStepIndicator;
 
         /// <summary>
-        /// lnkNext control.
+        /// btnNext control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkNext;
+        protected global::System.Web.UI.WebControls.LinkButton btnNext;
+
+        /// <summary>
+        /// litNextText control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litNextText;
     }
 }
