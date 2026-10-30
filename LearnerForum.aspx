@@ -217,10 +217,29 @@
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
+        /* Automatically reserve space on the right side of page headers for the notification bell */
+        .main-content > .page-header,
+        .main-content > .forum-header,
+        .main-content > .header-row,
+        .main-content > div:first-child {
+            padding-right: 3.75rem;
+        }
+
         @media (max-width: 992px) {
             .forum-container { flex-direction: column; }
             .comments-column { flex: none; height: 500px; }
         }
+
+        @media (max-width: 768px) {
+        .global-notif-wrapper { top: 1rem; right: 1rem; }
+        .notif-popover { width: 300px; right: 0; }
+        .main-content > .page-header,
+        .main-content > .forum-header,
+        .main-content > .header-row,
+        .main-content > div:first-child {
+            padding-right: 3.25rem;
+        }
+    }
     </style>
 </head>
 <body>

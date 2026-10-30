@@ -39,7 +39,7 @@ namespace Codercept
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // 1. Fetch Main Course Details
+                // 1. Fetch Main Course Details (Added HasCompletedExam subquery)
                 string courseQuery = @"
                     SELECT 
                         c.CourseId, 
@@ -49,6 +49,12 @@ namespace Codercept
                         c.CourseDuration,
                         t.Name as TeacherName,
                         (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChapters,
+                        (SELECT COUNT(*) FROM Exam WHERE CourseId = c.CourseId) as ExamCount,
+                        CAST(CASE WHEN EXISTS (
+                            SELECT 1 FROM Attempt a 
+                            JOIN Exam e ON a.ExamId = e.ExamId 
+                            WHERE e.CourseId = c.CourseId AND a.LearnerId = @LearnerId AND a.AttemptStatus IN ('completed', 'graded')
+                        ) THEN 1 ELSE 0 END AS BIT) as HasCompletedExam,
                         ISNULL((SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language'), 'General') as Language,
                         ISNULL((SELECT COUNT(*) FROM LearnerProgress WHERE CourseId = c.CourseId), 0) as EnrolledCount,
                         ISNULL((SELECT ROUND(AVG(Rating), 1) FROM Course_Review WHERE CourseId = c.CourseId), 0.0) as Rating,
@@ -77,24 +83,35 @@ namespace Codercept
                             litEnrolledCount.Text = Convert.ToInt32(reader["EnrolledCount"]).ToString("N0");
                             litRating.Text = $"{reader["Rating"]}/5.0";
 
-                            // Setup Badges
                             string lang = reader["Language"].ToString();
                             string level = reader["DifficultyLevel"].ToString();
-                            string cssLevel = level == "Easy" ? "beginner" : (level == "Medium" ? "intermediate" : "advanced"); // Fallback mapped colors
+                            string cssLevel = level == "Easy" ? "beginner" : (level == "Medium" ? "intermediate" : "advanced");
 
                             string badges = $"<span class='badge badge-lang'>{lang}</span> <span class='badge badge-level' style='text-transform: capitalize;'>{level}</span>";
                             litTags.Text = badges;
 
-                            // Check Enrollment
+                            // Check Enrollment & Progress
+                            // Check Enrollment & Progress
                             if (reader["LearnerCurrentChapter"] != DBNull.Value)
                             {
                                 userIsEnrolled = true;
                                 learnerProgressChapter = Convert.ToInt32(reader["LearnerCurrentChapter"]);
 
-                                int chaptersCompleted = learnerProgressChapter - 1;
-                                if (learnerProgressChapter > totalChapters) chaptersCompleted = totalChapters;
+                                bool hasExam = Convert.ToInt32(reader["ExamCount"]) > 0;
+                                bool hasCompletedExam = Convert.ToBoolean(reader["HasCompletedExam"]);
+                                int maxAllowedChapter = totalChapters + (hasExam ? 1 : 0);
 
-                                int progressPct = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
+                                // Course is 100% finished if ChapNum exceeds max OR if they reached the end and submitted the exam
+                                bool isCourseCompleted = (learnerProgressChapter > maxAllowedChapter)
+                                    || (hasExam && hasCompletedExam && learnerProgressChapter >= totalChapters);
+
+                                int chaptersCompleted = isCourseCompleted
+                                    ? maxAllowedChapter
+                                    : Math.Max(0, learnerProgressChapter - 1);
+
+                                int progressPct = maxAllowedChapter > 0
+                                    ? (int)Math.Round((double)chaptersCompleted / maxAllowedChapter * 100)
+                                    : 0;
 
                                 pnlEnrolledProgress.Visible = true;
                                 litProgressText.Text = $"{progressPct}%";
@@ -103,30 +120,41 @@ namespace Codercept
                                 btnCourseAction.Text = "Continue Learning ->";
                                 btnCourseAction.CommandArgument = courseId.ToString();
                                 btnCourseAction.OnClientClick = "";
-                            }
-                            else
-                            {
-                                pnlEnrolledProgress.Visible = false;
-                                btnCourseAction.Text = "Enroll Now";
-                                btnCourseAction.CommandArgument = courseId.ToString();
 
-                                if (isGuest)
+                                // Show Review options when course is 100% completed
+                                if (isCourseCompleted)
                                 {
-                                    btnCourseAction.OnClientClick = "showGuestModal(); return false;";
-                                }
-                                else
-                                {
-                                    btnCourseAction.OnClientClick = "";
+                                    // Ensure all chapter rows below render as Completed
+                                    learnerProgressChapter = maxAllowedChapter + 1;
+                                    btnCourseAction.Text = "Review Material";
+
+                                    using (SqlConnection reviewCon = new SqlConnection(connString))
+                                    {
+                                        using (SqlCommand reviewCmd = new SqlCommand("SELECT COUNT(*) FROM Course_Review WHERE CourseId = @CourseId AND LearnerId = @LearnerId", reviewCon))
+                                        {
+                                            reviewCmd.Parameters.AddWithValue("@CourseId", courseId);
+                                            reviewCmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                                            reviewCon.Open();
+                                            int reviewCount = Convert.ToInt32(reviewCmd.ExecuteScalar());
+                                            reviewCon.Close();
+
+                                            if (reviewCount > 0)
+                                            {
+                                                btnShowReviewModal.Visible = false;
+                                                lblReviewSubmitted.Visible = true;
+                                            }
+                                            else
+                                            {
+                                                btnShowReviewModal.Visible = true;
+                                                litReviewCourseTitle.Text = reader["CourseTitle"].ToString();
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            // Course not found
-                            Response.Redirect("CourseCatalog.aspx");
                         }
                     }
-                }
+                } // 👈 Here the scope for `cmd` naturally ends, but to be completely safe against .NET 4.x parser quirks, we rename the next one.
 
                 // 2. Fetch Chapter List
                 string chapterQuery = @"
@@ -143,10 +171,11 @@ namespace Codercept
                     WHERE ch.CourseId = @CourseId
                     ORDER BY ch.ChapterNum ASC";
 
-                using (SqlCommand cmd = new SqlCommand(chapterQuery, con))
+                // RENAMED from 'cmd' to 'chapterCmd' to resolve CS0136 scope collision
+                using (SqlCommand chapterCmd = new SqlCommand(chapterQuery, con))
                 {
-                    cmd.Parameters.AddWithValue("@CourseId", courseId);
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    chapterCmd.Parameters.AddWithValue("@CourseId", courseId);
+                    SqlDataAdapter da = new SqlDataAdapter(chapterCmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
@@ -181,7 +210,6 @@ namespace Codercept
             int courseId = Convert.ToInt32(((Button)sender).CommandArgument);
             int learnerId = Convert.ToInt32(Session["UserId"]);
 
-            // Check if already enrolled
             bool isEnrolled = false;
             using (SqlConnection con = new SqlConnection(connString))
             {
@@ -196,7 +224,6 @@ namespace Codercept
 
                 if (!isEnrolled)
                 {
-                    // Enroll them (Start at chapter 1)
                     using (SqlCommand cmd = new SqlCommand("INSERT INTO LearnerProgress (LearnerId, CourseId, ChapNum, EnrolledDate) VALUES (@LearnerId, @CourseId, 1, GETDATE())", con))
                     {
                         cmd.Parameters.AddWithValue("@LearnerId", learnerId);
@@ -208,11 +235,50 @@ namespace Codercept
                 }
             }
 
-            // After enrolling (or if already enrolled), redirect to the viewer to begin learning
             Response.Redirect($"CourseViewer.aspx?courseId={courseId}&ch=1");
         }
 
-        // 3. Helper Methods for Repeater Inline DataBinding
+        // --- NEW REVIEW MODAL HANDLERS ---
+        protected void btnShowReviewModal_Click(object sender, EventArgs e)
+        {
+            pnlReviewModal.Visible = true;
+        }
+
+        protected void btnCancelReview_Click(object sender, EventArgs e)
+        {
+            pnlReviewModal.Visible = false;
+        }
+
+        protected void btnSubmitReview_Click(object sender, EventArgs e)
+        {
+            int courseId = 1;
+            if (Request.QueryString["id"] != null) int.TryParse(Request.QueryString["id"], out courseId);
+
+            int learnerId = Convert.ToInt32(Session["UserId"]);
+            double rating = Convert.ToDouble(ddlRating.SelectedValue);
+            string feedback = txtFeedback.Text.Trim();
+
+            using (SqlConnection con = new SqlConnection(connString))
+            {
+                string query = "INSERT INTO Course_Review (CourseFeedBack, Rating, SubmissionDate, CourseId, LearnerId) VALUES (@Feedback, @Rating, GETDATE(), @CourseId, @LearnerId)";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@Feedback", string.IsNullOrEmpty(feedback) ? "No written feedback provided." : feedback);
+                    cmd.Parameters.AddWithValue("@Rating", rating);
+                    cmd.Parameters.AddWithValue("@CourseId", courseId);
+                    cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    con.Close();
+                }
+            }
+
+            pnlReviewModal.Visible = false;
+            LoadCourseDetails(); // Reload page to update UI
+        }
+
+        // --- Helper Methods ---
         protected string GetChapterUrl(string status, int chapterNum)
         {
             if (Session["UserType"].ToString() == "Guest") return "javascript:showGuestModal();";

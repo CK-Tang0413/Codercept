@@ -862,6 +862,18 @@ namespace Codercept
                         }
                     }
 
+                    // Advance LearnerProgress past the exam (TotalChapters + 2) so the course is officially marked 100% complete
+                    int courseId = Convert.ToInt32(ViewState["CourseId"]);
+                    int totalChapters = Convert.ToInt32(ViewState["TotalChapters"]);
+                    string progUpdate = "UPDATE LearnerProgress SET ChapNum = @CompletedChapNum WHERE LearnerId = @LearnerId AND CourseId = @CourseId";
+                    using (SqlCommand progCmd = new SqlCommand(progUpdate, con, transaction))
+                    {
+                        progCmd.Parameters.AddWithValue("@CompletedChapNum", totalChapters + 2);
+                        progCmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                        progCmd.Parameters.AddWithValue("@CourseId", courseId);
+                        progCmd.ExecuteNonQuery();
+                    }
+
                     transaction.Commit();
 
                     lblExamState.Visible = true;
