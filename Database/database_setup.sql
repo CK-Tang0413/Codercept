@@ -759,10 +759,6 @@ VALUES ('Teaching Assistant', 'Diploma in Information Technology', '~/UploadedCe
 SET @AppMarcusId = SCOPE_IDENTITY();
 
 INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
-VALUES ('Teaching Assistant', 'Certified Python Associate', '~/UploadedCertificates/chloe_cert.pdf', 'Pending', NULL, DATEADD(DAY, -3, GETDATE()), NULL);
-SET @AppChloeId = SCOPE_IDENTITY();
-
-INSERT INTO [dbo].[Application] ([RoleApplied], [QualificationName], [CredentialDocument], [ApprovalStatus], [RejectReason], [DateSubmitted], [DateReviewed])
 VALUES ('Teaching Assistant', 'Certificate in Web Basics', '~/UploadedCertificates/david_doc.pdf', 'Rejected', 'Does not meet minimum teaching qualification requirement.', DATEADD(DAY, -60, GETDATE()), DATEADD(DAY, -55, GETDATE()));
 SET @AppDavidId = SCOPE_IDENTITY();
 
