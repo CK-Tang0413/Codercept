@@ -584,6 +584,16 @@ namespace Codercept
             string recipientEmail = hfApplicantEmail.Value?.Trim() ?? "";
             string roleTitle = roleCategory == "teacher" ? "Teacher" : "Teaching Assistant";
 
+
+
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+
+            {
+
+                return;
+
+            }
+
             if (!string.IsNullOrEmpty(connectionString))
             {
                 try
