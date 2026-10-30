@@ -20,6 +20,11 @@ namespace Codercept
                     pnlNotice.Visible = true;
                     litNotice.Text = "<strong>Application Received!</strong> Your educator application has been submitted and is currently pending administrator approval. You will receive an update once approved.";
                 }
+                else if (Request.QueryString["registered"] == "reapplied")
+                {
+                    pnlNotice.Visible = true;
+                    litNotice.Text = "<strong>Application Re-submitted!</strong> Your updated educator application has been submitted and is currently pending administrator review. You will receive an update once approved.";
+                }
             }
         }
 
@@ -141,7 +146,19 @@ namespace Codercept
                         {
                             if (reader["AccStatus"].ToString() != "Active")
                             {
-                                lblEmailError.Text = "Your account is not active.";
+                                string status = reader["AccStatus"].ToString();
+                                if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    lblEmailError.Text = "Your educator application is currently pending administrator review. You will receive an email once processed.";
+                                }
+                                else if (status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    lblEmailError.Text = "Your previous application was not approved. You can submit an updated application with new credentials on the <a href='TeacherRegistration.aspx' style='color:#7c3aed;text-decoration:underline;font-weight:600;'>Teacher Registration</a> page.";
+                                }
+                                else
+                                {
+                                    lblEmailError.Text = "Your account is not active.";
+                                }
                                 return;
                             }
 
@@ -186,7 +203,19 @@ namespace Codercept
                         {
                             if (reader["AccStatus"].ToString() != "Active")
                             {
-                                lblEmailError.Text = "Your account is not active.";
+                                string status = reader["AccStatus"].ToString();
+                                if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    lblEmailError.Text = "Your educator application is currently pending administrator review. You will receive an email once processed.";
+                                }
+                                else if (status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    lblEmailError.Text = "Your previous application was not approved. You can submit an updated application with new credentials on the <a href='TeacherRegistration.aspx' style='color:#7c3aed;text-decoration:underline;font-weight:600;'>Teacher Registration</a> page.";
+                                }
+                                else
+                                {
+                                    lblEmailError.Text = "Your account is not active.";
+                                }
                                 return;
                             }
 
