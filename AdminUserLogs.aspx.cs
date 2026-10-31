@@ -24,7 +24,7 @@ namespace Codercept
             // Redirect unauthenticated users
             if (Session["UserId"] == null || string.IsNullOrEmpty(userRole))
             {
-                Response.Redirect("signIn.aspx");
+                Response.Redirect("LandingPage.aspx");
                 return;
             }
 

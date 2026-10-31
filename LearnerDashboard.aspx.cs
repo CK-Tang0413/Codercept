@@ -12,7 +12,7 @@ namespace Codercept
         {
             if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
             {
-                Response.Redirect("signIn.aspx");
+                Response.Redirect("LandingPage.aspx");
                 return;
             }
 

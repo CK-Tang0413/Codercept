@@ -59,7 +59,7 @@ namespace Codercept
 
             Session.Clear();
             Session.Abandon();
-            Response.Redirect("signIn.aspx");
+            Response.Redirect("LandingPage.aspx");
         }
     }
 }

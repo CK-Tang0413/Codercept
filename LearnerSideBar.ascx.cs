@@ -88,7 +88,7 @@ namespace Codercept
             // Clear and Destroy Session
             Session.Clear();
             Session.Abandon();
-            Response.Redirect("signIn.aspx");
+            Response.Redirect("LandingPage.aspx");
         }
     }
 }
