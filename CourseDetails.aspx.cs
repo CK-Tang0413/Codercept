@@ -101,7 +101,6 @@ namespace Codercept
                                 bool hasCompletedExam = Convert.ToBoolean(reader["HasCompletedExam"]);
                                 int maxAllowedChapter = totalChapters + (hasExam ? 1 : 0);
 
-                                // Course is 100% finished if ChapNum exceeds max OR if they reached the end and submitted the exam
                                 bool isCourseCompleted = (learnerProgressChapter > maxAllowedChapter)
                                     || (hasExam && hasCompletedExam && learnerProgressChapter >= totalChapters);
 
@@ -124,7 +123,6 @@ namespace Codercept
                                 // Show Review options when course is 100% completed
                                 if (isCourseCompleted)
                                 {
-                                    // Ensure all chapter rows below render as Completed
                                     learnerProgressChapter = maxAllowedChapter + 1;
                                     btnCourseAction.Text = "Review Material";
 
@@ -152,9 +150,31 @@ namespace Codercept
                                     }
                                 }
                             }
+                            else
+                            {
+                                // --- NEW BLOCK: User is NOT enrolled ---
+                                userIsEnrolled = false;
+
+                                // Hide the progress bar
+                                pnlEnrolledProgress.Visible = false;
+
+                                // Reset the button to "Enroll Now"
+                                btnCourseAction.Text = "Enroll Now";
+                                btnCourseAction.CommandArgument = courseId.ToString();
+
+                                // Handle Guest pop-up
+                                if (isGuest)
+                                {
+                                    btnCourseAction.OnClientClick = "showGuestModal(); return false;";
+                                }
+                                else
+                                {
+                                    btnCourseAction.OnClientClick = "";
+                                }
+                            }
                         }
                     }
-                } // 👈 Here the scope for `cmd` naturally ends, but to be completely safe against .NET 4.x parser quirks, we rename the next one.
+                }
 
                 // 2. Fetch Chapter List
                 string chapterQuery = @"

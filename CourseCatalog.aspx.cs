@@ -40,7 +40,7 @@ namespace Codercept
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Dynamic SQL query based on filters
+                // Dynamic SQL query based on filters (Filters out enrolled courses)
                 string query = @"
             SELECT 
                 c.CourseId, 
@@ -52,11 +52,12 @@ namespace Codercept
                 ISNULL((SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language'), 'General') as Language,
                 ISNULL((SELECT COUNT(*) FROM LearnerProgress WHERE CourseId = c.CourseId), 0) as EnrolledCount,
                 ISNULL((SELECT ROUND(AVG(Rating), 1) FROM Course_Review WHERE CourseId = c.CourseId), 0.0) as Rating,
-                CASE WHEN lp.LearnerId IS NOT NULL THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END as IsEnrolled,
-                lp.ChapNum as CurrentChapter
+                CAST(0 AS BIT) as IsEnrolled,
+                0 as CurrentChapter
             FROM Course c
-            LEFT JOIN LearnerProgress lp ON c.CourseId = lp.CourseId AND lp.LearnerId = @LearnerId
-            WHERE 1=1 ";
+            WHERE c.CourseId NOT IN (
+                SELECT CourseId FROM LearnerProgress WHERE LearnerId = @LearnerId
+            ) ";
 
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
@@ -66,9 +67,18 @@ namespace Codercept
                 if (selectedLang != "All")
                 {
                     if (selectedLang == "C++")
+                    {
                         query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') = 'C++' ";
+                    }
+                    else if (selectedLang == "C")
+                    {
+                        // Exact match for 'C' to prevent pulling in 'C++'
+                        query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') = 'C' ";
+                    }
                     else
+                    {
                         query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') LIKE '%' + @Lang + '%' ";
+                    }
                 }
 
                 if (selectedLevel != "All")
@@ -109,20 +119,7 @@ namespace Codercept
                         else if (lang == "c") row["LanguageCSS"] = "c";
                         else row["LanguageCSS"] = lang.Replace(" ", "");
 
-                        if (Convert.ToBoolean(row["IsEnrolled"]))
-                        {
-                            int currentChapter = row["CurrentChapter"] != DBNull.Value ? Convert.ToInt32(row["CurrentChapter"]) : 1;
-                            int totalChapters = Convert.ToInt32(row["Chapters"]);
-
-                            int chaptersCompleted = currentChapter - 1;
-                            if (currentChapter > totalChapters) chaptersCompleted = totalChapters;
-
-                            row["ProgressPercentage"] = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
-                        }
-                        else
-                        {
-                            row["ProgressPercentage"] = 0;
-                        }
+                        row["ProgressPercentage"] = 0; // Unenrolled courses always have 0% progress
                     }
 
                     rptCourses.DataSource = dt;
@@ -168,6 +165,11 @@ namespace Codercept
             clickedBtn.CssClass = "filter-pill active";
 
             BindCourses();
+        }
+
+        protected void rptCourses_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+
         }
     }
 }

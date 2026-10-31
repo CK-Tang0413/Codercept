@@ -101,9 +101,9 @@
             
             <aside class="course-sidebar">
                 <div class="sidebar-header">
-                    <a href="CourseCatalog.aspx" class="back-link">
+                    <a href="CourseCatalog.aspx" onclick="history.back(); return false;" class="back-link">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                        Back to course
+                        Back
                     </a>
                     <div class="course-title-side">Course Content</div>
                     <div class="course-meta-side"><asp:Literal ID="litTotalChapters" runat="server"></asp:Literal></div>
