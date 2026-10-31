@@ -102,6 +102,12 @@
                             <label>New Password</label>
                             <asp:TextBox ID="txtNewPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
                             <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New password is required" Display="Dynamic" CssClass="error-message" />
+                            <asp:RegularExpressionValidator ID="revNewPassword" runat="server" 
+                                ControlToValidate="txtNewPassword" 
+                                ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$" 
+                                ErrorMessage="Password must be 8-20 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character." 
+                                Display="Dynamic" 
+                                CssClass="error-message" />
                         </div>
                         
                         <div class="form-group">
