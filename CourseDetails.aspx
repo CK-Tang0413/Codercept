@@ -171,11 +171,11 @@
             <!-- Main Content -->
             <main class="main-content">
     
-                <a href="CourseCatalog.aspx" class="back-nav">
+                <a href="CourseCatalog.aspx" onclick="history.back(); return false;" class="back-nav">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    Back to catalog
+                    Back
                 </a>
 
                 <!-- Hero Section -->
@@ -195,7 +195,7 @@
                         <span>⭐ <asp:Literal ID="litRating" runat="server"></asp:Literal></span>
                     </div>
 
-                    <!-- Progress Bar (Visible only if enrolled) -->
+                    <!-- Progress Area (For Enrolled Users) -->
                     <asp:Panel ID="pnlEnrolledProgress" runat="server" CssClass="progress-section">
                         <div class="progress-header">
                             <span>Your progress</span>
@@ -206,8 +206,41 @@
                         </div>
                     </asp:Panel>
 
-                    <!-- Main Call to Action Button -->
-                    <asp:Button ID="btnCourseAction" runat="server" CssClass="btn-action" OnClick="btnCourseAction_Click" />
+                    <!-- Main Call to Action Button & Review Actions -->
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <asp:Button ID="btnCourseAction" runat="server" CssClass="btn-action" OnClick="btnCourseAction_Click" />
+                        <asp:Button ID="btnShowReviewModal" runat="server" Text="Leave a Review" CssClass="btn-nav" style="padding: 0.875rem 1.5rem; border: 1px solid var(--border-light); border-radius: 8px; font-weight: 600; cursor: pointer;" OnClick="btnShowReviewModal_Click" Visible="false" />
+                        <asp:Label ID="lblReviewSubmitted" runat="server" Visible="false" style="color: var(--icon-success); font-size: 0.9rem; font-weight: 600;">⭐ Review Submitted</asp:Label>
+                    </div>
+
+                    <!-- Review Modal -->
+                    <asp:Panel ID="pnlReviewModal" runat="server" Visible="false" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center;">
+                        <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 2.5rem; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                            <h3 style="margin-bottom: 0.5rem; color: var(--text-primary); font-size: 1.5rem;">Rate this course</h3>
+                            <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.95rem;">How was your experience learning <asp:Literal ID="litReviewCourseTitle" runat="server"></asp:Literal>?</p>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Rating (Out of 5)</label>
+                                <asp:DropDownList ID="ddlRating" runat="server" style="width: 100%; background: var(--bg-main); border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 8px; color: var(--text-primary); font-size: 1rem; outline: none;">
+                                    <asp:ListItem Value="5" Text="⭐⭐⭐⭐⭐ Excellent (5.0)"></asp:ListItem>
+                                    <asp:ListItem Value="4" Text="⭐⭐⭐⭐ Good (4.0)"></asp:ListItem>
+                                    <asp:ListItem Value="3" Text="⭐⭐⭐ Average (3.0)"></asp:ListItem>
+                                    <asp:ListItem Value="2" Text="⭐⭐ Fair (2.0)"></asp:ListItem>
+                                    <asp:ListItem Value="1" Text="⭐ Poor (1.0)"></asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Feedback (Optional)</label>
+                                <asp:TextBox ID="txtFeedback" runat="server" TextMode="MultiLine" placeholder="What did you like? What could be improved?" style="width: 100%; min-height: 100px; background: var(--bg-main); border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 0.95rem; resize: vertical; outline: none;"></asp:TextBox>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                                <asp:Button ID="btnCancelReview" runat="server" Text="Cancel" OnClick="btnCancelReview_Click" style="padding: 0.75rem 1.5rem; background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;" />
+                                <asp:Button ID="btnSubmitReview" runat="server" Text="Submit Review" OnClick="btnSubmitReview_Click" style="padding: 0.75rem 1.5rem; background: var(--accent-primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" />
+                            </div>
+                        </div>
+                    </asp:Panel>
                 </div>
 
                 <h2 class="section-title">Course Chapters</h2>

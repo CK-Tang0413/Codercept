@@ -14,7 +14,7 @@ namespace Codercept
         {
             if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
             {
-                Response.Redirect("signIn.aspx");
+                Response.Redirect("LandingPage.aspx");
                 return;
             }
 
@@ -29,7 +29,7 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Updated query: renamed the average columns to "Raw" so we can format them later
+                // Updated query: Added check for whether a review exists for this course by this learner
                 string query = @"
                     SELECT 
                         c.CourseId,
@@ -38,7 +38,7 @@ namespace Codercept
                         lp.ChapNum,
                         (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChapters,
                         
-                        -- Quiz Average (MCQ and FillBlank) renamed to QuizAvgRaw
+                        -- Quiz Average
                         ISNULL((SELECT AVG(aa.ObtainedScore / q.QuestionScore * 100)
                          FROM AttemptAnswer aa
                          JOIN Question q ON aa.QuestionId = q.QuestionId
@@ -48,7 +48,7 @@ namespace Codercept
                            AND a.QuizId IN (SELECT QuizId FROM Quiz WHERE ChapterId IN (SELECT ChapterId FROM Chapter WHERE CourseId = c.CourseId))
                         ), -1) as QuizAvgRaw,
 
-                        -- Coding Average renamed to CodeAvgRaw
+                        -- Coding Average
                         ISNULL((SELECT AVG(aa.ObtainedScore / q.QuestionScore * 100)
                          FROM AttemptAnswer aa
                          JOIN Question q ON aa.QuestionId = q.QuestionId
@@ -65,7 +65,13 @@ namespace Codercept
                          WHERE a.LearnerId = lp.LearnerId 
                            AND a.ExamId = (SELECT ExamId FROM Exam WHERE CourseId = c.CourseId)
                          ORDER BY a.AttemptDate DESC
-                        ), '-') as FinalGrade
+                        ), '-') as FinalGrade,
+
+                        -- Check if learner has reviewed this course
+                        CASE WHEN EXISTS (
+                            SELECT 1 FROM Course_Review cr 
+                            WHERE cr.CourseId = c.CourseId AND cr.LearnerId = lp.LearnerId
+                        ) THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END as HasReviewed
 
                     FROM LearnerProgress lp
                     JOIN Course c ON lp.CourseId = c.CourseId
@@ -78,17 +84,13 @@ namespace Codercept
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
-                    // Create brand-new STRING columns so they can safely accept the "%" sign
                     dt.Columns.Add("QuizAvg", typeof(string));
                     dt.Columns.Add("CodeAvg", typeof(string));
-
-                    // Add other UI Helper Columns
                     dt.Columns.Add("LangClass", typeof(string));
                     dt.Columns.Add("Progress", typeof(int));
                     dt.Columns.Add("GradeClass", typeof(string));
                     dt.Columns.Add("Grade", typeof(string));
 
-                    // Variables for Overview Stats
                     int activeCount = 0;
                     int completedCount = 0;
                     double totalQuizScores = 0;
@@ -116,7 +118,7 @@ namespace Codercept
                         if (progress == 100) completedCount++;
                         else if (progress > 0) activeCount++;
 
-                        // 3. Format Averages using the Raw number, injecting into the new string column
+                        // 3. Format Averages
                         double quizScore = Convert.ToDouble(row["QuizAvgRaw"]);
                         if (quizScore >= 0)
                         {
@@ -146,11 +148,9 @@ namespace Codercept
                         else row["GradeClass"] = "";
                     }
 
-                    // Bind Repeater (the frontend is looking for the new string columns we just created)
                     rptGrades.DataSource = dt;
                     rptGrades.DataBind();
 
-                    // Update Overview Stats
                     litActiveCourses.Text = activeCount.ToString();
                     litCompletedCourses.Text = completedCount.ToString();
                     litQuizAvg.Text = quizCount > 0 ? $"{(totalQuizScores / quizCount):F0}%" : "0%";

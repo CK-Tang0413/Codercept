@@ -51,7 +51,7 @@
             </div>
         </a>
             
-        <asp:LinkButton ID="btnSignOut" runat="server" CssClass="sign-out-btn" style="text-decoration: none;" OnClick="btnSignOut_Click">
+        <asp:LinkButton ID="btnSignOut" runat="server" CssClass="sign-out-btn" style="text-decoration: none;" CausesValidation="false" OnClick="btnSignOut_Click">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             Sign out
         </asp:LinkButton>

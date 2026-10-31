@@ -101,6 +101,7 @@ namespace Codercept
             }
 
             string connString = ConfigurationManager.ConnectionStrings["Codercept_db"].ConnectionString;
+            bool isReapplication = false;
 
             try
             {
@@ -108,26 +109,72 @@ namespace Codercept
                 {
                     con.Open();
 
-                    // 5. Check Email Uniqueness across all accounts
-                    string checkSql = @"
-                        SELECT COUNT(*) FROM (
-                            SELECT Email FROM [dbo].[Admin] WHERE LOWER(Email) = LOWER(@Email)
-                            UNION ALL
-                            SELECT Email FROM [dbo].[Learner] WHERE LOWER(Email) = LOWER(@Email)
-                            UNION ALL
-                            SELECT Email FROM [dbo].[Teacher] WHERE LOWER(Email) = LOWER(@Email)
-                            UNION ALL
-                            SELECT Email FROM [dbo].[Teaching_Assistant] WHERE LOWER(Email) = LOWER(@Email)
-                        ) AS ExistingAccounts";
+                    // 5. Check Email Uniqueness and Account Status across all accounts
+                    string existingEducatorRole = null;
+                    int existingEducatorId = 0;
 
-                    using (SqlCommand checkCmd = new SqlCommand(checkSql, con))
+                    // A. Check Admin
+                    using (SqlCommand adminCheck = new SqlCommand("SELECT COUNT(*) FROM [dbo].[Admin] WHERE LOWER(Email) = LOWER(@Email)", con))
                     {
-                        checkCmd.Parameters.AddWithValue("@Email", email);
-                        int count = (int)checkCmd.ExecuteScalar();
-                        if (count > 0)
+                        adminCheck.Parameters.AddWithValue("@Email", email);
+                        if ((int)adminCheck.ExecuteScalar() > 0)
                         {
-                            ShowError("This email address is already registered. Please sign in or use another email.", 1);
+                            ShowError("This email address is already registered as an administrator. Please sign in or use another email.", 1);
                             return;
+                        }
+                    }
+
+                    // B. Check Learner
+                    using (SqlCommand learnerCheck = new SqlCommand("SELECT COUNT(*) FROM [dbo].[Learner] WHERE LOWER(Email) = LOWER(@Email)", con))
+                    {
+                        learnerCheck.Parameters.AddWithValue("@Email", email);
+                        if ((int)learnerCheck.ExecuteScalar() > 0)
+                        {
+                            ShowError("This email address is already registered as a learner. Please sign in or use another email.", 1);
+                            return;
+                        }
+                    }
+
+                    // C. Check Teacher & Teaching_Assistant
+                    string educatorCheckSql = @"
+                        SELECT 'Teacher' AS RoleType, TeacherId AS Id, AccStatus FROM [dbo].[Teacher] WHERE LOWER(Email) = LOWER(@Email)
+                        UNION ALL
+                        SELECT 'Teaching_Assistant' AS RoleType, TA_Id AS Id, AccStatus FROM [dbo].[Teaching_Assistant] WHERE LOWER(Email) = LOWER(@Email)";
+
+                    using (SqlCommand eduCheck = new SqlCommand(educatorCheckSql, con))
+                    {
+                        eduCheck.Parameters.AddWithValue("@Email", email);
+                        using (SqlDataReader rdr = eduCheck.ExecuteReader())
+                        {
+                            if (rdr.Read())
+                            {
+                                string status = rdr["AccStatus"]?.ToString() ?? "";
+                                string roleType = rdr["RoleType"]?.ToString() ?? "";
+                                int id = Convert.ToInt32(rdr["Id"]);
+
+                                if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    ShowError("This email address is already registered as an active educator. Please sign in.", 1);
+                                    return;
+                                }
+                                else if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    ShowError("An educator application with this email address is already pending administrator review.", 1);
+                                    return;
+                                }
+                                else if (status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Permitted re-application flow
+                                    isReapplication = true;
+                                    existingEducatorRole = roleType;
+                                    existingEducatorId = id;
+                                }
+                                else
+                                {
+                                    ShowError("This email address is already registered. Please sign in or use another email.", 1);
+                                    return;
+                                }
+                            }
                         }
                     }
 
@@ -151,7 +198,7 @@ namespace Codercept
                     {
                         try
                         {
-                            // A. Insert into Application table
+                            // A. Always insert a fresh Application record (preserves audit trail of previous applications)
                             int appId;
                             string appSql = @"
                                 INSERT INTO [dbo].[Application] 
@@ -168,42 +215,192 @@ namespace Codercept
                                 appId = Convert.ToInt32(appCmd.ExecuteScalar());
                             }
 
-                            // B. Insert into Teacher or Teaching_Assistant
-                            int educatorId;
-                            if (dbRole == "Teacher")
-                            {
-                                string teacherSql = @"
-                                    INSERT INTO [dbo].[Teacher]
-                                        ([Name], [Email], [Password], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
-                                    VALUES
-                                        (@Name, @Email, @Password, 'Beginner', 'Pending', GETDATE(), @ApplicationId);
-                                    SELECT SCOPE_IDENTITY();";
+                            // B. Insert or Update Teacher or Teaching_Assistant
+                            int educatorId = 0;
+                            string targetRoleType = (dbRole == "Teacher") ? "Teacher" : "Teaching_Assistant";
 
-                                using (SqlCommand teacherCmd = new SqlCommand(teacherSql, con, tx))
+                            if (!isReapplication)
+                            {
+                                // Fresh registration
+                                if (dbRole == "Teacher")
                                 {
-                                    teacherCmd.Parameters.AddWithValue("@Name", fullName);
-                                    teacherCmd.Parameters.AddWithValue("@Email", email);
-                                    teacherCmd.Parameters.AddWithValue("@Password", hashedPassword);
-                                    teacherCmd.Parameters.AddWithValue("@ApplicationId", appId);
-                                    educatorId = Convert.ToInt32(teacherCmd.ExecuteScalar());
+                                    string teacherSql = @"
+                                        INSERT INTO [dbo].[Teacher]
+                                            ([Name], [Email], [Password], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+                                        VALUES
+                                            (@Name, @Email, @Password, 'Beginner', @QualificationName, @QualificationDocument, 'Pending', GETDATE(), @ApplicationId);
+                                        SELECT SCOPE_IDENTITY();";
+
+                                    using (SqlCommand teacherCmd = new SqlCommand(teacherSql, con, tx))
+                                    {
+                                        teacherCmd.Parameters.AddWithValue("@Name", fullName);
+                                        teacherCmd.Parameters.AddWithValue("@Email", email);
+                                        teacherCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                        teacherCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                        teacherCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                        teacherCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                        educatorId = Convert.ToInt32(teacherCmd.ExecuteScalar());
+                                    }
+                                }
+                                else
+                                {
+                                    string taSql = @"
+                                        INSERT INTO [dbo].[Teaching_Assistant]
+                                            ([Name], [Email], [Password], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+                                        VALUES
+                                            (@Name, @Email, @Password, 'Beginner', @QualificationName, @QualificationDocument, 'Pending', GETDATE(), @ApplicationId);
+                                        SELECT SCOPE_IDENTITY();";
+
+                                    using (SqlCommand taCmd = new SqlCommand(taSql, con, tx))
+                                    {
+                                        taCmd.Parameters.AddWithValue("@Name", fullName);
+                                        taCmd.Parameters.AddWithValue("@Email", email);
+                                        taCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                        taCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                        taCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                        taCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                        educatorId = Convert.ToInt32(taCmd.ExecuteScalar());
+                                    }
                                 }
                             }
                             else
                             {
-                                string taSql = @"
-                                    INSERT INTO [dbo].[Teaching_Assistant]
-                                        ([Name], [Email], [Password], [TeachingLevel], [AccStatus], [DateJoined], [ApplicationId])
-                                    VALUES
-                                        (@Name, @Email, @Password, 'Beginner', 'Pending', GETDATE(), @ApplicationId);
-                                    SELECT SCOPE_IDENTITY();";
-
-                                using (SqlCommand taCmd = new SqlCommand(taSql, con, tx))
+                                // Re-application from previously rejected educator
+                                if (existingEducatorRole == targetRoleType)
                                 {
-                                    taCmd.Parameters.AddWithValue("@Name", fullName);
-                                    taCmd.Parameters.AddWithValue("@Email", email);
-                                    taCmd.Parameters.AddWithValue("@Password", hashedPassword);
-                                    taCmd.Parameters.AddWithValue("@ApplicationId", appId);
-                                    educatorId = Convert.ToInt32(taCmd.ExecuteScalar());
+                                    educatorId = existingEducatorId;
+                                    if (dbRole == "Teacher")
+                                    {
+                                        string updateTeacherSql = @"
+                                            UPDATE [dbo].[Teacher]
+                                            SET [Name] = @Name,
+                                                [Password] = @Password,
+                                                [TeachingLevel] = 'Beginner',
+                                                [AccStatus] = 'Pending',
+                                                [QualificationName] = @QualificationName,
+                                                [QualificationDocument] = @QualificationDocument,
+                                                [ApplicationId] = @ApplicationId,
+                                                [DateJoined] = GETDATE()
+                                            WHERE [TeacherId] = @Id";
+
+                                        using (SqlCommand updateCmd = new SqlCommand(updateTeacherSql, con, tx))
+                                        {
+                                            updateCmd.Parameters.AddWithValue("@Name", fullName);
+                                            updateCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                            updateCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                            updateCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                            updateCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                            updateCmd.Parameters.AddWithValue("@Id", educatorId);
+                                            updateCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        string updateTaSql = @"
+                                            UPDATE [dbo].[Teaching_Assistant]
+                                            SET [Name] = @Name,
+                                                [Password] = @Password,
+                                                [TeachingLevel] = 'Beginner',
+                                                [AccStatus] = 'Pending',
+                                                [QualificationName] = @QualificationName,
+                                                [QualificationDocument] = @QualificationDocument,
+                                                [ApplicationId] = @ApplicationId,
+                                                [DateJoined] = GETDATE()
+                                            WHERE [TA_Id] = @Id";
+
+                                        using (SqlCommand updateCmd = new SqlCommand(updateTaSql, con, tx))
+                                        {
+                                            updateCmd.Parameters.AddWithValue("@Name", fullName);
+                                            updateCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                            updateCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                            updateCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                            updateCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                            updateCmd.Parameters.AddWithValue("@Id", educatorId);
+                                            updateCmd.ExecuteNonQuery();
+                                        }
+                                    }
+
+                                    // Clear previous EducatorSubject mappings to prevent duplicate key errors and stale subjects
+                                    string deleteOldSubjectsSql = (dbRole == "Teacher")
+                                        ? "DELETE FROM [dbo].[EducatorSubject] WHERE TeacherId = @Id"
+                                        : "DELETE FROM [dbo].[EducatorSubject] WHERE TA_Id = @Id";
+                                    using (SqlCommand delSubCmd = new SqlCommand(deleteOldSubjectsSql, con, tx))
+                                    {
+                                        delSubCmd.Parameters.AddWithValue("@Id", educatorId);
+                                        delSubCmd.ExecuteNonQuery();
+                                    }
+                                }
+                                else
+                                {
+                                    // Switched role between Teacher and Teaching Assistant
+                                    if (existingEducatorRole == "Teacher")
+                                    {
+                                        using (SqlCommand delOldSub = new SqlCommand("DELETE FROM [dbo].[EducatorSubject] WHERE TeacherId = @OldId", con, tx))
+                                        {
+                                            delOldSub.Parameters.AddWithValue("@OldId", existingEducatorId);
+                                            delOldSub.ExecuteNonQuery();
+                                        }
+                                        using (SqlCommand delOld = new SqlCommand("DELETE FROM [dbo].[Teacher] WHERE TeacherId = @OldId", con, tx))
+                                        {
+                                            delOld.Parameters.AddWithValue("@OldId", existingEducatorId);
+                                            delOld.ExecuteNonQuery();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        using (SqlCommand delOldSub = new SqlCommand("DELETE FROM [dbo].[EducatorSubject] WHERE TA_Id = @OldId", con, tx))
+                                        {
+                                            delOldSub.Parameters.AddWithValue("@OldId", existingEducatorId);
+                                            delOldSub.ExecuteNonQuery();
+                                        }
+                                        using (SqlCommand delOld = new SqlCommand("DELETE FROM [dbo].[Teaching_Assistant] WHERE TA_Id = @OldId", con, tx))
+                                        {
+                                            delOld.Parameters.AddWithValue("@OldId", existingEducatorId);
+                                            delOld.ExecuteNonQuery();
+                                        }
+                                    }
+
+                                    // Insert into newly selected role table
+                                    if (dbRole == "Teacher")
+                                    {
+                                        string teacherSql = @"
+                                            INSERT INTO [dbo].[Teacher]
+                                                ([Name], [Email], [Password], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+                                            VALUES
+                                                (@Name, @Email, @Password, 'Beginner', @QualificationName, @QualificationDocument, 'Pending', GETDATE(), @ApplicationId);
+                                            SELECT SCOPE_IDENTITY();";
+
+                                        using (SqlCommand teacherCmd = new SqlCommand(teacherSql, con, tx))
+                                        {
+                                            teacherCmd.Parameters.AddWithValue("@Name", fullName);
+                                            teacherCmd.Parameters.AddWithValue("@Email", email);
+                                            teacherCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                            teacherCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                            teacherCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                            teacherCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                            educatorId = Convert.ToInt32(teacherCmd.ExecuteScalar());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        string taSql = @"
+                                            INSERT INTO [dbo].[Teaching_Assistant]
+                                                ([Name], [Email], [Password], [TeachingLevel], [QualificationName], [QualificationDocument], [AccStatus], [DateJoined], [ApplicationId])
+                                            VALUES
+                                                (@Name, @Email, @Password, 'Beginner', @QualificationName, @QualificationDocument, 'Pending', GETDATE(), @ApplicationId);
+                                            SELECT SCOPE_IDENTITY();";
+
+                                        using (SqlCommand taCmd = new SqlCommand(taSql, con, tx))
+                                        {
+                                            taCmd.Parameters.AddWithValue("@Name", fullName);
+                                            taCmd.Parameters.AddWithValue("@Email", email);
+                                            taCmd.Parameters.AddWithValue("@Password", hashedPassword);
+                                            taCmd.Parameters.AddWithValue("@QualificationName", qualificationName);
+                                            taCmd.Parameters.AddWithValue("@QualificationDocument", dbDocPath);
+                                            taCmd.Parameters.AddWithValue("@ApplicationId", appId);
+                                            educatorId = Convert.ToInt32(taCmd.ExecuteScalar());
+                                        }
+                                    }
                                 }
                             }
 
@@ -259,8 +456,15 @@ namespace Codercept
                     }
                 }
 
-                // 9. Redirect to signIn with pending status
-                Response.Redirect("signIn.aspx?registered=pending");
+                // 9. Redirect to signIn with appropriate status notice
+                if (isReapplication)
+                {
+                    Response.Redirect("signIn.aspx?registered=reapplied");
+                }
+                else
+                {
+                    Response.Redirect("signIn.aspx?registered=pending");
+                }
             }
             catch (Exception ex)
             {

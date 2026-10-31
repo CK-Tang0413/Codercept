@@ -20,7 +20,7 @@ namespace Codercept
             string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
             if (Session["UserId"] == null || string.IsNullOrEmpty(userRole))
             {
-                Response.Redirect("signIn.aspx");
+                Response.Redirect("LandingPage.aspx");
                 return;
             }
 

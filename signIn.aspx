@@ -35,12 +35,49 @@
         .forgot-link:hover { text-decoration: underline; }
         .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-submit:hover { background: #6d28d9; }
-        .btn-guest { display: block; width: 100%; padding: 0.875rem; background: #f4f4f5; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
-        .btn-guest:hover { background: #e4e4e7; color: #18181b; }
         .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
         .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
-        @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
+        /* Ensure these are in your CSS block */
+        .btn-guest { display: block; width: 100%; padding: 0.875rem; background: #f4f4f5; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
+        .btn-guest:hover { background: #e4e4e7; color: #18181b; }
+
+        /* Tablet & Large Mobile (768px) */
+        @media (max-width: 768px) { 
+            /* Break the flex row layout completely */
+            .split-layout { display: block; } 
+            
+            /* Hide the dark left panel */
+            .left-panel { display: none !important; } 
+            
+            /* Turn right panel into a standard block that fills the screen */
+            .right-panel { 
+                display: block; 
+                padding: 3rem 2rem; 
+                min-height: 100vh; 
+            } 
+            
+            /* Center the form within the full-width block */
+            .form-container { 
+                margin: 0 auto; 
+                max-width: 480px; 
+            }
+        }
+
+        /* Small Mobile Phones (440px) */
+        @media (max-width: 440px) {
+            .right-panel { padding: 1.25rem; padding-top: 2rem; }
+            .form-header h2 { font-size: 1.75rem; }
+            .form-header p { margin-bottom: 1.25rem; font-size: 0.85rem; }
+            
+            .auth-toggle a { padding: 0.5rem; font-size: 0.85rem; }
+            .form-group { margin-bottom: 1rem; }
+            .form-group label { font-size: 0.8rem; }
+            .form-control { padding: 0.65rem 0.85rem; font-size: 0.9rem; }
+            
+            .options-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem; }
+            .btn-submit, .btn-guest, .btn-back { padding: 0.75rem; font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
@@ -98,8 +135,9 @@
                     </div>
 
                     <asp:Button ID="btnSignIn" runat="server" Text="Sign in to Codercept" CssClass="btn-submit" OnClick="btnSignIn_Click" />
-                    
-                    <asp:LinkButton ID="btnGuest" runat="server" CssClass="btn-guest" OnClick="btnGuest_Click" CausesValidation="false">Continue as Guest</asp:LinkButton>
+
+                    <!-- New Back to Home Button -->
+                    <a href="LandingPage.aspx" class="btn-guest">Back to Home</a>
 
                     <div class="auth-footer">
                         <p>New to Codercept? <a href="signUp.aspx">Create a free account</a></p>
@@ -113,17 +151,17 @@
     </form>
 
     <script type="text/javascript">
-        function toggleSignInPassword() {
-            var pwd = document.getElementById('<%= txtPassword.ClientID %>');
+            function toggleSignInPassword() {
+                var pwd = document.getElementById('<%= txtPassword.ClientID %>');
             
-            if (pwd != null) {
-                if (pwd.type === "password") {
-                    pwd.type = "text";
-                } else {
-                    pwd.type = "password";
+                if (pwd != null) {
+                    if (pwd.getAttribute('type') === "password") {
+                        pwd.setAttribute('type', 'text');
+                    } else {
+                        pwd.setAttribute('type', 'password');
+                    }
                 }
             }
-        }
     </script>
 </body>
 </html>

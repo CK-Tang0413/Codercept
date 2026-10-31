@@ -28,6 +28,20 @@ namespace Codercept
             if (!IsPostBack)
             {
                 PopulateProfileInfo();
+
+                // Persist session identity in ViewState as fallback if session state expires
+                if (Session["LogId"] != null && int.TryParse(Session["LogId"].ToString(), out int currentLogId))
+                {
+                    ViewState["LogId"] = currentLogId;
+                }
+                if (Session["UserId"] != null && int.TryParse(Session["UserId"].ToString(), out int currentUserId))
+                {
+                    ViewState["UserId"] = currentUserId;
+                }
+                if (!string.IsNullOrEmpty(userRole))
+                {
+                    ViewState["UserRole"] = userRole;
+                }
             }
         }
 
@@ -67,10 +81,44 @@ namespace Codercept
 
         protected void btnSignOut_Click(object sender, EventArgs e)
         {
-            UserLogHelper.RecordLogout(Session);
+            int logId = 0;
+            if (Session["LogId"] != null)
+            {
+                int.TryParse(Session["LogId"].ToString(), out logId);
+            }
+            else if (ViewState["LogId"] != null)
+            {
+                int.TryParse(ViewState["LogId"].ToString(), out logId);
+            }
+
+            int userId = 0;
+            if (Session["UserId"] != null)
+            {
+                int.TryParse(Session["UserId"].ToString(), out userId);
+            }
+            else if (ViewState["UserId"] != null)
+            {
+                int.TryParse(ViewState["UserId"].ToString(), out userId);
+            }
+
+            string userRole = (Session["UserRole"] as string) 
+                ?? (Session["UserType"] as string) 
+                ?? (ViewState["UserRole"] as string)
+                ?? (IsSuperAdmin ? "SuperAdmin" : "Admin");
+
+            // Record logout datetime into [dbo].[User_Log]
+            if (logId > 0 || userId > 0)
+            {
+                UserLogHelper.RecordLogout(logId, userRole, userId);
+            }
+            else
+            {
+                UserLogHelper.RecordLogout(Session);
+            }
+
             Session.Clear();
             Session.Abandon();
-            Response.Redirect("signIn.aspx");
+            Response.Redirect("LandingPage.aspx");
         }
 
         protected string GetActiveCssClass(string keyword)

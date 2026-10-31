@@ -185,6 +185,172 @@
         .feedback-hint i {
             color: var(--warning-orange-text);
         }
+        /* Custom Rejection & Confirmation Modal Styles */
+        .confirm-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .confirm-icon-badge.danger {
+            background: var(--danger-red-bg);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red-border);
+        }
+
+        .confirm-icon-badge.success {
+            background: var(--success-green-bg);
+            color: var(--success-green);
+            border: 1px solid var(--success-green-border);
+        }
+
+        .modal-warning-banner {
+            background-color: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #9f1239;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .modal-warning-banner i {
+            font-size: 16px;
+            color: var(--danger-red);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .modal-info-banner {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #166534;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .modal-info-banner i {
+            font-size: 16px;
+            color: var(--success-green);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .quick-reasons-wrapper {
+            margin-bottom: 10px;
+        }
+
+        .quick-reasons-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quick-reasons-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .quick-reason-pill {
+            background: var(--bg-surface-nested);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .quick-reason-pill:hover {
+            background: var(--danger-red-bg);
+            border-color: var(--danger-red-border);
+            color: var(--danger-red);
+        }
+
+        .modal-reason-textarea {
+            width: 100%;
+            min-height: 105px;
+            box-sizing: border-box;
+            font-size: 13px;
+            font-family: inherit;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            color: var(--text-primary);
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-reason-textarea:focus {
+            outline: none;
+            border-color: var(--danger-red);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        }
+
+        .modal-error-alert {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background-color: var(--danger-red-bg);
+            border: 1px solid var(--danger-red-border);
+            border-radius: 6px;
+            color: var(--danger-red);
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-danger-confirm {
+            background-color: var(--danger-red);
+            color: #ffffff;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-danger-confirm:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-danger-confirm:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -297,14 +463,14 @@
                             <p>Approving will grant teacher privileges. Rejecting will notify the candidate with the stated reason.</p>
                         </div>
                         <div class="decision-buttons">
-                            <!-- Rejection directly triggers ASP.NET server-side click with JS validation -->
-                            <asp:Button ID="btnRejectApplication" runat="server" Text="Reject Application" 
-                                CssClass="btn-decision btn-reject-lg" OnClick="btnRejectApplication_Click" 
-                                OnClientClick="return validateRejectReason();" />
+                            <!-- Pop-out modal triggers replacing browser interface -->
+                            <button type="button" class="btn-decision btn-reject-lg" onclick="openRejectModal()">
+                                <i class="fa-solid fa-xmark"></i> Reject Application
+                            </button>
 
-                            <asp:Button ID="btnApproveApplication" runat="server" Text="Approve Application" 
-                                CssClass="btn-decision btn-approve-lg" OnClick="btnApproveApplication_Click" 
-                                OnClientClick="return confirm('Are you sure you want to approve this application?');" />
+                            <button type="button" class="btn-decision btn-approve-lg" onclick="openApproveModal()">
+                                <i class="fa-solid fa-check"></i> Approve Application
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -327,6 +493,111 @@
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab
                             </a>
                             <button type="button" class="btn-modal-cancel" onclick="closeDocModal()">Done Reading</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pop-out Rejection Confirmation Modal -->
+                <div class="modal-overlay" id="rejectModal" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+                    <div class="modal-container" style="max-width: 540px;">
+                        <div class="modal-header-row">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="confirm-icon-badge danger">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div>
+                                    <h3 id="rejectModalTitle" style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0;">Reject Application</h3>
+                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                                        Applicant: <strong id="modalApplicantNameReject" style="color: var(--text-primary);"></strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-modal-close" onclick="closeRejectModal()" aria-label="Close modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div>
+                            <div class="modal-warning-banner">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <div>
+                                    This action will decline this application and mark the account status as <strong>Rejected</strong>. An official notification email containing your specified reason will be dispatched to the applicant.
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 14px;">
+                                <label for="modalRejectReason" class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span>Reason for Rejection <span style="color: var(--danger-red);">*</span></span>
+                                    <span style="font-size: 11px; font-weight: 400; color: var(--text-muted);">Required for email & audit record</span>
+                                </label>
+
+                                <div class="quick-reasons-wrapper">
+                                    <div class="quick-reasons-label">
+                                        <i class="fa-solid fa-bolt" style="color: var(--warning-orange);"></i> Quick presets:
+                                    </div>
+                                    <div class="quick-reasons-group">
+                                        <button type="button" class="quick-reason-pill" onclick="selectQuickReason('Attached credential document is unverified or blurred.')">Blurred / Unverified Doc</button>
+                                        <button type="button" class="quick-reason-pill" onclick="selectQuickReason('Qualifications provided do not meet the minimum criteria for this role.')">Criteria Not Met</button>
+                                        <button type="button" class="quick-reason-pill" onclick="selectQuickReason('Subject area specialization does not align with current course offerings.')">Subject Mismatch</button>
+                                        <button type="button" class="quick-reason-pill" onclick="selectQuickReason('Incomplete application profile or missing required verification details.')">Incomplete Info</button>
+                                    </div>
+                                </div>
+
+                                <textarea id="modalRejectReason" class="modal-reason-textarea" rows="4"
+                                    placeholder="Enter specific feedback or reason for rejection..."></textarea>
+
+                                <div id="rejectModalError" class="modal-error-alert" style="display: none;">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>Please provide a rejection reason before confirming.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-actions" style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+                            <button type="button" class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+                            <asp:Button ID="btnRejectApplication" runat="server" Text="Confirm & Reject Application" 
+                                CssClass="btn-danger-confirm" OnClick="btnRejectApplication_Click" 
+                                OnClientClick="return confirmRejectModal();" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pop-out Approval Confirmation Modal -->
+                <div class="modal-overlay" id="approveModal" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
+                    <div class="modal-container" style="max-width: 500px;">
+                        <div class="modal-header-row">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="confirm-icon-badge success">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div>
+                                    <h3 id="approveModalTitle" style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0;">Approve Application</h3>
+                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                                        Applicant: <strong id="modalApplicantNameApprove" style="color: var(--text-primary);"></strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-modal-close" onclick="closeApproveModal()" aria-label="Close modal">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div>
+                            <div class="modal-info-banner">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <div>
+                                    Approving this application will activate the educator's account, grant teaching privileges, and send a welcome email with their login confirmation.
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                                Are you sure you want to approve this educator? Any notes entered in the review remarks will also be included in the email.
+                            </p>
+                        </div>
+
+                        <div class="modal-actions" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+                            <button type="button" class="btn-cancel" onclick="closeApproveModal()">Cancel</button>
+                            <asp:Button ID="btnApproveApplication" runat="server" Text="Confirm & Approve Application" 
+                                CssClass="btn-decision btn-approve-lg" OnClick="btnApproveApplication_Click" />
                         </div>
                     </div>
                 </div>
@@ -388,8 +659,31 @@
         }
 
         function openRejectModal() {
+            var txtMain = document.getElementById('<%= txtAdminRemarks.ClientID %>');
+            var txtModal = document.getElementById('modalRejectReason');
+            var errBox = document.getElementById('rejectModalError');
+            var applicantName = document.getElementById('<%= hfApplicantName.ClientID %>');
+            var modalNameEl = document.getElementById('modalApplicantNameReject');
+
+            if (applicantName && modalNameEl) {
+                modalNameEl.innerText = applicantName.value || 'Applicant';
+            }
+
+            if (errBox) errBox.style.display = 'none';
+
+            // Pre-populate modal textarea from main remark input if text already entered
+            if (txtMain && txtModal) {
+                txtModal.value = txtMain.value.trim();
+                txtModal.style.borderColor = '';
+            }
+
             var modal = document.getElementById('rejectModal');
-            if (modal) modal.classList.add('active');
+            if (modal) {
+                modal.classList.add('active');
+                setTimeout(function () {
+                    if (txtModal) txtModal.focus();
+                }, 100);
+            }
         }
 
         function closeRejectModal() {
@@ -397,25 +691,109 @@
             if (modal) modal.classList.remove('active');
         }
 
-        window.addEventListener('click', function (e) {
-            var docM = document.getElementById('docModal');
-            var rejM = document.getElementById('rejectModal');
-            if (e.target === docM) closeDocModal();
-            if (e.target === rejM) closeRejectModal();
-        });
+        function openApproveModal() {
+            var applicantName = document.getElementById('<%= hfApplicantName.ClientID %>');
+            var modalNameEl = document.getElementById('modalApplicantNameApprove');
+            if (applicantName && modalNameEl) {
+                modalNameEl.innerText = applicantName.value || 'Applicant';
+            }
+            var modal = document.getElementById('approveModal');
+            if (modal) modal.classList.add('active');
+        }
 
-        function validateRejectReason() {
-            var txt = document.getElementById('<%= txtAdminRemarks.ClientID %>');
-            if (!txt || !txt.value.trim()) {
-                alert('Please provide a reason for rejecting the application.');
-                if (txt) {
-                    txt.focus();
-                    txt.style.borderColor = "var(--danger-red)";
+        function closeApproveModal() {
+            var modal = document.getElementById('approveModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function selectQuickReason(reason) {
+            var txtModal = document.getElementById('modalRejectReason');
+            if (!txtModal) return;
+            if (txtModal.value.trim().length > 0) {
+                txtModal.value = txtModal.value.trim() + " " + reason;
+            } else {
+                txtModal.value = reason;
+            }
+            // Also sync to main remarks
+            var txtMain = document.getElementById('<%= txtAdminRemarks.ClientID %>');
+            if (txtMain) txtMain.value = txtModal.value;
+
+            var errBox = document.getElementById('rejectModalError');
+            if (errBox) errBox.style.display = 'none';
+            txtModal.style.borderColor = '';
+            txtModal.focus();
+        }
+
+        function confirmRejectModal() {
+            var txtModal = document.getElementById('modalRejectReason');
+            var txtMain = document.getElementById('<%= txtAdminRemarks.ClientID %>');
+            var errBox = document.getElementById('rejectModalError');
+
+            var reason = (txtModal ? txtModal.value : (txtMain ? txtMain.value : '')).trim();
+
+            if (!reason) {
+                if (errBox) {
+                    errBox.style.display = 'flex';
+                }
+                if (txtModal) {
+                    txtModal.style.borderColor = 'var(--danger-red)';
+                    txtModal.focus();
                 }
                 return false;
             }
-            return confirm("Are you sure you want to reject this applicant with the provided reason?");
+
+            // Sync reason back to main server-side control
+            if (txtMain) {
+                txtMain.value = reason;
+            }
+
+            // Hide any error
+            if (errBox) errBox.style.display = 'none';
+
+            return true; // Allow form submission
         }
+
+        window.addEventListener('click', function (e) {
+            var docM = document.getElementById('docModal');
+            var rejM = document.getElementById('rejectModal');
+            var appM = document.getElementById('approveModal');
+            if (e.target === docM) closeDocModal();
+            if (e.target === rejM) closeRejectModal();
+            if (e.target === appM) closeApproveModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeDocModal();
+                closeRejectModal();
+                closeApproveModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var txtModal = document.getElementById('modalRejectReason');
+            var txtMain = document.getElementById('<%= txtAdminRemarks.ClientID %>');
+            var errBox = document.getElementById('rejectModalError');
+
+            if (txtModal) {
+                txtModal.addEventListener('input', function () {
+                    if (txtModal.value.trim().length > 0) {
+                        if (errBox) errBox.style.display = 'none';
+                        txtModal.style.borderColor = '';
+                    }
+                    if (txtMain) txtMain.value = txtModal.value;
+                });
+            }
+
+            if (txtMain) {
+                txtMain.addEventListener('input', function () {
+                    var rejModal = document.getElementById('rejectModal');
+                    if (txtModal && rejModal && !rejModal.classList.contains('active')) {
+                        txtModal.value = txtMain.value;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

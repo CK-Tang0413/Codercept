@@ -105,7 +105,7 @@ namespace Codercept
         }
 
         /// <summary>
-        /// Updates the EndDateTime of the specified LogId or the most recent open session for the user.
+        /// Updates the EndDateTime of the specified LogId or open session(s) for the user in [dbo].[User_Log].
         /// </summary>
         public static void RecordLogout(int logId, string userType = null, int userId = 0)
         {
@@ -118,19 +118,21 @@ namespace Codercept
                 {
                     con.Open();
 
+                    DateTime logoutTime = DateTime.Now;
+                    int rowsUpdated = 0;
+
                     if (logId > 0)
                     {
                         string query = "UPDATE [dbo].[User_Log] SET [EndDateTime] = @EndDateTime WHERE [LogId] = @LogId AND [EndDateTime] IS NULL";
                         using (SqlCommand cmd = new SqlCommand(query, con))
                         {
-                            cmd.Parameters.AddWithValue("@EndDateTime", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@EndDateTime", logoutTime);
                             cmd.Parameters.AddWithValue("@LogId", logId);
-                            int rows = cmd.ExecuteNonQuery();
-                            if (rows > 0) return;
+                            rowsUpdated += cmd.ExecuteNonQuery();
                         }
                     }
 
-                    // Fallback: update most recent open session for this user ID and role
+                    // Fallback and orphaned session closure
                     if (userId > 0 && !string.IsNullOrEmpty(userType))
                     {
                         string column = null;
@@ -157,17 +159,26 @@ namespace Codercept
                             string query = $@"
                                 UPDATE [dbo].[User_Log] 
                                 SET [EndDateTime] = @EndDateTime 
-                                WHERE [LogId] = (
-                                    SELECT TOP 1 [LogId] 
-                                    FROM [dbo].[User_Log] 
-                                    WHERE [{column}] = @UserId AND [EndDateTime] IS NULL 
-                                    ORDER BY [StartDateTime] DESC
-                                )";
+                                WHERE [{column}] = @UserId AND [EndDateTime] IS NULL";
                             using (SqlCommand cmd = new SqlCommand(query, con))
                             {
-                                cmd.Parameters.AddWithValue("@EndDateTime", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@EndDateTime", logoutTime);
                                 cmd.Parameters.AddWithValue("@UserId", userId);
-                                cmd.ExecuteNonQuery();
+                                rowsUpdated += cmd.ExecuteNonQuery();
+                            }
+
+                            // If no active session was updated (e.g. login was unrecorded), insert a record so the logout timestamp is captured
+                            if (rowsUpdated == 0)
+                            {
+                                string insertQuery = $@"
+                                    INSERT INTO [dbo].[User_Log] ([StartDateTime], [EndDateTime], [{column}])
+                                    VALUES (@LogoutTime, @LogoutTime, @UserId)";
+                                using (SqlCommand insertCmd = new SqlCommand(insertQuery, con))
+                                {
+                                    insertCmd.Parameters.AddWithValue("@LogoutTime", logoutTime);
+                                    insertCmd.Parameters.AddWithValue("@UserId", userId);
+                                    insertCmd.ExecuteNonQuery();
+                                }
                             }
                         }
                     }

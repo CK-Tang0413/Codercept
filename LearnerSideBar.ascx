@@ -32,15 +32,5 @@
                 Sign out
             </asp:LinkButton>
         </asp:PlaceHolder>
-
-        <!-- Shown only for Guests -->
-        <asp:PlaceHolder ID="phGuestAction" runat="server" Visible="false">
-            <a href="signUp.aspx" class="btn-submit" style="text-align: center; text-decoration: none; display: block; font-size: 0.9rem;">
-                Create Account
-            </a>
-            <a href="signIn.aspx" style="display: block; text-align: center; margin-top: 10px; color: var(--text-secondary); font-size: 0.85rem; text-decoration: none;">
-                Or Sign In
-            </a>
-        </asp:PlaceHolder>
     </div>
 </aside>
