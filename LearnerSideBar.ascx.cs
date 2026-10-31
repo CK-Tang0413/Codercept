@@ -11,40 +11,32 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserType"] != null)
+            // Only execute if a valid user is logged in
+            if (Session["UserType"] != null && Session["UserName"] != null && Session["UserEmail"] != null)
             {
-                if (Session["UserType"].ToString() == "Guest")
+                string fullName = Session["UserName"].ToString();
+                litUserNameNav.Text = fullName;
+                litUserEmailNav.Text = Session["UserEmail"].ToString();
+
+                if (!string.IsNullOrEmpty(fullName))
                 {
-                    phRestrictedNav.Visible = false;
-                    phUserProfile.Visible = false;
-                    phGuestAction.Visible = true;
+                    litUserInitial.Text = fullName.Substring(0, 1).ToUpper();
                 }
-                else if (Session["UserName"] != null && Session["UserEmail"] != null)
-                {
-                    string fullName = Session["UserName"].ToString();
-                    litUserNameNav.Text = fullName;
-                    litUserEmailNav.Text = Session["UserEmail"].ToString();
 
-                    if (!string.IsNullOrEmpty(fullName))
-                    {
-                        litUserInitial.Text = fullName.Substring(0, 1).ToUpper();
-                    }
+                // Store Session Data in ViewState as a fallback if the Session times out
+                if (Session["LogId"] != null) ViewState["LogId"] = Session["LogId"];
+                if (Session["UserId"] != null) ViewState["UserId"] = Session["UserId"];
+                if (Session["UserRole"] != null) ViewState["UserRole"] = Session["UserRole"];
 
-                    // Store Session Data in ViewState as a fallback if the Session times out
-                    if (Session["LogId"] != null) ViewState["LogId"] = Session["LogId"];
-                    if (Session["UserId"] != null) ViewState["UserId"] = Session["UserId"];
-                    if (Session["UserRole"] != null) ViewState["UserRole"] = Session["UserRole"];
-
-                    // --- Check if current page is one of the main allowed pages ---
-                    string currentPage = System.IO.Path.GetFileNameWithoutExtension(Request.Url.AbsolutePath);
-                    bool isMainPage =
-                        string.Equals(currentPage, "LearnerDashboard", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(currentPage, "CourseCatalog", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(currentPage, "MyProgress", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(currentPage, "Certificates", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(currentPage, "LearnerForum", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(currentPage, "profile", StringComparison.OrdinalIgnoreCase);
-                }
+                // --- Check if current page is one of the main allowed pages ---
+                string currentPage = System.IO.Path.GetFileNameWithoutExtension(Request.Url.AbsolutePath);
+                bool isMainPage =
+                    string.Equals(currentPage, "LearnerDashboard", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(currentPage, "CourseCatalog", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(currentPage, "MyProgress", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(currentPage, "Certificates", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(currentPage, "LearnerForum", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(currentPage, "profile", StringComparison.OrdinalIgnoreCase);
             }
         }
 

@@ -115,17 +115,17 @@
     </form>
 
     <script type="text/javascript">
-        function toggleSignInPassword() {
-            var pwd = document.getElementById('<%= txtPassword.ClientID %>');
+            function toggleSignInPassword() {
+                var pwd = document.getElementById('<%= txtPassword.ClientID %>');
             
-            if (pwd != null) {
-                if (pwd.type === "password") {
-                    pwd.type = "text";
-                } else {
-                    pwd.type = "password";
+                if (pwd != null) {
+                    if (pwd.getAttribute('type') === "password") {
+                        pwd.setAttribute('type', 'text');
+                    } else {
+                        pwd.setAttribute('type', 'password');
+                    }
                 }
             }
-        }
     </script>
 </body>
 </html>

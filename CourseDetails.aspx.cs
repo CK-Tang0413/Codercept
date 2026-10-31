@@ -151,7 +151,7 @@ namespace Codercept
                             }
                             else
                             {
-                                // --- NEW BLOCK: User is NOT enrolled ---
+                                // --- User is NOT enrolled ---
                                 userIsEnrolled = false;
 
                                 // Hide the progress bar
@@ -160,16 +160,7 @@ namespace Codercept
                                 // Reset the button to "Enroll Now"
                                 btnCourseAction.Text = "Enroll Now";
                                 btnCourseAction.CommandArgument = courseId.ToString();
-
-                                // Handle Guest pop-up
-                                if (isGuest)
-                                {
-                                    btnCourseAction.OnClientClick = "showGuestModal(); return false;";
-                                }
-                                else
-                                {
-                                    btnCourseAction.OnClientClick = "";
-                                }
+                                btnCourseAction.OnClientClick = ""; // Removed guest modal popup
                             }
                         }
                     }
