@@ -522,7 +522,7 @@ INSERT INTO [dbo].[Chapter] ([DateCreation], [DateUpdate], [ChapterNum], [Chapte
 VALUES
     (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -35, GETDATE()), 1, 'Introduction to Python', 'Get set up with Python, run your first program, and learn how Python code is structured.', '2 hours', N'media/uploads/1/chapter-01-introduction-to-python.jpg', @CourseId, @BryanId),
     (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -33, GETDATE()), 2, 'Variables and Data Types', 'Understand variables, strings, numbers, booleans, and common type conversions in Python.', '3 hours', N'media/uploads/1/chapter-02-variables-and-data-types.png', @CourseId, @BryanId),
-    (DATEADD(DAY, -36, GETDATE()), DATEADD(DAY, -30, GETDATE()), 3, 'Control Flow', 'Make decisions and repeat work with if statements, for loops, and while loops.', '4 hours', NULL, @CourseId, @BryanId);
+    (DATEADD(DAY, -36, GETDATE()), DATEADD(DAY, -30, GETDATE()), 3, 'Control Flow', 'Make decisions and repeat work with if statements, for loops, and while loops.', '4 hours', N'media/uploads/1/chapter-03-control-flow.jpg', @CourseId, @BryanId);
 
 -- Course: Java Programming Masterclass (Bryan Yeong)
 INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
@@ -551,7 +551,7 @@ INSERT INTO [dbo].[Chapter] ([DateCreation], [DateUpdate], [ChapterNum], [Chapte
 VALUES
     (DATEADD(DAY, -70, GETDATE()), DATEADD(DAY, -65, GETDATE()), 1, 'Working with Data in Python', 'Load data from files and inspect it with lists, dictionaries, and pandas DataFrames.', '3 hours', N'media/uploads/3/chapter-01-working-with-data-in-python.jpg', @CourseId, @BryanId),
     (DATEADD(DAY, -68, GETDATE()), DATEADD(DAY, -60, GETDATE()), 2, 'Cleaning and Transforming Data', 'Handle missing values, fix types, filter rows, and reshape data ready for analysis.', '4 hours', N'media/uploads/3/chapter-02-cleaning-and-transforming-data.png', @CourseId, @BryanId),
-    (DATEADD(DAY, -66, GETDATE()), DATEADD(DAY, -58, GETDATE()), 3, 'Visualising Results', 'Turn data into clear charts and summaries that answer a question.', '3.5 hours', NULL, @CourseId, @BryanId);
+    (DATEADD(DAY, -66, GETDATE()), DATEADD(DAY, -58, GETDATE()), 3, 'Visualising Results', 'Turn data into clear charts and summaries that answer a question.', '3.5 hours', N'media/uploads/3/chapter-03-visualising-results.jpg', @CourseId, @BryanId);
 
 -- Course: C Programming Essentials (Sarah Lim)
 INSERT INTO [dbo].[Course] ([DateCreation], [DateUpdate], [CourseTitle], [CourseDescription], [DifficultyLevel], [CourseDuration], [TeacherId])
@@ -1301,12 +1301,12 @@ VALUES
 INSERT INTO [dbo].[Chapter] ([DateCreation], [DateUpdate], [ChapterNum], [ChapterTitle], [ChapterDescription], [ChapterDuration], [ChapterMediaLink], [CourseId], [TeacherId])
 VALUES
     (DATEADD(DAY, -30, GETDATE()), DATEADD(DAY, -24, GETDATE()), 4, N'Functions', N'Write reusable functions with parameters, return values and docstrings.', N'4 hours', N'media/uploads/1/chapter-04-functions.mp4', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @BcBryan),
-    (DATEADD(DAY, -28, GETDATE()), DATEADD(DAY, -22, GETDATE()), 5, N'Lists, Dictionaries and Files', N'Store collections of data and read and write text files.', N'5 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @BcBryan),
-    (DATEADD(DAY, -42, GETDATE()), DATEADD(DAY, -36, GETDATE()), 3, N'Exceptions and Error Handling', N'Handle errors with try, catch and finally and design your own exceptions.', N'4 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @BcBryan),
+    (DATEADD(DAY, -28, GETDATE()), DATEADD(DAY, -22, GETDATE()), 5, N'Lists, Dictionaries and Files', N'Store collections of data and read and write text files.', N'5 hours', N'media/uploads/1/chapter-05-lists-dictionaries-and-files.png', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @BcBryan),
+    (DATEADD(DAY, -42, GETDATE()), DATEADD(DAY, -36, GETDATE()), 3, N'Exceptions and Error Handling', N'Handle errors with try, catch and finally and design your own exceptions.', N'4 hours', N'media/uploads/2/chapter-03-exceptions-and-error-handling.mp4', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @BcBryan),
     (DATEADD(DAY, -40, GETDATE()), DATEADD(DAY, -33, GETDATE()), 4, N'Collections and Generics', N'Use lists, maps and generics to store and process groups of objects.', N'5 hours', N'media/uploads/2/chapter-04-collections-and-generics.mp4', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @BcBryan),
-    (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -30, GETDATE()), 5, N'Files and Unit Testing', N'Read and write files and check your code with JUnit tests.', N'4 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @BcBryan),
+    (DATEADD(DAY, -38, GETDATE()), DATEADD(DAY, -30, GETDATE()), 5, N'Files and Unit Testing', N'Read and write files and check your code with JUnit tests.', N'4 hours', N'media/uploads/2/chapter-05-files-and-unit-testing.mp4', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), @BcBryan),
     (DATEADD(DAY, -55, GETDATE()), DATEADD(DAY, -48, GETDATE()), 4, N'Aggregation and Grouping', N'Summarise data with groupby, pivot tables and merges.', N'4 hours', N'media/uploads/3/chapter-04-aggregation-and-grouping.mp4', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python'), @BcBryan),
-    (DATEADD(DAY, -52, GETDATE()), DATEADD(DAY, -44, GETDATE()), 5, N'Telling a Data Story', N'Turn an analysis into a short report that a reader can act on.', N'3 hours', NULL, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python'), @BcBryan);
+    (DATEADD(DAY, -52, GETDATE()), DATEADD(DAY, -44, GETDATE()), 5, N'Telling a Data Story', N'Turn an analysis into a short report that a reader can act on.', N'3 hours', N'media/uploads/3/chapter-05-telling-a-data-story.png', (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python'), @BcBryan);
 
 -- Subchapters: every chapter ends with 3 (duration in minutes)
 INSERT INTO [dbo].[SubChapter] ([DateCreation], [DateUpdate], [SubChapterOrder], [SubChapterTitle], [SubChapterContent], [SubChapterMediaLink], [SubChapterDuration], [ChapterId], [TeacherId])
