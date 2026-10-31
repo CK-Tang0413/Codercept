@@ -215,6 +215,7 @@
     <Content Include="img\Codercept_Icon.png" />
     <Content Include="img\Codercept_Title.png" />
     <Content Include="img\Codercept_Title_with_Slogan.png" />
+    <Content Include="LandingPage.aspx" />
     <Content Include="LearnerAddPost.aspx" />
     <Content Include="LearnerDashboard.aspx" />
     <Content Include="LearnerForum.aspx" />
@@ -406,6 +407,13 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage.aspx.cs">
+      <DependentUpon>LandingPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage.aspx.designer.cs">
+      <DependentUpon>LandingPage.aspx</DependentUpon>
     </Compile>
     <Compile Include="LearnerAddPost.aspx.cs">
       <DependentUpon>LearnerAddPost.aspx</DependentUpon>

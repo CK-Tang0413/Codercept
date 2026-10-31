@@ -255,15 +255,5 @@ namespace Codercept
             }
         }
 
-        protected void btnGuest_Click(object sender, EventArgs e)
-        {
-            // Assign generic guest attributes to bypass the login check securely
-            Session["UserType"] = "Guest";
-            Session["UserRole"] = "Guest";
-            Session["UserName"] = "Future Coder"; // Used for the dashboard greeting
-            Session["UserEmail"] = "";
-
-            Response.Redirect("LearnerDashboard.aspx");
-        }
     }
 }

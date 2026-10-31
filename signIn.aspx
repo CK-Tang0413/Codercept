@@ -35,11 +35,12 @@
         .forgot-link:hover { text-decoration: underline; }
         .btn-submit { width: 100%; padding: 0.875rem; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-submit:hover { background: #6d28d9; }
-        .btn-guest { display: block; width: 100%; padding: 0.875rem; background: #f4f4f5; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
-        .btn-guest:hover { background: #e4e4e7; color: #18181b; }
         .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
         .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
+        /* Ensure these are in your CSS block */
+        .btn-guest { display: block; width: 100%; padding: 0.875rem; background: #f4f4f5; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
+        .btn-guest:hover { background: #e4e4e7; color: #18181b; }
         @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
     </style>
 </head>
@@ -98,8 +99,9 @@
                     </div>
 
                     <asp:Button ID="btnSignIn" runat="server" Text="Sign in to Codercept" CssClass="btn-submit" OnClick="btnSignIn_Click" />
-                    
-                    <asp:LinkButton ID="btnGuest" runat="server" CssClass="btn-guest" OnClick="btnGuest_Click" CausesValidation="false">Continue as Guest</asp:LinkButton>
+
+                    <!-- New Back to Home Button -->
+                    <a href="LandingPage.aspx" class="btn-guest">Back to Home</a>
 
                     <div class="auth-footer">
                         <p>New to Codercept? <a href="signUp.aspx">Create a free account</a></p>

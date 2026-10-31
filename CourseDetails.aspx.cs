@@ -12,7 +12,7 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
+            if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
             {
                 Response.Redirect("signIn.aspx");
                 return;
@@ -32,8 +32,7 @@ namespace Codercept
                 int.TryParse(Request.QueryString["id"], out courseId);
             }
 
-            bool isGuest = Session["UserType"].ToString() == "Guest";
-            int learnerId = isGuest ? 0 : Convert.ToInt32(Session["UserId"]);
+            int learnerId = Convert.ToInt32(Session["UserId"]);
             bool userIsEnrolled = false;
             int learnerProgressChapter = 0;
 

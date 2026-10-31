@@ -7,11 +7,10 @@ namespace Codercept
 {
     public partial class LearnerDashboard : System.Web.UI.Page
     {
-        // Grab the connection string from Web.config
         string connString = ConfigurationManager.ConnectionStrings["Codercept_DB"].ConnectionString;
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
+            if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
             {
                 Response.Redirect("signIn.aspx");
                 return;
@@ -19,16 +18,11 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                string fullName = Session["UserName"] != null ? Session["UserName"].ToString() : "Guest";
+                string fullName = Session["UserName"] != null ? Session["UserName"].ToString() : "Learner";
                 litWelcomeName.Text = fullName;
 
                 LoadDashboardData();
-
-                // NEW: Load Notifications directly on the Dashboard
-                if (Session["UserType"].ToString() != "Guest")
-                {
-                    LoadNotifications();
-                }
+                LoadNotifications();
             }
         }
 
@@ -76,26 +70,12 @@ namespace Codercept
 
         private void LoadDashboardData()
         {
-            bool isGuest = Session["UserType"].ToString() == "Guest";
-
             LoadRecommendedCourses();
+            phLearnerData.Visible = true;
 
-            if (isGuest)
-            {
-                phLearnerData.Visible = false;
-                litGreetingDesc.Text = "Explore our course catalog to find your next skill. Create a free account to track your progress!";
-                recommendationHeader.InnerText = "Explore Our Courses";
-            }
-            else
-            {
-                phLearnerData.Visible = true;
-
-                // Assuming your login page sets Session["UserId"] to the LearnerId
-                int learnerId = Convert.ToInt32(Session["UserId"]);
-
-                LoadActiveCourses(learnerId);
-                LoadDashboardStats(learnerId);
-            }
+            int learnerId = Convert.ToInt32(Session["UserId"]);
+            LoadActiveCourses(learnerId);
+            LoadDashboardStats(learnerId);
         }
 
         private void LoadActiveCourses(int learnerId)
