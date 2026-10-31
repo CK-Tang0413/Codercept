@@ -12,14 +12,35 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserType"] == null || Session["UserType"].ToString() != "Learner")
+            if (Session["UserType"] == null || (Session["UserType"].ToString() != "Learner" && Session["UserType"].ToString() != "Guest"))
             {
-                Response.Redirect("LandingPage.aspx");
+                Response.Redirect("signIn.aspx");
                 return;
             }
 
             if (!IsPostBack)
             {
+                // --- Bulletproof Smart Back Navigation Logic ---
+                string cId = Request.QueryString["id"] ?? "0";
+                string sessionKey = "ReturnUrl_Course_" + cId;
+
+                if (Request.UrlReferrer != null)
+                {
+                    string referrer = Request.UrlReferrer.ToString().ToLower();
+
+                    // Only save the referrer if it is one of the three valid origin pages
+                    if (referrer.Contains("LearnerDashboard.aspx") ||
+                        referrer.Contains("MyProgress.aspx") ||
+                        referrer.Contains("CourseCatalog.aspx"))
+                    {
+                        Session[sessionKey] = Request.UrlReferrer.ToString();
+                    }
+                }
+
+                // Retrieve the saved origin page. If none exists (direct link), default to Course Catalog.
+                lnkBack.NavigateUrl = Session[sessionKey] != null ? Session[sessionKey].ToString() : "CourseCatalog.aspx";
+                // ------------------------------------------------
+
                 LoadCourseDetails();
             }
         }
