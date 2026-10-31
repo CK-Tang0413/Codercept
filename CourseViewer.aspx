@@ -186,7 +186,7 @@
                             <asp:Panel ID="pnlCode" runat="server" Visible="false">
                                 <div class="section-divider">Part 4: Coding Challenge</div>
                                 <div class="challenge-box">
-                                    <h3 style="color: white; margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
+                                    <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
                                     <p><asp:Literal ID="litCodeDesc" runat="server"></asp:Literal></p>
                                 </div>
                                 <asp:Label ID="lblCodeState" runat="server" Visible="false" style="display: block; margin-bottom: 1rem; font-weight: bold;"></asp:Label>
