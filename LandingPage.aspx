@@ -88,10 +88,51 @@
         /* Footer */
         .footer { background: var(--bg-surface); border-top: 1px solid var(--border-light); padding: 3rem 5%; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
 
-        @media (max-width: 992px) {
+        /* Tablet Horizontal (1024px) */
+        @media (max-width: 1024px) {
+            .hero { min-height: 70vh; padding: 120px 5% 50px; }
+            .hero h1 { font-size: 3rem; }
+            
+            /* Squeeze grids to 2 columns */
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .course-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* Tablet Vertical (768px) */
+        @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            
+            /* Stack grids to 1 column */
             .features-grid { grid-template-columns: 1fr; }
-            .nav-links { display: none; } /* Hide links on mobile, keep buttons */
+            .course-grid { grid-template-columns: 1fr !important; }
+            
+            /* Hide middle nav links to make room for buttons */
+            .nav-links { display: none; } 
+        }
+
+        /* Mobile Phones (440px and below) */
+        @media (max-width: 440px) {
+            .public-nav { padding: 0 1rem; }
+            .nav-brand { font-size: 1.1rem; }
+            .nav-brand img { width: 24px; height: 24px; }
+            
+            /* Shrink top nav buttons */
+            .nav-actions { gap: 0.5rem; }
+            .btn-outline, .btn-sunset { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+            
+            /* Adjust Hero for small screens */
+            .hero { padding: 100px 1rem 40px; }
+            .hero h1 { font-size: 2rem; margin-bottom: 1rem; }
+            
+            /* Stack hero buttons vertically */
+            .hero-buttons { flex-direction: column; width: 100%; gap: 0.75rem; }
+            .hero-buttons .btn-sunset, .hero-buttons .btn-outline { width: 100%; text-align: center; }
+            
+            /* Tighter container padding */
+            .container { padding: 3rem 1rem; }
+            .section-header h2 { font-size: 1.75rem; }
+            .feature-card { padding: 1.5rem; }
         }
     </style>
 </head>

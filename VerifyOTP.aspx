@@ -12,6 +12,13 @@
         .form-control { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); background: transparent; color: var(--text-primary); }
         .btn-submit { width: 100%; padding: 0.75rem; background: var(--accent-primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .error-msg { color: #ef4444; font-size: 0.875rem; display: block; margin-top: 0.5rem; }
+        @media (max-width: 440px) {
+            .auth-container { margin: 2rem 1rem; padding: 1.5rem; }
+            h2 { font-size: 1.5rem; }
+            p { font-size: 0.9rem; }
+            .form-control { padding: 0.65rem 0.85rem; font-size: 0.9rem; }
+            .btn-submit { padding: 0.75rem; font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
