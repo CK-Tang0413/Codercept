@@ -1,4 +1,4 @@
-<%@ Page Title="Manage Subchapters - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterContent.aspx.cs" Inherits="Codercept.TeacherChapterContent" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterContent.aspx.cs" Inherits="Codercept.TeacherChapterContent" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherBreadcrumb.ascx" TagPrefix="uc" TagName="Breadcrumb" %>
 <%@ Register Src="~/TeacherRichEditor.ascx" TagPrefix="uc" TagName="RichEditor" %>
@@ -28,9 +28,6 @@
                 <span>CHAPTER CONTENT</span>
                 <strong><%= Contents.Count %> subchapter<%= Contents.Count == 1 ? "" : "s" %></strong>
             </div>
-            <%-- Picking a subchapter does not reload the page: TeacherPortal.js copies the item's data-* values into the editor and sets
-                 hfTeacherSubchapterId, which Update / Delete post. Dragging only changes hfTeacherContentOrder (SubChapterIds in order),
-                 saved together with Update details. --%>
             <input type="hidden" id="hfTeacherSubchapterId" runat="server" value="" data-tp-content-input />
             <input type="hidden" id="hfTeacherContentOrder" runat="server" value="" data-tp-content-order />
             <div class="content-reorder-items" data-tp-content-list data-tp-sortable="[data-tp-content-item]">

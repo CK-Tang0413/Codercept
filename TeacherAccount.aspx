@@ -1,4 +1,4 @@
-<%@ Page Title="My Account - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherAccount.aspx.cs" Inherits="Codercept.TeacherAccount" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherAccount.aspx.cs" Inherits="Codercept.TeacherAccount" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherConfirmModal.ascx" TagPrefix="uc" TagName="ConfirmModal" %>
 
@@ -63,7 +63,6 @@
 </asp:Content>
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
-    <%-- The email typed below is posted as tpDeleteEmail and re-checked on the server; the button is also locked client-side. --%>
     <uc:ConfirmModal ID="mdlTeacherDeleteAccount" runat="server" ModalId="tpDeleteAccountModal" TitleText="Delete your account?"
         ExtraCssClass="account-modal" ConfirmText="Delete Account" ConfirmIcon="trash" ConfirmVariant="danger"
         OnConfirmed="mdlTeacherDeleteAccount_Confirmed" />

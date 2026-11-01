@@ -9,31 +9,53 @@
 
 namespace Codercept
 {
+
+
     public partial class TAGradeAssessments
     {
+
         /// <summary>
         /// hfTeacherGradeAssessment control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherGradeAssessment;
 
         /// <summary>
         /// hfTeacherGradeLearner control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherGradeLearner;
 
         /// <summary>
         /// btnTASaveGrading control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnTASaveGrading;
 
         /// <summary>
         /// mdlTAConfirmGrade control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::Codercept.TeacherConfirmModal mdlTAConfirmGrade;
 
         /// <summary>
         /// Master property.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated property.
+        /// </remarks>
         public new Codercept.TASite Master
         {
             get

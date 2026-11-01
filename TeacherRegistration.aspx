@@ -3,7 +3,8 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Teacher Registration - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body, html { height: 100%; background-color: #ffffff; }

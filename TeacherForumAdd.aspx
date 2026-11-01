@@ -1,4 +1,4 @@
-<%@ Page Title="Create New Post - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherForumAdd.aspx.cs" Inherits="Codercept.TeacherForumAdd" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherForumAdd.aspx.cs" Inherits="Codercept.TeacherForumAdd" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">

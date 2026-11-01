@@ -1,4 +1,4 @@
-<%@ Page Title="Edit Quiz or Assessment - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterTest.aspx.cs" Inherits="Codercept.TeacherChapterTest" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterTest.aspx.cs" Inherits="Codercept.TeacherChapterTest" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
 <%@ Register Src="~/TeacherBreadcrumb.ascx" TagPrefix="uc" TagName="Breadcrumb" %>

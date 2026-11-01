@@ -1,4 +1,4 @@
-<%@ Page Title="Grade Course Assessments - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherGradeAssessments.aspx.cs" Inherits="Codercept.TeacherGradeAssessments" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherGradeAssessments.aspx.cs" Inherits="Codercept.TeacherGradeAssessments" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Import Namespace="System.Linq" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>

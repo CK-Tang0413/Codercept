@@ -1,4 +1,4 @@
-<%@ Page Title="Create Course - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherCourseCreate.aspx.cs" Inherits="Codercept.TeacherCourseCreate" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherCourseCreate.aspx.cs" Inherits="Codercept.TeacherCourseCreate" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherDomainInput.ascx" TagPrefix="uc" TagName="DomainInput" %>
 

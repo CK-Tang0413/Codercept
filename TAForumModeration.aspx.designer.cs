@@ -9,51 +9,89 @@
 
 namespace Codercept
 {
+
+
     public partial class TAForumModeration
     {
+
         /// <summary>
         /// hfTeacherForumPost control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherForumPost;
 
         /// <summary>
         /// hfTeacherForumMobile control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherForumMobile;
 
         /// <summary>
         /// hfTeacherReplyingTo control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfTeacherReplyingTo;
 
         /// <summary>
         /// txtTAReply control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtTAReply;
 
         /// <summary>
         /// txtModerateReason control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtModerateReason;
 
         /// <summary>
         /// hfModeratePostId control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden hfModeratePostId;
 
         /// <summary>
         /// btnModerateFlag control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnModerateFlag;
 
         /// <summary>
         /// btnModerateHide control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnModerateHide;
 
         /// <summary>
         /// Master property.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated property.
+        /// </remarks>
         public new Codercept.TASite Master
         {
             get

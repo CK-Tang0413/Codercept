@@ -9,31 +9,53 @@
 
 namespace Codercept
 {
+
+
     public partial class TACourseView
     {
+
         /// <summary>
         /// phNotFound control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.PlaceHolder phNotFound;
 
         /// <summary>
         /// phCourse control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.PlaceHolder phCourse;
 
         /// <summary>
         /// litTitle control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTitle;
 
         /// <summary>
         /// litSubtitle control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSubtitle;
 
         /// <summary>
         /// Master property.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated property.
+        /// </remarks>
         public new Codercept.TASite Master
         {
             get
