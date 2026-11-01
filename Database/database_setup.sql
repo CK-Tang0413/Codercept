@@ -44,7 +44,7 @@ DROP TABLE IF EXISTS [dbo].[Notification];
 
 CREATE TABLE [dbo].[Notification] (
     [NotificationId] INT            IDENTITY (1, 1) NOT NULL,
-    [Title]          NVARCHAR (50)  NOT NULL,
+    [Title]          NVARCHAR (255) NOT NULL,
     [Content]        NVARCHAR (MAX) NOT NULL,
     [Type]           NVARCHAR (50)  NOT NULL,
     [DateTime]       DATETIME       NOT NULL,

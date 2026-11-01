@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCommunity.aspx.cs" Inherits="Codercept.Admin_Community" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminCommunity.aspx.cs" Inherits="Codercept.Admin_Community" ValidateRequest="false" %>
 <%@ Register Src="~/AdminSidebar.ascx" TagPrefix="uc" TagName="AdminSidebar" %>
 
 <!DOCTYPE html>
@@ -111,6 +111,17 @@
             transition: background 0.2s;
         }
         .btn-danger-confirm:hover { background-color: #dc2626; }
+
+        .view-content-box {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-top: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 350px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -145,19 +156,25 @@
                                 
                                 <div class="announcement-content">
                                     <div class="announcement-title-row">
-                                        <h4><%# Eval("Title") %></h4>
+                                        <h4><%#: Eval("Title") %></h4>
                                         <div class="announcement-actions">
                                             <span class="type-badge <%# Eval("Type").ToString().ToLower() == "invitation" ? "badge-invitation" : "badge-announcement" %>">
-                                                <%# Eval("Type") %>
+                                                <%#: Eval("Type") %>
                                             </span>
 
                                             <button type="button" class="icon-btn" title="View Full Content"
-                                                onclick="openViewModal('<%# HttpUtility.JavaScriptStringEncode(Eval("Title").ToString()) %>', '<%# HttpUtility.JavaScriptStringEncode(Eval("Content").ToString()) %>', '<%# Eval("Type") %>', '<%# Eval("DateTime", "{0:yyyy-MM-dd HH:mm}") %>')">
+                                                data-title="<%#: Eval("Title") %>"
+                                                data-content="<%#: Eval("Content") %>"
+                                                data-type="<%#: Eval("Type") %>"
+                                                data-date="<%# Eval("DateTime", "{0:yyyy-MM-dd HH:mm}") %>"
+                                                onclick="handleViewClick(this)">
                                                 <i class="fa-regular fa-eye"></i>
                                             </button>
 
                                             <button type="button" class="icon-btn btn-delete" title="Delete Announcement"
-                                                onclick="openCustomDeleteAnnouncementModal('<%# Eval("NotificationId") %>', '<%# HttpUtility.JavaScriptStringEncode(Eval("Title").ToString()) %>')">
+                                                data-id="<%# Eval("NotificationId") %>"
+                                                data-title="<%#: Eval("Title") %>"
+                                                onclick="handleDeleteClick(this)">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </button>
                                         </div>
@@ -192,12 +209,12 @@
             
                 <div class="form-group">
                     <label class="form-label" for="<%= txtTitle.ClientID %>">Title <span style="color: var(--danger-red);">*</span></label>
-                    <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control" placeholder="Announcement title..."></asp:TextBox>
+                    <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control" placeholder="Announcement title..." MaxLength="255" ValidateRequestMode="Disabled"></asp:TextBox>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="<%= txtContent.ClientID %>">Content <span style="color: var(--danger-red);">*</span></label>
-                    <asp:TextBox ID="txtContent" runat="server" TextMode="MultiLine" CssClass="form-control" placeholder="Write full details..."></asp:TextBox>
+                    <asp:TextBox ID="txtContent" runat="server" TextMode="MultiLine" CssClass="form-control" placeholder="Write full details..." Rows="5" ValidateRequestMode="Disabled"></asp:TextBox>
                 </div>
 
                 <div class="form-group">
@@ -259,6 +276,22 @@
             function closeNewModal() {
                 var modal = document.getElementById('announcementModal');
                 if (modal) modal.classList.remove('active');
+            }
+
+            function handleViewClick(btn) {
+                if (!btn) return;
+                var title = btn.getAttribute('data-title') || '';
+                var content = btn.getAttribute('data-content') || '';
+                var type = btn.getAttribute('data-type') || '';
+                var dateStr = btn.getAttribute('data-date') || '';
+                openViewModal(title, content, type, dateStr);
+            }
+
+            function handleDeleteClick(btn) {
+                if (!btn) return;
+                var id = btn.getAttribute('data-id') || '';
+                var title = btn.getAttribute('data-title') || '';
+                openCustomDeleteAnnouncementModal(id, title);
             }
 
             function openViewModal(title, content, type, dateStr) {

@@ -62,9 +62,9 @@ namespace Codercept
                     conn.Open();
 
                     string query = @"
-                        SELECT NotificationId, Title, Content, Type, DateTime
+                        SELECT [NotificationId], [Title], [Content], [Type], [DateTime]
                         FROM [dbo].[Notification]
-                        ORDER BY DateTime DESC";
+                        ORDER BY [DateTime] DESC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
@@ -108,42 +108,53 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(content))
             {
+                ClientScript.RegisterStartupScript(this.GetType(), "alertEmpty", "alert('Please provide both a title and content.');", true);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(connectionString))
+            if (title.Length > 255)
             {
-                try
-                {
-                    using (SqlConnection conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-
-                        string insertQuery = @"
-                    INSERT INTO [dbo].[Notification] (Title, Content, Type, DateTime)
-                    VALUES (@Title, @Content, @Type, GETDATE())";
-
-                        using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@Title", title);
-                            cmd.Parameters.AddWithValue("@Content", content);
-                            cmd.Parameters.AddWithValue("@Type", type);
-
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[AdminCommunity Insert Error]: {ex.Message}");
-                }
+                title = title.Substring(0, 255);
             }
 
-            txtTitle.Text = string.Empty;
-            txtContent.Text = string.Empty;
-            ddlType.SelectedIndex = 0;
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alertNoConn", "alert('Database connection string is missing.');", true);
+                return;
+            }
 
-            LoadAnnouncements();
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string insertQuery = @"
+                        INSERT INTO [dbo].[Notification] ([Title], [Content], [Type], [DateTime])
+                        VALUES (@Title, @Content, @Type, GETDATE())";
+
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                    {
+                        cmd.Parameters.Add("@Title", SqlDbType.NVarChar, 255).Value = title;
+                        cmd.Parameters.Add("@Content", SqlDbType.NVarChar, -1).Value = content;
+                        cmd.Parameters.Add("@Type", SqlDbType.NVarChar, 50).Value = type;
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                txtTitle.Text = string.Empty;
+                txtContent.Text = string.Empty;
+                ddlType.SelectedIndex = 0;
+
+                LoadAnnouncements();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AdminCommunity Insert Error]: {ex.Message}");
+                string safeErr = HttpUtility.JavaScriptStringEncode(ex.Message);
+                ClientScript.RegisterStartupScript(this.GetType(), "alertInsertError", $"alert('Failed to save announcement: {safeErr}');", true);
+            }
         }
 
         protected void rptAnnouncements_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -171,7 +182,7 @@ namespace Codercept
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@Id", notificationId);
+                        cmd.Parameters.Add("@Id", SqlDbType.Int).Value = notificationId;
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -179,6 +190,8 @@ namespace Codercept
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AdminCommunity Delete Error]: {ex.Message}");
+                string safeErr = HttpUtility.JavaScriptStringEncode(ex.Message);
+                ClientScript.RegisterStartupScript(this.GetType(), "alertDeleteError", $"alert('Failed to delete announcement: {safeErr}');", true);
             }
         }
 
@@ -211,7 +224,5 @@ namespace Codercept
             hfDeleteAnnouncementId.Value = string.Empty;
             LoadAnnouncements();
         }
-
-
     }
 }
