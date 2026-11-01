@@ -4,12 +4,11 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Dashboard - Codercept</title>
-    
-    <!-- 1. Import Global Variables & Shared Layout -->
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
+
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- 2. Page-Specific Styles -->
     <style>
         :root {
             --stat-card-bg: var(--bg-surface);
@@ -17,7 +16,6 @@
             --greeting-border: rgba(124, 58, 237, 0.2);
         }
 
-        /* Greeting Section */
         .greeting-section {
             position: relative;
             display: flex;
@@ -27,8 +25,6 @@
             gap: 32px;
             padding: 32px 38px;
             
-            /* REMOVED: overflow: hidden; -> This was cutting off the popover */
-            
             border-radius: 16px;
             color: #ffffff;
             background: radial-gradient(circle at 74% 0, rgba(255, 255, 255, 0.15), transparent 26%),
@@ -37,7 +33,6 @@
             margin-bottom: 2rem;
         }
 
-        /* ADDED: Use a pseudo-element wrapper to safely clip the background pattern */
         .greeting-section::before {
             content: "";
             position: absolute;
@@ -48,13 +43,11 @@
             z-index: 0;
         }
 
-        /* Ensure content and notification bell sit above the clipping wrapper */
         .greeting-content, .greeting-header {
             position: relative;
             z-index: 2;
         }
 
-        /* Subtle dot pattern overlay inside the safe wrapper */
         .greeting-section::after {
             position: absolute;
             inset: 0;
@@ -88,7 +81,6 @@
             line-height: 1.6;
         }
 
-        /* Decorative background elements */
         .greeting-pattern {
             position: absolute;
             inset: 0;
@@ -107,8 +99,7 @@
         .greeting-pattern span:nth-child(1) { right: 25%; top: 15px; }
         .greeting-pattern span:nth-child(2) { right: 15%; bottom: 10px; }
         .greeting-pattern span:nth-child(3) { left: 45%; bottom: -10px; font-size: 65px; }
-        
-        /* Overview Stats Grid */
+
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
         
         .stat-card { 
@@ -140,22 +131,19 @@
         
         .stat-icon svg { width: 22px; height: 22px; }
 
-        /* Assign distinct colors to each stat card icon */
-        .stat-card:nth-child(1) .stat-icon { color: #7c3aed; background: #f3e8ff; } /* Purple */
-        .stat-card:nth-child(2) .stat-icon { color: #b45309; background: #fef3c7; } /* Amber */
-        .stat-card:nth-child(3) .stat-icon { color: #2563eb; background: #eff6ff; } /* Blue */
-        .stat-card:nth-child(4) .stat-icon { color: #16a34a; background: #dcfce7; } /* Green */
+        .stat-card:nth-child(1) .stat-icon { color: #7c3aed; background: #f3e8ff; }
+        .stat-card:nth-child(2) .stat-icon { color: #b45309; background: #fef3c7; }
+        .stat-card:nth-child(3) .stat-icon { color: #2563eb; background: #eff6ff; }
+        .stat-card:nth-child(4) .stat-icon { color: #16a34a; background: #dcfce7; }
 
         .stat-value { font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem; line-height: 1; }
         .stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
-        
-        /* Section Headers */
+
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
         .section-header h2 { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
         .view-all { color: var(--accent-light); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
         .view-all:hover { color: var(--accent-hover); text-decoration: underline; }
 
-        /* Embedded Notification Bell */
         .global-notif-wrapper { position: relative; }
         
         .btn-notif-bell {
@@ -180,7 +168,6 @@
             color: #ffffff;
         }
 
-        /* Notification Popover Window */
         .notif-popover {
             display: none;
             position: absolute;
@@ -224,14 +211,11 @@
 <body>
     <form id="form1" runat="server">
         <div class="dashboard-layout">
-            
-            <!-- Sidebar Injected Here -->
+
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
-               <!-- Greeting -->
                 <div class="greeting-section">
                     <div class="greeting-pattern" aria-hidden="true">
                         <span>&lt;/&gt;</span>
@@ -244,12 +228,10 @@
                         <p><asp:Literal ID="litGreetingDesc" runat="server" Text="You have 2 active courses. Keep up the momentum!"></asp:Literal></p>
                     </div>
 
-                    <!-- NEW: Embedded Notification Bell Container -->
                     <div class="greeting-header" style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
                         <asp:PlaceHolder ID="phNotificationBell" runat="server">
                             <div class="global-notif-wrapper" id="globalNotifWrapper" data-user-id='<%= Session["UserId"] ?? "0" %>'>
-                                
-                                <!-- Replaced Literal inside attribute with a HiddenField to fix CS0103 -->
+
                                 <asp:HiddenField ID="hfLatestNotifId" runat="server" Value="0" ClientIDMode="Static" />
                                 
                                 <button type="button" class="btn-notif-bell" id="btnNotifBell" onclick="toggleNotifPopover(event)" title="Notifications">
@@ -289,7 +271,6 @@
                     </div>
                 </div>
 
-                <!-- Updated JavaScript to pass strict TypeScript/VS checks -->
                 <script type="text/javascript">
                     document.addEventListener("DOMContentLoaded", function () { 
                         syncNotificationBadge(); 
@@ -360,19 +341,13 @@
                     document.addEventListener('click', function (e) {
                         var wrapper = document.getElementById('globalNotifWrapper');
                         var target = e.target;
-                        // Strict Node cast to satisfy TypeScript
                         if (wrapper && target instanceof Node && !wrapper.contains(target)) { 
                             closeNotifPopover(); 
                         }
                     });
                 </script>
 
-            
-                
-                <!-- Hidden for Guests -->
                 <asp:PlaceHolder ID="phLearnerData" runat="server">
-                    <!-- User Overview Blocks -->
-
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon">
@@ -404,7 +379,6 @@
                         </div>
                     </div>
 
-                    <!-- Continue Learning Progress -->
                     <div class="section-header">
                         <h2>Continue Learning</h2>
                         <a href="MyProgress.aspx" class="view-all">View all active courses &rarr;</a>
@@ -414,7 +388,6 @@
                         <asp:Repeater ID="rptActiveCourses" runat="server">
                             <ItemTemplate>
                                 <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
-                                    <!-- Teacher Dashboard Style Thumbnail -->
                                     <div class='course-thumbnail course-thumbnail--<%# Eval("LanguageCSS") %>'>
                                         <span class='card-floating-badge badge-<%# Eval("DifficultyLevel").ToString().ToLower() %>'><%# Eval("DifficultyLevel") %></span>
                                         <span><%# Eval("Language").ToString().Substring(0, 1) %></span>
@@ -424,8 +397,7 @@
                                         <h3 class="course-title"><%# Eval("CourseTitle") %></h3>
                                         <p class="course-desc">Up next: <%# Eval("NextChapterTitle") %></p>
                                     </div>
-                                    
-                                    <!-- Dedicated Progress Footer Block -->
+
                                     <div class="course-progress-footer">
                                         <div class="progress-header">
                                             <span>Course Progress</span>
@@ -441,7 +413,6 @@
                     </div>
                 </asp:PlaceHolder>
 
-                <!-- Recommended Courses (Visible to Everyone) -->
                 <div class="section-header">
                     <h2 id="recommendationHeader" runat="server">Recommended for You</h2>
                     <a href="CourseCatalog.aspx" class="view-all">View all recommendations &rarr;</a>
@@ -451,7 +422,6 @@
                     <asp:Repeater ID="rptRecommended" runat="server" OnItemCommand="rptRecommended_ItemCommand">
                         <ItemTemplate>
                             <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
-                                <!-- Teacher Dashboard Style Thumbnail with Difficulty Badge -->
                                 <div class='course-thumbnail course-thumbnail--<%# Eval("LanguageCSS") %>'>
                                     <span class='card-floating-badge badge-<%# Eval("DifficultyLevel").ToString().ToLower() %>'><%# Eval("DifficultyLevel") %></span>
                                     <span><%# Eval("Language").ToString().Substring(0, 1) %></span>
@@ -465,14 +435,12 @@
                                         <span class="course-meta-item">📖 <%# Eval("Chapters") %> chapters</span>
                                         <span class="course-meta-item">⏱️ <%# Eval("CourseDuration") %></span>
                                         <span class="course-meta-item">⭐ <%# Eval("Rating") %> Rating</span>
-                                        
-                                        <!-- Show Enrolled Count if NOT Enrolled -->
+
                                         <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsEnrolled")) %>'>
                                             <span class="course-meta-item">👥 <%# Eval("EnrolledCount") %> enrolled</span>
                                         </asp:PlaceHolder>
                                     </div>
-                                    
-                                    <!-- Show Progress Block & Continue Button if Enrolled -->
+
                                     <asp:PlaceHolder runat="server" Visible='<%# Convert.ToBoolean(Eval("IsEnrolled")) %>'>
                                         <div class="course-progress-footer">
                                             <div class="progress-header">
@@ -485,8 +453,7 @@
                                         </div>
                                         <span class="course-action-btn active">Continue Learning &rarr;</span>
                                     </asp:PlaceHolder>
-                            
-                                    <!-- Show Enroll Button if NOT Enrolled -->
+
                                     <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsEnrolled")) %>'>
                                         <span class="course-action-btn enroll">Enroll Now</span>
                                     </asp:PlaceHolder>

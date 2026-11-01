@@ -93,7 +93,6 @@ namespace Codercept
 
                 if (learnerProgress == 0) Response.Redirect("CourseCatalog.aspx");
 
-                // Check if this course has a Final Exam configured
                 bool hasExam = false;
                 int examId = 0;
                 string examTitle = "";
@@ -134,7 +133,6 @@ namespace Codercept
                 ViewState["TotalChapters"] = totalChapters;
                 ViewState["LearnerProgress"] = learnerProgress;
 
-                // Load Sidebar
                 List<NavChapter> sidebarChapters = new List<NavChapter>();
                 string chaptersQuery = "SELECT ChapterId, ChapterNum, ChapterTitle, ChapterDuration FROM Chapter WHERE CourseId = @CourseId ORDER BY ChapterNum ASC";
                 int activeChapterDbId = 0;
@@ -167,17 +165,14 @@ namespace Codercept
                     con.Close();
                 }
 
-                // Add Exam to Sidebar if it exists
                 if (hasExam)
                 {
                     int examChapNum = totalChapters + 1;
                     string examStatus = "locked";
 
-                    // If they have completed the exam, their progress might exceed examChapNum, or attempt is graded
                     if (learnerProgress > examChapNum) examStatus = "completed";
                     else if (learnerProgress == examChapNum) examStatus = "pending";
 
-                    // Check actual Attempt status to mark as completed even if progress maxes out
                     string checkExamAttempt = "SELECT AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND ExamId = @ExamId";
                     using (SqlCommand cmd = new SqlCommand(checkExamAttempt, con))
                     {
@@ -205,7 +200,6 @@ namespace Codercept
                 rptSidebar.DataSource = sidebarChapters;
                 rptSidebar.DataBind();
 
-                // Load Right Panel Content (Standard Chapter vs Exam)
                 if (activeChapterNum <= totalChapters)
                 {
                     pnlNormalChapter.Visible = true;
@@ -317,7 +311,6 @@ namespace Codercept
                 }
                 else
                 {
-                    // WE ARE ON THE FINAL EXAM PAGE
                     pnlNormalChapter.Visible = false;
                     pnlExamContent.Visible = true;
 
@@ -326,7 +319,6 @@ namespace Codercept
                     LoadExamQuestions(examId, learnerId);
                 }
 
-                // Setup Navigation Bottom Links
                 litStepIndicator.Text = $"{activeChapterNum} / {maxAllowedChapter}";
                 lnkPrev.NavigateUrl = $"CourseViewer.aspx?courseId={courseId}&ch={activeChapterNum - 1}";
                 lnkPrev.Visible = activeChapterNum > 1;
@@ -334,7 +326,6 @@ namespace Codercept
                 if (activeChapterNum < learnerProgress) litNextText.Text = "Next";
                 else litNextText.Text = "Mark Complete & Continue";
 
-                // Hide Next button if we are on the very last available section (Exam or final chapter)
                 btnNext.Visible = activeChapterNum != maxAllowedChapter;
             }
         }
@@ -357,9 +348,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 1. QUIZ SUBMISSION LOGIC (Normal Chapter)
-        // ========================================================
         private void LoadQuizQuestions(int quizId, int learnerId)
         {
             List<ExamQuestion> questions = new List<ExamQuestion>();
@@ -481,7 +469,6 @@ namespace Codercept
 
         protected void btnSubmitQuiz_Click(object sender, EventArgs e)
         {
-            // 1. Validate that ALL questions have been answered first
             foreach (RepeaterItem item in rptQuizQuestions.Items)
             {
                 HiddenField hfQuestionId = (HiddenField)item.FindControl("hfQuestionId");
@@ -493,7 +480,7 @@ namespace Codercept
                     lblQuizState.Visible = true;
                     lblQuizState.Text = "Please answer all questions before submitting.";
                     lblQuizState.Style.Add("color", "#ef4444");
-                    return; // Stop execution, do not submit to DB
+                    return;
                 }
             }
 
@@ -557,9 +544,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 2. ASSESSMENT SUBMISSION LOGIC (Normal Chapter)
-        // ========================================================
         private void LoadAssessmentContent(int assessmentId, int learnerId)
         {
             using (SqlConnection con = new SqlConnection(connString))
@@ -690,9 +674,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 3. FINAL EXAM LOAD & SUBMISSION LOGIC
-        // ========================================================
         private void LoadExamQuestions(int examId, int learnerId)
         {
             List<ExamQuestion> questions = new List<ExamQuestion>();
@@ -727,7 +708,7 @@ namespace Codercept
                     btnSubmitExam.Enabled = false;
                     btnSubmitExam.Text = "Submitted";
                     btnSubmitExam.CssClass = "btn-nav";
-                    phExamCheckmark.Visible = true; // Show completion badge
+                    phExamCheckmark.Visible = true;
                 }
 
                 string qQuery = "SELECT QuestionId, QuestionContent, QuestionType FROM Question WHERE ExamId = @ExamId ORDER BY QuestionOrder ASC";
@@ -751,7 +732,6 @@ namespace Codercept
                                 Options = new List<QuizOption>()
                             };
 
-                            // Fetch previous answer if submitted
                             string submittedAnswer = "";
                             if (isAlreadySubmitted && existingAttemptId > 0)
                             {
@@ -771,7 +751,6 @@ namespace Codercept
                             }
                             q.SelectedAnswer = submittedAnswer;
 
-                            // If MCQ, load options
                             if (type == "MCQ")
                             {
                                 using (SqlConnection con2 = new SqlConnection(connString))
@@ -830,7 +809,6 @@ namespace Codercept
 
         protected void btnSubmitExam_Click(object sender, EventArgs e)
         {
-            // 1. Validate that ALL exam questions have been answered first
             foreach (RepeaterItem item in rptExamQuestions.Items)
             {
                 HiddenField hfQuestionId = (HiddenField)item.FindControl("hfExamQuestionId");
@@ -859,7 +837,7 @@ namespace Codercept
                     lblExamState.Visible = true;
                     lblExamState.Text = "Please answer all exam questions before submitting.";
                     lblExamState.Style.Add("color", "#ef4444");
-                    return; // Stop execution, do not submit to DB
+                    return;
                 }
             }
 
@@ -914,7 +892,6 @@ namespace Codercept
                         }
                     }
 
-                    // Advance LearnerProgress past the exam (TotalChapters + 2) so the course is officially marked 100% complete
                     int courseId = Convert.ToInt32(ViewState["CourseId"]);
                     int totalChapters = Convert.ToInt32(ViewState["TotalChapters"]);
                     string progUpdate = "UPDATE LearnerProgress SET ChapNum = @CompletedChapNum WHERE LearnerId = @LearnerId AND CourseId = @CourseId";
@@ -951,9 +928,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 4. PROGRESS VALIDATION
-        // ========================================================
         protected void btnNext_Click(object sender, EventArgs e)
         {
             int courseId = Convert.ToInt32(ViewState["CourseId"]);

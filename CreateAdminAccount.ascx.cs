@@ -47,7 +47,6 @@ namespace Codercept
                 return;
             }
 
-            // Determine temporary password: use custom password if provided, or default to <firstName>@1234
             string temporaryPassword = txtAdminPassword.Text.Trim();
             if (string.IsNullOrWhiteSpace(temporaryPassword))
             {
@@ -70,7 +69,6 @@ namespace Codercept
                 {
                     conn.Open();
 
-                    // Check if email already exists in Admin, Teacher, Teaching_Assistant, or Learner tables
                     string checkQuery = @"
                         SELECT 
                             (SELECT COUNT(*) FROM [dbo].[Admin] WHERE Email = @Email) +
@@ -89,10 +87,8 @@ namespace Codercept
                         }
                     }
 
-                    // Hash password using BCrypt (Cost Factor 12)
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(temporaryPassword, 12);
 
-                    // Insert new administrator record
                     string insertQuery = @"
                         INSERT INTO [dbo].[Admin] (Name, Email, Password, Role, AccStatus)
                         VALUES (@Name, @Email, @Password, @Role, 'Active')";
@@ -117,7 +113,6 @@ namespace Codercept
 
             if (accountCreated)
             {
-                // Send email with the set temporary password
                 string emailErrorMessage;
                 bool emailSent = SendAccountCreatedEmail(fullName, email, temporaryPassword, role, out emailErrorMessage);
 
@@ -140,7 +135,6 @@ namespace Codercept
                 litModalError.Text = HttpUtility.HtmlEncode(message);
             }
 
-            // Ensure the modal re-opens smoothly after postback so user sees the message
             string script = "document.addEventListener('DOMContentLoaded', function() { openAddAdminModal(); });";
             ScriptManager.RegisterStartupScript(this, GetType(), "ReopenAddAdminModalScript", script, true);
         }
@@ -151,7 +145,6 @@ namespace Codercept
 
             try
             {
-                // Retrieve email credentials with fallback to secrets.config file on disk
                 string senderEmail = ConfigurationManager.AppSettings["SenderEmail"];
                 string senderAppPassword = ConfigurationManager.AppSettings["SenderAppPassword"];
 

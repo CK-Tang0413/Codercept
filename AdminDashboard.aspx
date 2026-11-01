@@ -4,13 +4,13 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Dashboard</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <style>
-        /* Alert Banner (Matching Teacher Portal Welcome Banner) */
         .alert-banner {
             background: var(--banner-bg);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -44,7 +44,6 @@
             transform: translateY(-1px);
         }
 
-        /* Pending Approvals */
         .approvals-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; }
         .approval-item { 
             background-color: var(--bg-panel); 
@@ -84,7 +83,6 @@
             color: #fff;
         }
 
-        /* User Breakdown */
         .breakdown-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
         .breakdown-card { 
             background-color: var(--bg-panel); 
@@ -102,7 +100,6 @@
         .breakdown-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
         .status-text { font-size: 12px; color: var(--success-green); font-weight: 600; }
 
-        /* Recent Announcements */
         .announcements-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
         .announcement-card { 
             background-color: var(--bg-panel); 
@@ -137,7 +134,6 @@
             <uc:AdminSidebar runat="server" ID="SidebarCtrl" />
             
             <main class="main-content" style="flex: 1; overflow-y: auto;">
-                <!-- Banner -->
                 <div class="alert-banner">
                     <h2>Admin Dashboard</h2>
                     <p><asp:Literal ID="litBannerPendingCount" runat="server">0</asp:Literal> accounts pending approval. Review them in User Management.</p>
@@ -146,7 +142,6 @@
                     </a>
                 </div>
 
-                <!-- High-level Stats -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fa-solid fa-user-group"></i></div>
@@ -170,7 +165,6 @@
                     </div>
                 </div>
 
-                <!-- Pending Approvals Section -->
                 <div class="section-header">
                     <div class="section-header-left">
                         <div class="section-title title-with-dot">Pending Approvals</div>
@@ -209,7 +203,6 @@
                     </asp:Panel>
                 </div>
 
-                <!-- User Breakdown Section -->
                 <div class="section-header">
                     <div class="section-title">User Breakdown</div>
                 </div>
@@ -232,7 +225,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Announcements Section -->
                 <div class="section-header">
                     <div class="section-header-left">
                         <div class="section-title">Recent Announcements</div>

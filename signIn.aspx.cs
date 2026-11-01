@@ -30,7 +30,6 @@ namespace Codercept
 
         protected void btnSignIn_Click(object sender, EventArgs e)
         {
-            // Clear previous errors
             lblEmailError.Text = "";
             lblPasswordError.Text = "";
 
@@ -42,9 +41,6 @@ namespace Codercept
             {
                 con.Open();
 
-                // ==========================================
-                // 1. CHECK ADMIN TABLE
-                // ==========================================
                 using (SqlCommand cmd = new SqlCommand("SELECT AdminId, Name, Password, Role, AccStatus FROM [dbo].[Admin] WHERE Email = @Email", con))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
@@ -58,14 +54,13 @@ namespace Codercept
                                 return;
                             }
 
-                            // Use BCrypt to safely verify the hashed password
                             if (BCrypt.Net.BCrypt.Verify(passwordInput, reader["Password"].ToString()))
                             {
                                 int adminId = Convert.ToInt32(reader["AdminId"]);
                                 string role = reader["Role"].ToString();
 
                                 Session["UserId"] = adminId;
-                                Session["UserType"] = role; // Dynamically captures "Admin" or "SuperAdmin"
+                                Session["UserType"] = role;
                                 Session["UserRole"] = role;
                                 Session["UserName"] = reader["Name"].ToString();
                                 Session["UserEmail"] = email;
@@ -89,9 +84,6 @@ namespace Codercept
                     }
                 }
 
-                // ==========================================
-                // 2. CHECK LEARNER TABLE
-                // ==========================================
                 using (SqlCommand cmd = new SqlCommand("SELECT LearnerId, Name, Password, AccStatus FROM [dbo].[Learner] WHERE Email = @Email", con))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
@@ -134,9 +126,6 @@ namespace Codercept
                     }
                 }
 
-                // ==========================================
-                // 3. CHECK TEACHER TABLE
-                // ==========================================
                 using (SqlCommand cmd = new SqlCommand("SELECT TeacherId, Name, Password, AccStatus FROM [dbo].[Teacher] WHERE Email = @Email", con))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
@@ -191,9 +180,6 @@ namespace Codercept
                     }
                 }
 
-                // ==========================================
-                // 4. CHECK TEACHING ASSISTANT TABLE
-                // ==========================================
                 using (SqlCommand cmd = new SqlCommand("SELECT TA_Id, Name, Password, AccStatus FROM [dbo].[Teaching_Assistant] WHERE Email = @Email", con))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
@@ -248,9 +234,6 @@ namespace Codercept
                     }
                 }
 
-                // ==========================================
-                // 5. NO MATCH FOUND IN ANY TABLE
-                // ==========================================
                 lblEmailError.Text = "Email not found.";
             }
         }

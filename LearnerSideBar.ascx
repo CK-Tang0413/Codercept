@@ -9,8 +9,7 @@
     <nav class="nav-menu">
         <a href="LearnerDashboard.aspx" class="nav-item <%= GetActiveCssClass("LearnerDashboard") %>">Dashboard</a>
         <a href="CourseCatalog.aspx" class="nav-item <%= GetActiveCssClass("CourseCatalog") %>">Course Catalog</a>
-        
-        <!-- Hidden for Guests -->
+
         <asp:PlaceHolder ID="phRestrictedNav" runat="server">
             <a href="MyProgress.aspx" class="nav-item <%= GetActiveCssClass("MyProgress") %>">My Progress</a>
             <a href="Certificates.aspx" class="nav-item <%= GetActiveCssClass("Certificates") %>">Certificates</a>
@@ -19,7 +18,6 @@
     </nav>
     
     <div class="user-profile-section">
-        <!-- Shown only for logged-in Learners -->
         <asp:PlaceHolder ID="phUserProfile" runat="server">
             <a href="profile.aspx" class="user-info">
                 <div class="avatar"><asp:Literal ID="litUserInitial" runat="server" Text="A"></asp:Literal></div>

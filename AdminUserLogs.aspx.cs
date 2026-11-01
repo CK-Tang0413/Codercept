@@ -18,10 +18,8 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Retrieve role stored in Session upon authentication
             string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
 
-            // Redirect unauthenticated users
             if (Session["UserId"] == null || string.IsNullOrEmpty(userRole))
             {
                 Response.Redirect("LandingPage.aspx");
@@ -33,14 +31,12 @@ namespace Codercept
 
             bool isAdmin = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
-            // Allow both SuperAdmin and Admin to access the user log interface; redirect unauthorized roles
             if (!IsSuperAdmin && !isAdmin)
             {
                 Response.Redirect("AdminDashboard.aspx");
                 return;
             }
 
-            // Hide the Admin tab on frontend if the user is not a SuperAdmin
             phAdminTab.Visible = IsSuperAdmin;
 
             if (!IsPostBack)
@@ -65,7 +61,6 @@ namespace Codercept
                 {
                     conn.Open();
 
-                    // If not SuperAdmin, filter out any admin log entries at the SQL level
                     string adminFilterCondition = IsSuperAdmin ? "" : "WHERE ul.AdminId IS NULL";
 
                     string query = $@"
@@ -175,7 +170,6 @@ namespace Codercept
                 rptUserLogs.DataBind();
                 pnlNoLogs.Visible = false;
 
-                // Compute KPI statistics
                 int totalSessions = dt.Rows.Count;
                 int activeSessions = 0;
                 double totalMinutes = 0;

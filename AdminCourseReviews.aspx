@@ -5,7 +5,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Course Reviews & Feedback - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
@@ -30,7 +31,6 @@
         }
         .btn-back:hover { color: var(--text-primary); }
 
-        /* Course Overview Hero Card */
         .course-hero-card {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -94,7 +94,6 @@
             margin-bottom: 4px;
         }
 
-        /* Review Comments List */
         .reviews-section-header {
             font-size: 16px;
             font-weight: 600;
@@ -174,7 +173,6 @@
                     </a>
                 </div>
 
-                <!-- Course Overview Hero -->
                 <div class="course-hero-card">
                     <div class="hero-info">
                         <h2>
@@ -196,7 +194,6 @@
                     </div>
                 </div>
 
-                <!-- Reviews Feed -->
                 <div class="reviews-section-header">
                     <i class="fa-regular fa-comment-dots"></i> Learner Feedback & Reviews
                 </div>

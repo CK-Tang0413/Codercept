@@ -29,16 +29,12 @@ namespace Codercept
             }
         }
 
-        // ==========================================
-        // 1. BUSINESS LOGIC: GENERATE MISSING CERTS
-        // ==========================================
         private void ProcessNewCertificates()
         {
             int learnerId = Convert.ToInt32(Session["UserId"]);
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Find all courses where the user has a passed Exam Result, but no Certificate exists yet
                 string query = @"
                     SELECT 
                         r.ResultId,
@@ -69,7 +65,6 @@ namespace Codercept
                     con.Close();
                 }
 
-                // Insert the new certificates
                 if (newCerts.Rows.Count > 0)
                 {
                     con.Open();
@@ -89,9 +84,6 @@ namespace Codercept
             }
         }
 
-        // ==========================================
-        // 2. FETCH EXISTING CERTS FROM DATABASE
-        // ==========================================
         private void LoadCertificates()
         {
             int learnerId = Convert.ToInt32(Session["UserId"]);
@@ -125,9 +117,6 @@ namespace Codercept
             }
         }
 
-        // ==========================================
-        // 3. GENERATE UI IMAGE PREVIEW (Base64)
-        // ==========================================
         protected string GetCertificateImageBase64(string courseName, string issueDate)
         {
             string userName = Session["UserName"].ToString();
@@ -164,9 +153,6 @@ namespace Codercept
             }
         }
 
-        // ==========================================
-        // 4. GENERATE PDF DOWNLOAD (PDFsharp)
-        // ==========================================
         protected void rptCertificates_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "DownloadPDF")

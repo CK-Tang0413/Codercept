@@ -6,13 +6,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>User Activities Log - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <style>
-        /* Activity Logs Table Grid Columns */
         .list-header,
         .list-row {
             grid-template-columns: 0.8fr 2.5fr 1.2fr 2.2fr 1.2fr 1fr 1fr;
@@ -62,7 +62,6 @@
                     </div>
                 </div>
 
-                <!-- KPI Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fa-solid fa-list-check"></i></div>
@@ -89,7 +88,6 @@
                     </div>
                 </div>
 
-                <!-- Filters -->
                 <div class="filter-toolbar">
                     <div class="search-container">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -104,14 +102,12 @@
                     </select>
                 </div>
 
-                <!-- Tabs: All Activities, Learners, Teachers, Teaching Assistant, Admin (SuperAdmin only) -->
                 <div class="tabs-container">
                     <div class="tab active" onclick="filterRole('all', this)">All Activities</div>
                     <div class="tab" onclick="filterRole('learner', this)">Learners</div>
                     <div class="tab" onclick="filterRole('teacher', this)">Teachers</div>
                     <div class="tab" onclick="filterRole('assistant', this)">Teaching Assistant</div>
                     
-                    <!-- Admin Tab: Rendered only if user is SuperAdmin -->
                     <asp:PlaceHolder ID="phAdminTab" runat="server">
                         <div class="tab" onclick="filterRole('admin', this)">
                             Admin <span class="badge" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); font-size: 10px; margin-left: 4px;">SUPER</span>
@@ -119,7 +115,6 @@
                     </asp:PlaceHolder>
                 </div>
 
-                <!-- Log Table -->
                 <div class="log-table">
                     <div class="list-header">
                         <div>Log ID</div>
@@ -154,10 +149,8 @@
                                      data-completed='<%# HttpUtility.HtmlAttributeEncode(Eval("CompletedCourses")?.ToString() ?? "None completed") %>'
                                      data-start='<%# Eval("StartDateTime", "{0:yyyy-MM-dd HH:mm:ss}") %>'>
                                     
-                                    <!-- Log ID -->
                                     <div class="col-logid">#LOG-<%# Eval("LogId") %></div>
 
-                                    <!-- User Meta -->
                                     <div class="col-user">
                                         <div class="avatar" style='<%# Eval("RoleCategory").ToString().ToLower() == "admin" ? "background-color: var(--accent-rose-bg); color: var(--accent-rose);" : "" %>'>
                                             <%# GetInitials(Eval("UserName")?.ToString() ?? "") %>
@@ -168,25 +161,21 @@
                                         </div>
                                     </div>
 
-                                    <!-- Role Badge -->
                                     <div>
                                         <span class="badge <%# GetRoleBadgeClass(Eval("Role")?.ToString() ?? "") %>">
                                             <%# Eval("Role") %>
                                         </span>
                                     </div>
 
-                                    <!-- Session Window -->
                                     <div class="session-window">
                                         <%# Eval("StartDateTime", "{0:MMM dd, yyyy HH:mm}") %>
                                         <span><%# Eval("EndDateTime") != DBNull.Value && Eval("EndDateTime") != null ? "to " + string.Format("{0:HH:mm}", Eval("EndDateTime")) : "Active Session" %></span>
                                     </div>
 
-                                    <!-- Duration -->
                                     <div class="session-duration">
                                         <%# CalculateDuration(Eval("StartDateTime"), Eval("EndDateTime")) %>
                                     </div>
 
-                                    <!-- Status -->
                                     <div>
                                         <span class="status-badge <%# IsSessionActive(Eval("EndDateTime")) ? "status-active" : "status-completed" %>">
                                             <i class="<%# IsSessionActive(Eval("EndDateTime")) ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-circle-check" %>"></i>
@@ -194,7 +183,6 @@
                                         </span>
                                     </div>
 
-                                    <!-- Action -->
                                     <div style="text-align: right;">
                                         <button type="button" class="btn-view-profile" onclick="openUserProfileModal(this)" title="View Details">
                                             <i class="fa-regular fa-eye"></i> Profile
@@ -221,7 +209,6 @@
         </div>
 
         <script>
-            // @ts-nocheck
             let activeRole = 'all';
 
             function filterRole(role, clickedTab) {
@@ -247,13 +234,10 @@
                     const startDateStr = row.getAttribute('data-start');
                     const startDate = new Date(startDateStr ? startDateStr.replace(' ', 'T') : '');
 
-                    // 1. Role tab match
                     let matchesRole = (activeRole === 'all') || (role === activeRole);
 
-                    // 2. Search query match
                     let matchesSearch = !search || name.includes(search) || email.includes(search) || logId.includes(search);
 
-                    // 3. Date range match
                     let matchesDate = true;
                     if (dateFilter === 'today') {
                         matchesDate = (now - startDate) >= 0 && (now - startDate) < (24 * 60 * 60 * 1000);

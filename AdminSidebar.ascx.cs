@@ -29,7 +29,6 @@ namespace Codercept
             {
                 PopulateProfileInfo();
 
-                // Persist session identity in ViewState as fallback if session state expires
                 if (Session["LogId"] != null && int.TryParse(Session["LogId"].ToString(), out int currentLogId))
                 {
                     ViewState["LogId"] = currentLogId;
@@ -106,7 +105,6 @@ namespace Codercept
                 ?? (ViewState["UserRole"] as string)
                 ?? (IsSuperAdmin ? "SuperAdmin" : "Admin");
 
-            // Record logout datetime into [dbo].[User_Log]
             if (logId > 0 || userId > 0)
             {
                 UserLogHelper.RecordLogout(logId, userRole, userId);

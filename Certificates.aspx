@@ -4,20 +4,17 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Certificates - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
 
-    <!-- Import Global Variables & Shared Layout -->
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- Page-Specific Styles and Local Variables -->
     <style>
         :root {
-            /* Local variables for Certificate Cards */
             --cert-card-bg: var(--bg-surface);
             --cert-img-bg: rgba(255, 255, 255, 0.02);
             --cert-img-border: rgba(255, 255, 255, 0.1);
             
-            /* Download Button Variables */
             --cert-btn-bg: var(--accent-transparent);
             --cert-btn-text: var(--accent-light);
             --cert-btn-border: rgba(124, 58, 237, 0.3);
@@ -25,12 +22,10 @@
             --cert-btn-hover-text: var(--text-primary);
         }
 
-        /* Page Header */
         .page-header { margin-bottom: 2.5rem; }
         .page-header h1 { font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--text-primary); }
         .page-header p { color: var(--text-secondary); font-size: 1rem; }
 
-        /* Certificates Grid */
         .cert-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
@@ -38,7 +33,6 @@
             padding-bottom: 2rem; 
         }
 
-        /* Individual Certificate Card */
         .cert-card { 
             background: var(--cert-card-bg); 
             border: 1px solid var(--border-light); 
@@ -54,7 +48,6 @@
             border-color: rgba(124, 58, 237, 0.4); 
         }
 
-        /* Course Title */
         .cert-title { 
             font-size: 1.15rem; 
             font-weight: 600; 
@@ -63,7 +56,6 @@
             text-align: center;
         }
 
-        /* Certificate Image Area (Placeholder) */
         .cert-img-wrapper { 
             background: var(--cert-img-bg); 
             border: 1px dashed var(--cert-img-border); 
@@ -88,7 +80,6 @@
             filter: grayscale(0%);
         }
 
-        /* Certificate Details */
         .cert-details { 
             text-align: left; 
             font-size: 0.85rem; 
@@ -103,7 +94,6 @@
             font-weight: 500;
         }
 
-        /* Download Button */
         .btn-download { 
             display: block; 
             width: 100%; 
@@ -125,7 +115,6 @@
             border-color: var(--cert-btn-hover-bg);
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .cert-grid { grid-template-columns: 1fr; }
         }
@@ -135,10 +124,8 @@
     <form id="form1" runat="server">
         <div class="dashboard-layout">
             
-            <!-- Sidebar Injected Here -->
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
                 <div class="page-header">
@@ -157,7 +144,6 @@
                                 <div class="cert-title"><%# Eval("CourseTitle") %></div>
                 
                                 <div class="cert-img-wrapper">
-                                    <!-- This calls a C# method to generate the stamped image as a Base64 string -->
                                     <img src='<%# GetCertificateImageBase64(Eval("CourseTitle").ToString(), Eval("IssueDate", "{0:MMMM dd, yyyy}")) %>' alt="Certificate Preview" style="max-height: 120px; opacity: 1; filter: none;" />
                                 </div>
                 
@@ -167,7 +153,6 @@
                                     <div>Credential ID: <strong><%# Eval("CertId") %></strong></div>
                                 </div>
                 
-                                <!-- Passes the CourseName and Date to the backend click event -->
                                 <asp:LinkButton ID="btnDownload" runat="server" CssClass="btn-download" 
                                     CommandName="DownloadPDF" 
                                     CommandArgument='<%# Eval("CourseTitle") + "|" + Eval("IssueDate", "{0:MMMM dd, yyyy}") %>'>

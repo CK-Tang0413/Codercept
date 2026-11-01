@@ -5,13 +5,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Review Application - CodeLearn</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <style>
-        /* Applicant Overview Banner */
         .breadcrumb-row {
             display: flex;
             align-items: center;
@@ -73,7 +73,6 @@
             font-weight: 600;
         }
 
-        /* Grid of Details */
         .details-grid {
             display: grid;
             grid-template-columns: 1.6fr 1fr;
@@ -85,7 +84,6 @@
             .details-grid { grid-template-columns: 1fr; }
         }
 
-        /* Decision Action Footer */
         .decision-bar {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -143,7 +141,6 @@
             background-color: var(--danger-red-bg);
         }
 
-        /* Document Viewer Mockup inside Modal */
         .doc-preview-body {
             flex: 1;
             background-color: var(--bg-surface-nested);
@@ -164,7 +161,6 @@
             margin-bottom: 16px;
         }
 
-        /* Feedback / Notes Area */
         .feedback-card {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -185,7 +181,6 @@
         .feedback-hint i {
             color: var(--warning-orange-text);
         }
-        /* Custom Rejection & Confirmation Modal Styles */
         .confirm-icon-badge {
             width: 44px;
             height: 44px;
@@ -356,14 +351,11 @@
 <body>
     <form id="form1" runat="server">
         <div style="display: flex; height: 100vh; width: 100%; overflow: hidden;">
-            <!-- Shared Admin Sidebar -->
             <uc:AdminSidebar runat="server" ID="SidebarCtrl" />
 
-            <!-- Main Content Pane -->
             <main class="main-content" style="flex: 1; overflow-y: auto;">
                 <div class="review-wrapper">
                     
-                    <!-- Navigation / Back row -->
                     <div class="breadcrumb-row">
                         <asp:HiddenField ID="hfApplicantUserId" runat="server" />
                     <asp:HiddenField ID="hfApplicantRole" runat="server" />
@@ -378,7 +370,6 @@
                         </span>
                     </div>
 
-                    <!-- Applicant Header Card -->
                     <div class="applicant-header-card">
                         <div class="applicant-identity">
                             <div class="applicant-avatar"><asp:Literal ID="litAvatarInitials" runat="server">EW</asp:Literal></div>
@@ -392,10 +383,8 @@
                         </div>
                     </div>
 
-                    <!-- Details Grid -->
                     <div class="details-grid">
                         
-                        <!-- Left Panel: Academic & Technical Profile -->
                         <div class="info-card">
                             <div class="info-card-title">
                                 <i class="fa-solid fa-graduation-cap"></i> Academic & Technical Profile
@@ -424,7 +413,6 @@
                             </div>
                         </div>
 
-                        <!-- Right Panel: Attached Documents -->
                         <div class="info-card">
                             <div class="info-card-title">
                                 <i class="fa-solid fa-file-lines"></i> Verification Documents
@@ -436,7 +424,6 @@
                         </div>
                     </div>
 
-                    <!-- Admin Remarks & Reason Area -->
                     <div class="feedback-card">
                         <div class="info-card-title">
                             <i class="fa-solid fa-comment-dots"></i> Admin Review Remarks & Feedback
@@ -456,14 +443,12 @@
                         </div>
                     </div>
 
-                    <!-- Decision Action Footer -->
                     <div class="decision-bar">
                         <div class="decision-text">
                             <h4>Application Decision</h4>
                             <p>Approving will grant teacher privileges. Rejecting will notify the candidate with the stated reason.</p>
                         </div>
                         <div class="decision-buttons">
-                            <!-- Pop-out modal triggers replacing browser interface -->
                             <button type="button" class="btn-decision btn-reject-lg" onclick="openRejectModal()">
                                 <i class="fa-solid fa-xmark"></i> Reject Application
                             </button>
@@ -475,7 +460,6 @@
                     </div>
                 </div>
 
-                <!-- Document Viewer Modal -->
                 <div class="modal-overlay" id="docModal">
                     <div class="modal-box large">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -483,9 +467,7 @@
                             <button type="button" class="btn-view-doc" onclick="closeDocModal()"><i class="fa-solid fa-xmark"></i> Close</button>
                         </div>
 
-                        <!-- Dynamic Container that switches based on file extension -->
                         <div id="dynamicPreviewContainer" style="flex: 1; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #0b0c10; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
-                            <!-- Content injected via JavaScript -->
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
@@ -497,7 +479,6 @@
                     </div>
                 </div>
 
-                <!-- Pop-out Rejection Confirmation Modal -->
                 <div class="modal-overlay" id="rejectModal" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
                     <div class="modal-container" style="max-width: 540px;">
                         <div class="modal-header-row">
@@ -562,7 +543,6 @@
                     </div>
                 </div>
 
-                <!-- Pop-out Approval Confirmation Modal -->
                 <div class="modal-overlay" id="approveModal" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
                     <div class="modal-container" style="max-width: 500px;">
                         <div class="modal-header-row">
@@ -606,7 +586,6 @@
     </form>
 
     <script>
-        // @ts-nocheck
         function openDocModal(docTitle, fileUrl) {
             var titleEl = document.getElementById('docModalTitle');
             if (titleEl) titleEl.innerText = docTitle;
@@ -671,7 +650,6 @@
 
             if (errBox) errBox.style.display = 'none';
 
-            // Pre-populate modal textarea from main remark input if text already entered
             if (txtMain && txtModal) {
                 txtModal.value = txtMain.value.trim();
                 txtModal.style.borderColor = '';
@@ -714,7 +692,6 @@
             } else {
                 txtModal.value = reason;
             }
-            // Also sync to main remarks
             var txtMain = document.getElementById('<%= txtAdminRemarks.ClientID %>');
             if (txtMain) txtMain.value = txtModal.value;
 
@@ -742,15 +719,13 @@
                 return false;
             }
 
-            // Sync reason back to main server-side control
             if (txtMain) {
                 txtMain.value = reason;
             }
 
-            // Hide any error
             if (errBox) errBox.style.display = 'none';
 
-            return true; // Allow form submission
+            return true;
         }
 
         window.addEventListener('click', function (e) {

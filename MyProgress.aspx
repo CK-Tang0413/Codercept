@@ -4,15 +4,13 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>My Progress - Codercept</title>
-    
-    <!-- 1. Import Global Variables & Shared Layout -->
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
+
     <link href="~/css/global.css" rel="stylesheet" type="text/css" />
-    
-    <!-- 2. Page-Specific Styles -->
+
     <style>
         :root {
-            /* Local variables for stats colors and table */
             --stat-active: #c084fc;
             --stat-completed: #4ade80;
             --stat-quiz: #fb923c;
@@ -29,12 +27,10 @@
             --grade-f: #ef4444;
         }
 
-        /* Page Header */
         .page-header { margin-bottom: 2rem; }
         .page-header h1 { font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--text-primary); }
         .page-header p { color: var(--text-secondary); font-size: 1rem; }
 
-        /* Overview Stats Grid[cite: 14] */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
         .stat-card { background: var(--bg-surface); border: 1px solid var(--border-light); padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .stat-value { font-size: 2.25rem; font-weight: 700; margin-bottom: 0.25rem; }
@@ -45,11 +41,9 @@
         .val-quiz { color: var(--stat-quiz); }
         .val-code { color: var(--stat-code); }
 
-        /* Section Header */
         .section-header { margin-bottom: 1.25rem; }
         .section-header h2 { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
 
-        /* Grades Table[cite: 14] */
         .table-container { background: var(--bg-surface); border: 1px solid var(--table-border); border-radius: 12px; overflow: hidden; }
         .grades-table { width: 100%; border-collapse: collapse; text-align: left; }
         .grades-table th { padding: 1.25rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--table-border); background: var(--table-header-bg); }
@@ -57,20 +51,17 @@
         .grades-table tr:last-child td { border-bottom: none; }
         .grades-table tbody tr:hover td { background: var(--table-row-hover); }
 
-        /* Course Column Details */
         .course-info { display: flex; flex-direction: column; gap: 0.25rem; }
         .course-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
         .course-lang { font-size: 0.8rem; }
         .lang-python { color: #60a5fa; }
         .lang-java { color: #fb923c; }
 
-        /* Progress Bar in Table[cite: 14] */
         .progress-wrapper { display: flex; align-items: center; gap: 1rem; }
         .progress-bar-bg { flex: 1; max-width: 120px; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--accent-primary); border-radius: 3px; }
         .progress-text { font-size: 0.85rem; color: var(--text-secondary); width: 40px; text-align: right; }
 
-        /* Averages and Grades[cite: 14] */
         .score-text { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
         .grade-badge { font-size: 1rem; font-weight: 700; }
         .grade-b { color: var(--grade-b); }
@@ -91,11 +82,9 @@
 <body>
     <form id="form1" runat="server">
         <div class="dashboard-layout">
-            
-            <!-- Sidebar Injected Here -->
+
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
                 <div class="page-header">
@@ -103,7 +92,6 @@
                     <p>Track your learning journey and scores</p>
                 </div>
 
-            <!-- Overview Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value val-active">
@@ -131,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Course Grades Section -->
             <div class="section-header">
                 <h2>Course Grades</h2>
             </div>
@@ -149,7 +136,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Dynamic Repeater for Rows -->
                         <asp:Repeater ID="rptGrades" runat="server">
                             <ItemTemplate>
                                 <tr>
@@ -171,22 +157,19 @@
                                     <td><span class="score-text"><%# Eval("CodeAvg") %></span></td>
                                     <td><span class="grade-badge <%# Eval("GradeClass") %>"><%# Eval("Grade") %></span></td>
                                     <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center; align-items: center; border-bottom: 1px solid var(--table-border);">
-                                        <!-- State 1: Incomplete -> Continue Learning -->
+
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) < 100 %>'>
                                             <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none;">Continue Learning &rarr;</a>
                                         </asp:PlaceHolder>
 
-                                        <!-- State 2 & 3: Completed -> Always allow Review Material -->
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 %>'>
                                             <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(124, 58, 237, 0.1); color: var(--accent-light); border: 1px solid var(--accent-primary);">Review Material</a>
                                         </asp:PlaceHolder>
 
-                                        <!-- State 2: Completed, but NOT reviewed -> Leave Review -->
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && !Convert.ToBoolean(Eval("HasReviewed")) %>'>
                                             <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn enroll" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">Leave Review ⭐</a>
                                         </asp:PlaceHolder>
 
-                                        <!-- State 3: Completed AND got final grade -> View Certificate -->
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && Eval("Grade").ToString() != "-" %>'>
                                             <a href='Certificates.aspx' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">View Certificate 🏆</a>
                                         </asp:PlaceHolder>

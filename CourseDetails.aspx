@@ -4,19 +4,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Course Details - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
 
-    <!-- 1. Import Global Variables & Shared Layout -->
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- 2. Page-Specific Styles -->
     <style>
         :root {
-            /* Local variables for Course Details */
             --hero-bg: var(--bg-surface);
             --hero-border: var(--border-light);
             
-            /* Chapter List Variables */
             --chapter-bg: var(--bg-surface);
             --chapter-border: var(--border-light);
             --chapter-hover: rgba(255, 255, 255, 0.02);
@@ -25,7 +22,6 @@
             --icon-locked-bg: rgba(255, 255, 255, 0.05);
             --icon-locked-color: var(--text-muted);
             
-            /* Tag Colors */
             --tag-theory: rgba(96, 165, 250, 0.15);
             --tag-theory-text: #60a5fa;
             --tag-video: rgba(251, 146, 60, 0.15);
@@ -36,7 +32,6 @@
             --tag-coding-text: #c084fc;
         }
 
-        /* Top Navigation */
         .back-nav {
             display: inline-flex;
             align-items: center;
@@ -50,7 +45,6 @@
         .back-nav:hover { color: var(--text-primary); }
         .back-nav svg { width: 18px; height: 18px; }
 
-        /* Hero Section */
         .course-hero {
             background: var(--hero-bg);
             border: 1px solid var(--hero-border);
@@ -84,7 +78,6 @@
         }
         .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
 
-        /* Progress Area (For Enrolled Users) */
         .progress-section { margin-bottom: 1.5rem; }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
         .progress-header strong { color: var(--text-primary); }
@@ -106,7 +99,6 @@
         }
         .btn-action:hover { background: var(--accent-hover); }
 
-        /* Chapter Section */
         .section-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.25rem; }
 
         .chapter-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -123,7 +115,6 @@
         }
         .chapter-item:hover { background: var(--chapter-hover); }
 
-        /* Status Icon */
         .ch-status { 
             width: 32px; 
             height: 32px; 
@@ -139,7 +130,6 @@
         .ch-status.completed { background: var(--icon-completed-bg); color: var(--icon-completed-color); }
         .ch-status.locked { background: var(--icon-locked-bg); color: var(--icon-locked-color); }
 
-        /* Chapter Details */
         .ch-content { flex: 1; }
         .ch-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; }
         
@@ -150,7 +140,6 @@
         .c-tag.quiz { background: var(--tag-quiz); color: var(--tag-quiz-text); }
         .c-tag.coding { background: var(--tag-coding); color: var(--tag-coding-text); }
 
-        /* Chapter Meta */
         .ch-meta { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.85rem; }
         .ch-icon { width: 16px; height: 16px; }
 
@@ -165,10 +154,8 @@
     <form id="form1" runat="server">
         <div class="dashboard-layout">
             
-            <!-- Sidebar Injected Here -->
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
     
                 <asp:HyperLink ID="lnkBack" runat="server" CssClass="back-nav">
@@ -178,7 +165,6 @@
                     Back
                 </asp:HyperLink>
 
-                <!-- Hero Section -->
                 <div class="course-hero">
                     <div class="hero-tags">
                         <asp:Literal ID="litTags" runat="server"></asp:Literal>
@@ -195,7 +181,6 @@
                         <span>⭐ <asp:Literal ID="litRating" runat="server"></asp:Literal></span>
                     </div>
 
-                    <!-- Progress Area (For Enrolled Users) -->
                     <asp:Panel ID="pnlEnrolledProgress" runat="server" CssClass="progress-section">
                         <div class="progress-header">
                             <span>Your progress</span>
@@ -206,14 +191,12 @@
                         </div>
                     </asp:Panel>
 
-                    <!-- Main Call to Action Button & Review Actions -->
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <asp:Button ID="btnCourseAction" runat="server" CssClass="btn-action" OnClick="btnCourseAction_Click" />
                         <asp:Button ID="btnShowReviewModal" runat="server" Text="Leave a Review" CssClass="btn-nav" style="padding: 0.875rem 1.5rem; border: 1px solid var(--border-light); border-radius: 8px; font-weight: 600; cursor: pointer;" OnClick="btnShowReviewModal_Click" Visible="false" />
                         <asp:Label ID="lblReviewSubmitted" runat="server" Visible="false" style="color: var(--icon-success); font-size: 0.9rem; font-weight: 600;">⭐ Review Submitted</asp:Label>
                     </div>
 
-                    <!-- Review Modal -->
                     <asp:Panel ID="pnlReviewModal" runat="server" Visible="false" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center;">
                         <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 2.5rem; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                             <h3 style="margin-bottom: 0.5rem; color: var(--text-primary); font-size: 1.5rem;">Rate this course</h3>
@@ -245,14 +228,12 @@
 
                 <h2 class="section-title">Course Chapters</h2>
 
-                <!-- Chapters List using Repeater -->
                 <div class="chapter-list">
                     <asp:Repeater ID="rptChapters" runat="server">
                         <ItemTemplate>
 
                             <a href='<%# GetChapterUrl((string)Eval("Status"), Convert.ToInt32(Eval("ChapterNum"))) %>' class="chapter-item" style='<%# GetChapterStyle((string)Eval("Status")) %>'>
 
-                                <!-- Dynamic Status Icon (Checkmark, Play, Lock, or Number) -->
                                 <div class='ch-status <%# Eval("Status").ToString().ToLower() %>' style='<%# Eval("Status").ToString() == "Active" ? "background: rgba(124, 58, 237, 0.2); color: #c084fc;" : "" %>'>
                                     <asp:Literal runat="server" Text='<%# GetStatusIcon((string)Eval("Status"), Convert.ToInt32(Eval("ChapterNum"))) %>'></asp:Literal>
                                 </div>
@@ -260,7 +241,6 @@
                                 <div class="ch-content">
                                     <div class="ch-title"><%# Eval("ChapterTitle") %></div>
                                     <div class="ch-tags">
-                                        <!-- Inline conditional rendering for the badges -->
                                         <span class="c-tag theory" style="display: <%# Convert.ToInt32(Eval("SubChapterCount")) > 0 ? "inline-flex" : "none" %>;">📄 Theory</span>
                                         <span class="c-tag video" style="display: <%# Convert.ToBoolean(Eval("HasVideo")) ? "inline-flex" : "none" %>;">▶️ Video</span>
                                         <span class="c-tag quiz" style="display: <%# Convert.ToBoolean(Eval("HasQuiz")) ? "inline-flex" : "none" %>;">⚡ Quiz</span>
@@ -283,7 +263,6 @@
         </div>
     </form>
 
-    <!-- Guest Registration Modal -->
     <div id="guestModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px); justify-content: center; align-items: center;">
         <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%;">
         

@@ -4,12 +4,11 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>My Account - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
 
-    <!-- 1. Import Global Variables & Shared Layout -->
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- 2. Page-Specific Styles -->
     <style>
         :root {
             --profile-card-bg: var(--bg-surface);
@@ -24,12 +23,10 @@
             --btn-danger-hover-text: #ffffff;
         }
 
-        /* Header */
         .page-header { margin-bottom: 2rem; }
         .page-header h1 { font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--text-primary); }
         .page-header p { color: var(--text-secondary); font-size: 1rem; }
 
-        /* Profile Container - Expanded screen-wide */
         .profile-container {
             width: 100%;
             max-width: 100%;
@@ -51,7 +48,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* Form Grid Layout */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -105,7 +101,6 @@
             margin-top: 0.4rem;
         }
 
-        /* Action Buttons */
         .action-bar {
             display: flex;
             justify-content: flex-end;
@@ -141,7 +136,6 @@
             color: var(--btn-danger-hover-text);
         }
 
-        /* Custom Delete Modal Overlay */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -234,12 +228,11 @@
             cursor: not-allowed;
         }
 
-        /* Success Toast Notification */
         .toast-notification {
             position: fixed;
             bottom: 2.5rem;
             right: 2.5rem;
-            background: #10b981; /* Emerald green */
+            background: #10b981;
             color: #ffffff;
             padding: 1rem 1.5rem;
             border-radius: 10px;
@@ -251,7 +244,6 @@
             gap: 0.75rem;
             z-index: 10000;
             pointer-events: none;
-            /* Slides in, stays for 3 seconds, then fades out */
             animation: slideInUp 0.4s ease-out forwards, fadeOut 0.4s ease-in 3.5s forwards;
             opacity: 0;
             transform: translateY(20px);
@@ -283,11 +275,9 @@
 <body>
     <form id="form1" runat="server">
         <div class="dashboard-layout">
-            
-            <!-- Sidebar Injected Here -->
+
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
                 <div class="profile-container">
@@ -300,39 +290,33 @@
                     
                     <div class="profile-card">
                         <div class="form-grid">
-                            
-                            <!-- Name Field -->
+
                             <div class="form-group">
                                 <label>Full Name</label>
                                 <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="Enter your full name"></asp:TextBox>
                             </div>
 
-                            <!-- Age Field -->
                             <div class="form-group">
                                 <label>Age</label>
                                 <asp:TextBox ID="txtAge" runat="server" CssClass="form-control" TextMode="Number" placeholder="Enter your age"></asp:TextBox>
                             </div>
 
-                            <!-- Email Field (Read-only) -->
                             <div class="form-group">
                                 <label>Email Address</label>
                                 <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control readonly" ReadOnly="true" ToolTip="Email cannot be changed."></asp:TextBox>
                                 <span class="help-text">Your email is used for login and cannot be changed.</span>
                             </div>
 
-                            <!-- Role/Occupation Field -->
                             <div class="form-group">
                                 <label>Occupation / Role</label>
                                 <asp:TextBox ID="txtOccupation" runat="server" CssClass="form-control" placeholder="e.g., Student"></asp:TextBox>
                             </div>
 
-                            <!-- Date Joined Field (Read-only) -->
                             <div class="form-group">
                                 <label>Member Since</label>
                                 <asp:TextBox ID="txtDateJoined" runat="server" CssClass="form-control readonly" ReadOnly="true"></asp:TextBox>
                             </div>
 
-                            <!-- Address Field (Full Width) -->
                             <div class="form-group full-width">
                                 <label>Address</label>
                                 <asp:TextBox ID="txtAddress" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="3" placeholder="Enter your full address"></asp:TextBox>
@@ -341,9 +325,7 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="action-bar">
-                        <!-- Changed to trigger JavaScript Modal instead of built-in confirm() -->
                         <button type="button" class="btn btn-delete" onclick="openDeleteModal()">Delete Account</button>
                         <asp:Button ID="btnUpdateProfile" runat="server" Text="Update Details" CssClass="btn btn-update" OnClick="btnUpdateProfile_Click" />
                     </div>
@@ -352,7 +334,6 @@
             </main>
         </div>
 
-        <!-- Delete Account Confirmation Modal -->
         <div class="modal-overlay" id="deleteModal">
             <div class="modal-card">
                 <div class="modal-icon-wrapper">
@@ -379,7 +360,6 @@
             </div>
         </div>
 
-        <!-- Success Toast (Hidden by default) -->
         <asp:Panel ID="pnlToast" runat="server" CssClass="toast-notification" Visible="false">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -388,11 +368,10 @@
         </asp:Panel>
     </form>
 
-    <!-- Modal Client Script -->
     <script type="text/javascript">
-function openDeleteModal() {
-    var modal = document.getElementById('deleteModal');
-    var userEmail = document.getElementById('<%= txtEmail.ClientID %>').value;
+        function openDeleteModal() {
+            var modal = document.getElementById('deleteModal');
+            var userEmail = document.getElementById('<%= txtEmail.ClientID %>').value;
             document.getElementById('lblUserEmail').innerText = userEmail;
             document.getElementById('txtConfirmEmail').value = '';
             document.getElementById('btnConfirmDelete').disabled = true;
@@ -416,7 +395,6 @@ function openDeleteModal() {
             }
         }
 
-        // Close modal if clicking outside the card
         window.onclick = function(event) {
             var modal = document.getElementById('deleteModal');
             if (event.target == modal) {

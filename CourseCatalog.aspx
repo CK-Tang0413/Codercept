@@ -4,19 +4,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Course Catalog - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
 
-    <!-- 1. Import Global Variables -->
     <link href="~/css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- 2. Page-Specific Styles and Local Variables -->
     <style>
         :root {
-            /* Local variables only used in the Catalog */
             --catalog-search-bg: var(--bg-surface);
         }
 
-        /* Header & Search */
         .page-header { margin-bottom: 2rem; }
         .page-header h1 { font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--text-primary); }
         .page-header p { color: var(--text-secondary); font-size: 1rem; }
@@ -27,7 +24,6 @@
         .search-input:focus { border-color: var(--accent-primary); }
         .search-input::placeholder { color: var(--text-muted); }
 
-        /* Filters */
         .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
         .filter-group { display: flex; gap: 0.5rem; align-items: center; }
         .filter-pill { background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
@@ -40,14 +36,12 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <!-- 1. Required for dynamic partial-page updates -->
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
 
         <div class="dashboard-layout">
             
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
                 <div class="page-header">
@@ -55,18 +49,14 @@
                     <p>Browse all available programming courses</p>
                 </div>
 
-                <!-- 2. Search Container (Kept OUTSIDE the UpdatePanel so you don't lose typing focus) -->
                 <div class="search-container">
                     <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <!-- Removed AutoPostBack, Added oninput to trigger JS -->
                     <asp:TextBox ID="txtSearch" runat="server" CssClass="search-input" placeholder="Search courses..." oninput="debounceSearch()"></asp:TextBox>
-                    <!-- Hidden button that executes the C# search method -->
                     <asp:Button ID="btnHiddenSearch" runat="server" OnClick="txtSearch_TextChanged" style="display:none;" />
                 </div>
 
-                <!-- Live Search Script (Waits 400ms after you stop typing to fetch results) -->
                 <script>
                     let typingTimer;
                     function debounceSearch() {
@@ -77,14 +67,12 @@
                     }
                 </script>
 
-                <!-- 3. UpdatePanel wraps the results so only this section reloads dynamically -->
                 <asp:UpdatePanel ID="upCatalog" runat="server">
                     <Triggers>
                         <asp:AsyncPostBackTrigger ControlID="btnHiddenSearch" EventName="Click" />
                     </Triggers>
                     <ContentTemplate>
                         
-                        <!-- Filters -->
                         <div class="filter-section">
                             <div class="filter-group">
                                 <asp:LinkButton ID="btnLangAll" runat="server" CssClass="filter-pill active" CommandArgument="All" OnClick="FilterLang_Click">All Languages</asp:LinkButton>
@@ -105,12 +93,10 @@
                             <asp:Literal ID="litResultsCount" runat="server" Text="6 courses found"></asp:Literal>
                         </div>
 
-                        <!-- Course Grid using Repeater -->
                         <div class="course-grid">
                             <asp:Repeater ID="rptCourses" runat="server">
                                 <ItemTemplate>
                                     <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-card">
-                                        <!-- Thumbnail with Floating Difficulty Badge -->
                                         <div class='course-thumbnail course-thumbnail--<%# Eval("LanguageCSS") %>'>
                                             <span class='card-floating-badge badge-<%# Eval("DifficultyLevel").ToString().ToLower() %>'><%# Eval("DifficultyLevel") %></span>
                                             <span><%# Eval("Language").ToString().Substring(0, 1) %></span>
@@ -127,7 +113,6 @@
                                                 <span class="course-meta-item">👥 <%# Eval("EnrolledCount") %> enrolled</span>
                                             </div>
                                             
-                                            <!-- Static Enroll Button -->
                                             <span class="course-action-btn enroll">Enroll Now</span>
                                         </div>
                                     </a>

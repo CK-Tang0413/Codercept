@@ -1,6 +1,5 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CreateAdminAccount.ascx.cs" Inherits="Codercept.CreateAdminAccount" %>
 
-<!-- Add New Admin Modal Overlay -->
 <div class="modal-overlay" id="addAdminModal">
     <div class="modal-box" style="max-width: 540px;">
         <div class="modal-header-row" style="margin-bottom: 16px; padding-bottom: 16px;">
@@ -16,13 +15,11 @@
             <button type="button" class="btn-modal-close" onclick="closeAddAdminModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- Server-side Error / Alert within Modal -->
         <asp:Panel ID="pnlModalError" runat="server" Visible="false" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-circle-exclamation"></i>
             <div><asp:Literal ID="litModalError" runat="server"></asp:Literal></div>
         </asp:Panel>
 
-        <!-- Form Fields -->
         <div class="admin-form-group">
             <label class="form-label" for="<%= txtAdminFullName.ClientID %>">Full Name <span style="color: var(--danger-red);">*</span></label>
             <asp:TextBox ID="txtAdminFullName" runat="server" CssClass="form-control" placeholder="e.g. Sarah Jenkins" oninput="handleFullNameInput()"></asp:TextBox>
@@ -56,7 +53,6 @@
             <span style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; display: block;">Format: &lt;userFirstName&gt;@1234 or custom temporary password. This temporary password will be emailed to the administrator.</span>
         </div>
 
-        <!-- Modal Actions Footer -->
         <div class="modal-footer" style="margin-top: 20px; padding-top: 16px;">
             <button type="button" class="btn-action" onclick="closeAddAdminModal()">Cancel</button>
             <asp:Button ID="btnSubmitAdmin" runat="server" Text="Create Account" CssClass="btn-action btn-submit-admin" 
@@ -170,7 +166,6 @@
         return true;
     }
 
-    // Close on outside backdrop click
     window.addEventListener('click', function (e) {
         const modal = document.getElementById('addAdminModal');
         if (e.target === modal) {

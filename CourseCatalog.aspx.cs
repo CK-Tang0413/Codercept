@@ -36,11 +36,10 @@ namespace Codercept
 
             string searchTerm = txtSearch.Text.Trim();
             string selectedLang = ViewState["SelectedLang"].ToString();
-            string selectedLevel = ViewState["SelectedLevel"].ToString(); // This is now already "Easy", "Medium", or "Hard"
+            string selectedLevel = ViewState["SelectedLevel"].ToString();
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Dynamic SQL query based on filters (Filters out enrolled courses)
                 string query = @"
             SELECT 
                 c.CourseId, 
@@ -72,7 +71,6 @@ namespace Codercept
                     }
                     else if (selectedLang == "C")
                     {
-                        // Exact match for 'C' to prevent pulling in 'C++'
                         query += " AND (SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language') = 'C' ";
                     }
                     else
@@ -83,7 +81,6 @@ namespace Codercept
 
                 if (selectedLevel != "All")
                 {
-                    // We no longer need to map the terms; just use selectedLevel directly
                     query += " AND c.DifficultyLevel = @Level ";
                 }
 
@@ -101,7 +98,6 @@ namespace Codercept
 
                     if (selectedLevel != "All")
                     {
-                        // Directly pass selectedLevel which is "Easy", "Medium", or "Hard"
                         cmd.Parameters.AddWithValue("@Level", selectedLevel);
                     }
 
@@ -119,7 +115,7 @@ namespace Codercept
                         else if (lang == "c") row["LanguageCSS"] = "c";
                         else row["LanguageCSS"] = lang.Replace(" ", "");
 
-                        row["ProgressPercentage"] = 0; // Unenrolled courses always have 0% progress
+                        row["ProgressPercentage"] = 0;
                     }
 
                     rptCourses.DataSource = dt;
@@ -155,13 +151,11 @@ namespace Codercept
             LinkButton clickedBtn = (LinkButton)sender;
             ViewState["SelectedLevel"] = clickedBtn.CommandArgument;
 
-            // Reset UI states using the new button IDs
             btnLevelAll.CssClass = "filter-pill";
             btnLevelEasy.CssClass = "filter-pill";
             btnLevelMedium.CssClass = "filter-pill";
             btnLevelHard.CssClass = "filter-pill";
 
-            // Set active class on clicked button
             clickedBtn.CssClass = "filter-pill active";
 
             BindCourses();

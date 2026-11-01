@@ -29,7 +29,6 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Updated query: Added check for whether a review exists for this course by this learner
                 string query = @"
                     SELECT 
                         c.CourseId,
@@ -100,13 +99,11 @@ namespace Codercept
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        // 1. Language CSS
                         string lang = row["Language"].ToString().ToLower();
                         if (lang.Contains("c++") || lang.Contains("cpp")) row["LangClass"] = "lang-cpp";
                         else if (lang == "c") row["LangClass"] = "lang-c";
                         else row["LangClass"] = "lang-" + lang.Replace(" ", "");
 
-                        // 2. Progress Calculation
                         int currentChapter = Convert.ToInt32(row["ChapNum"]);
                         int totalChapters = Convert.ToInt32(row["TotalChapters"]);
                         int chaptersCompleted = currentChapter - 1;
@@ -118,7 +115,6 @@ namespace Codercept
                         if (progress == 100) completedCount++;
                         else if (progress > 0) activeCount++;
 
-                        // 3. Format Averages
                         double quizScore = Convert.ToDouble(row["QuizAvgRaw"]);
                         if (quizScore >= 0)
                         {
@@ -137,7 +133,6 @@ namespace Codercept
                         }
                         else row["CodeAvg"] = "–";
 
-                        // 4. Grade Badge CSS
                         string grade = row["FinalGrade"].ToString();
                         row["Grade"] = grade;
                         if (grade == "A") row["GradeClass"] = "grade-a";
