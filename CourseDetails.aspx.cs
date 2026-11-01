@@ -20,6 +20,27 @@ namespace Codercept
 
             if (!IsPostBack)
             {
+                // --- Bulletproof Smart Back Navigation Logic ---
+                string cId = Request.QueryString["id"] ?? "0";
+                string sessionKey = "ReturnUrl_Course_" + cId;
+
+                if (Request.UrlReferrer != null)
+                {
+                    string referrer = Request.UrlReferrer.ToString().ToLower();
+
+                    // Only save the referrer if it is one of the three valid origin pages
+                    if (referrer.Contains("LearnerDashboard.aspx") ||
+                        referrer.Contains("MyProgress.aspx") ||
+                        referrer.Contains("CourseCatalog.aspx"))
+                    {
+                        Session[sessionKey] = Request.UrlReferrer.ToString();
+                    }
+                }
+
+                // Retrieve the saved origin page. If none exists (direct link), default to Course Catalog.
+                lnkBack.NavigateUrl = Session[sessionKey] != null ? Session[sessionKey].ToString() : "CourseCatalog.aspx";
+                // ------------------------------------------------
+
                 LoadCourseDetails();
             }
         }
@@ -32,8 +53,7 @@ namespace Codercept
                 int.TryParse(Request.QueryString["id"], out courseId);
             }
 
-            bool isGuest = Session["UserType"].ToString() == "Guest";
-            int learnerId = isGuest ? 0 : Convert.ToInt32(Session["UserId"]);
+            int learnerId = Convert.ToInt32(Session["UserId"]);
             bool userIsEnrolled = false;
             int learnerProgressChapter = 0;
 
@@ -101,7 +121,6 @@ namespace Codercept
                                 bool hasCompletedExam = Convert.ToBoolean(reader["HasCompletedExam"]);
                                 int maxAllowedChapter = totalChapters + (hasExam ? 1 : 0);
 
-                                // Course is 100% finished if ChapNum exceeds max OR if they reached the end and submitted the exam
                                 bool isCourseCompleted = (learnerProgressChapter > maxAllowedChapter)
                                     || (hasExam && hasCompletedExam && learnerProgressChapter >= totalChapters);
 
@@ -124,7 +143,6 @@ namespace Codercept
                                 // Show Review options when course is 100% completed
                                 if (isCourseCompleted)
                                 {
-                                    // Ensure all chapter rows below render as Completed
                                     learnerProgressChapter = maxAllowedChapter + 1;
                                     btnCourseAction.Text = "Review Material";
 
@@ -152,9 +170,22 @@ namespace Codercept
                                     }
                                 }
                             }
+                            else
+                            {
+                                // --- User is NOT enrolled ---
+                                userIsEnrolled = false;
+
+                                // Hide the progress bar
+                                pnlEnrolledProgress.Visible = false;
+
+                                // Reset the button to "Enroll Now"
+                                btnCourseAction.Text = "Enroll Now";
+                                btnCourseAction.CommandArgument = courseId.ToString();
+                                btnCourseAction.OnClientClick = ""; // Removed guest modal popup
+                            }
                         }
                     }
-                } // 👈 Here the scope for `cmd` naturally ends, but to be completely safe against .NET 4.x parser quirks, we rename the next one.
+                }
 
                 // 2. Fetch Chapter List
                 string chapterQuery = @"

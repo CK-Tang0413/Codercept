@@ -180,3 +180,246 @@ body, html {
     .sign-out:hover {
         color: #ef4444;
     }
+
+/* ==========================================================================
+   GLOBAL COURSE CARD DESIGN (Matches Teacher Dashboard Layout)
+   ========================================================================== */
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+}
+
+.course-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-card);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    height: 100%;
+}
+
+.course-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+}
+
+/* Course Card Thumbnail Block */
+.course-thumbnail {
+    position: relative;
+    display: grid;
+    height: 142px;
+    place-items: center;
+    overflow: hidden;
+}
+
+.course-thumbnail::before {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    content: "";
+    mask-image: linear-gradient(to bottom right, black, transparent);
+    -webkit-mask-image: linear-gradient(to bottom right, black, transparent);
+}
+
+/* Center Language Letter (Excludes the difficulty badge) */
+.course-thumbnail > span:not(.card-floating-badge) {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-width: 68px;
+    height: 68px;
+    padding: 0 12px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 18px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Difficulty Badges - Fixed to Top Right */
+.card-floating-badge {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 5;
+    display: inline-block;
+    min-width: 0;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge-easy {
+    color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+}
+
+.badge-medium {
+    color: #b45309;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+}
+
+.badge-hard {
+    color: #b91c1c;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+/* Thumbnail Background Gradients mapped to Subjects */
+.course-thumbnail--python {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+/* Vibrant Blue */
+.course-thumbnail--java {
+    background: linear-gradient(135deg, #f97316, #c2410c);
+}
+/* Rich Orange */
+.course-thumbnail--c {
+    background: linear-gradient(135deg, #10b981, #047857);
+}
+/* Emerald Green */
+.course-thumbnail--cpp {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+/* Deep Purple */
+.course-thumbnail--other {
+    background: linear-gradient(135deg, #64748b, #334155);
+}
+/* Slate Gray */
+
+/* Card Content Details */
+.course-content {
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.course-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.course-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+/* Meta Data Footer Grid */
+.course-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0.5rem 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color-subtle);
+    margin-top: auto;
+}
+
+.course-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Progress Footer Block (For Active Courses) */
+.course-progress-footer {
+    background: var(--bg-surface-nested);
+    padding: 1rem 1.2rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: 3px;
+}
+
+/* Card Action Button (Enroll / Continue) */
+.course-action-btn {
+    display: block;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+    margin-top: 1rem;
+}
+
+/* Button style when enrolled (Continue Learning) */
+.course-action-btn.active {
+    background-color: var(--accent-transparent);
+    color: var(--accent-light);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+    .course-action-btn.active:hover {
+        background-color: var(--accent-primary);
+        color: #ffffff;
+    }
+
+/* Button style when not enrolled (Enroll) */
+.course-action-btn.enroll {
+    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color-subtle);
+}
+
+.course-action-btn.enroll:hover {
+    background-color: #e2e8f0;
+    color: var(--text-primary);
+}

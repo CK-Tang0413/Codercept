@@ -17,7 +17,7 @@ namespace Codercept
             if (profile == null)
             {
                 // the account no longer exists: nothing to show
-                Response.Redirect("~/signIn.aspx");
+                Response.Redirect("~/LandingPage.aspx");
                 return;
             }
             Email = profile.Email;

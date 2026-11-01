@@ -36,7 +36,41 @@
         .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
         .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
-        @media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel { padding: 2rem; } .hero-content h1 { font-size: 2.5rem; } .snippet { display: none; } }
+        /* Tablet & Large Mobile (768px) */
+        @media (max-width: 768px) { 
+            /* Break the flex row layout completely */
+            .split-layout { display: block; } 
+            
+            /* Hide the dark left panel */
+            .left-panel { display: none !important; } 
+            
+            /* Turn right panel into a standard block that fills the screen */
+            .right-panel { 
+                display: block; 
+                padding: 3rem 2rem; 
+                min-height: 100vh; 
+            } 
+            
+            /* Center the form within the full-width block */
+            .form-container { 
+                margin: 0 auto; 
+                max-width: 480px; 
+            }
+        }
+        /* Small Mobile Phones (440px) */
+        @media (max-width: 440px) {
+            .right-panel { padding: 1.25rem; padding-top: 2rem; }
+            .form-header h2 { font-size: 1.75rem; }
+            .form-header p { margin-bottom: 1.25rem; font-size: 0.85rem; }
+            
+            .auth-toggle a { padding: 0.5rem; font-size: 0.85rem; }
+            .form-group { margin-bottom: 1rem; }
+            .form-group label { font-size: 0.8rem; }
+            .form-control { padding: 0.65rem 0.85rem; font-size: 0.9rem; }
+            
+            .options-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem; }
+            .btn-submit, .btn-guest, .btn-back { padding: 0.75rem; font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>

@@ -145,6 +145,7 @@
                             <th>Quiz Avg</th>
                             <th>Coding Avg</th>
                             <th>Grade</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -169,6 +170,22 @@
                                     <td><span class="score-text"><%# Eval("QuizAvg") %></span></td>
                                     <td><span class="score-text"><%# Eval("CodeAvg") %></span></td>
                                     <td><span class="grade-badge <%# Eval("GradeClass") %>"><%# Eval("Grade") %></span></td>
+                                    <td style="text-align: center;">
+                                        <!-- State 1: Incomplete -> Continue Learning -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) < 100 %>'>
+                                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none;">Continue &rarr;</a>
+                                        </asp:PlaceHolder>
+
+                                        <!-- State 2: Completed, but NOT reviewed -> Leave Review -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && !Convert.ToBoolean(Eval("HasReviewed")) %>'>
+                                            <a href='CourseReview.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn enroll" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">Leave Review ⭐</a>
+                                        </asp:PlaceHolder>
+
+                                        <!-- State 3: Completed AND reviewed -> View Certificate / Completed Badge -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && Convert.ToBoolean(Eval("HasReviewed")) %>'>
+                                            <a href='Certificates.aspx' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">View Certificate 🏆</a>
+                                        </asp:PlaceHolder>
+                                    </td>
                                 </tr>
                             </ItemTemplate>
                         </asp:Repeater>

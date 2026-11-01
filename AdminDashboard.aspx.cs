@@ -19,7 +19,7 @@ namespace Codercept
                  !userRole.Equals("Super Admin", StringComparison.OrdinalIgnoreCase) &&
                  !userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             {
-                Response.Redirect("signIn.aspx");
+                Response.Redirect("LandingPage.aspx");
                 return;
             }
 

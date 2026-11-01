@@ -10,7 +10,7 @@
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
     <!-- 2. Page-Specific Styles -->
-    <style>
+<style>
         :root {
             /* Local variables for Forum */
             --forum-panel-bg: var(--bg-surface);
@@ -29,45 +29,70 @@
             --msg-pinned-border: var(--accent-primary);
         }
 
-        /* Override main-content for a fixed split-screen layout */
+        /* 1. Main Layout & Viewport Boundaries */
         .main-content {
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Prevents whole page scroll, lets panels scroll */
+            height: calc(100vh - 40px);
+            overflow: hidden;
             padding-bottom: 0; 
         }
 
-        /* Forum Header */
+        /* 2. Forum Header */
         .forum-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 1.5rem; 
+            padding-right: 0 !important;
         }
-        .forum-header h1 { font-size: 2rem; color: var(--text-primary); }
-        .btn-new-post { 
-            background: var(--text-primary); 
-            color: var(--bg-main); 
+        
+        .forum-header h1 { 
+            font-size: 2rem; 
+            color: var(--text-primary); 
+        }
+
+        /* 3. Action Buttons (Sunset Gradient) */
+        .btn-new-post, .btn-send {
+            background: #7c3aed !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+            transition: background 0.2s, transform 0.2s !important;
+            cursor: pointer;
+        }
+
+        .btn-new-post {
             padding: 0.6rem 1.25rem; 
             border-radius: 20px; 
             font-weight: 600; 
             text-decoration: none; 
-            border: none; 
-            cursor: pointer; 
-            transition: background 0.2s; 
         }
-        .btn-new-post:hover { background: #e4e4e7; }
 
-        /* Split Layout Container */
+        .btn-new-post:hover, .btn-send:hover {
+            background: #6d28d9 !important;
+            transform: translateY(-1px);
+        }
+
+        /* 4. UpdatePanel & Split Layout Containers */
+        div[id$="upForum"] {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+
         .forum-container {
             display: flex;
             flex: 1;
             gap: 1.5rem;
             overflow: hidden;
-            padding-bottom: 2rem;
+            min-height: 0;
+            padding-bottom: 1.5rem;
         }
 
-        /* LEFT PANEL: Posts Column */
+        /* 5. Left Panel: Posts Column (Scrollable) */
         .posts-column {
             flex: 1.5;
             display: flex;
@@ -75,6 +100,7 @@
             gap: 1rem;
             overflow-y: auto;
             padding-right: 0.5rem;
+            min-height: 0;
         }
 
         /* Post Card */
@@ -86,6 +112,7 @@
             display: flex;
             flex-direction: column;
         }
+        
         .post-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary); }
         .post-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem; }
         .post-tags { font-size: 0.85rem; color: var(--accent-light); margin-bottom: 1.25rem; font-weight: 500; }
@@ -104,7 +131,7 @@
         .btn-action:hover { background: var(--btn-action-hover); color: var(--text-primary); }
         .btn-action.active-comment { background: var(--accent-transparent); color: var(--accent-light); border-color: var(--accent-border); }
 
-        /* RIGHT PANEL: Comments Column */
+        /* 6. Right Panel: Comments Column */
         .comments-column {
             flex: 1;
             background: var(--forum-panel-bg);
@@ -113,6 +140,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
         }
         
         .comments-header {
@@ -130,6 +158,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+            min-height: 0;
         }
 
         /* Individual Comment */
@@ -142,7 +171,6 @@
             flex-direction: column;
         }
         
-        /* Message States */
         .comment-item.flagged { background: var(--msg-flagged-bg); border-color: var(--msg-flagged-border); }
         .comment-item.pinned { border-color: var(--msg-pinned-border); }
 
@@ -160,7 +188,6 @@
 
         .comment-text { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem; }
         
-        /* Updated Comment Actions */
         .comment-actions { display: flex; gap: 0.75rem; }
         .action-btn { 
             background: none; 
@@ -174,7 +201,6 @@
             font-family: inherit;
         }
         .action-btn:hover { color: var(--text-primary); }
-        .action-btn.action-flag:hover { color: #ef4444; }
 
         /* Comment Input Area */
         .comment-input-area {
@@ -184,6 +210,7 @@
             gap: 0.5rem;
             background: rgba(255, 255, 255, 0.02);
         }
+        
         .input-chat {
             flex: 1;
             background: var(--bg-main);
@@ -196,54 +223,39 @@
             transition: border-color 0.2s;
         }
         .input-chat:focus { border-color: var(--accent-primary); }
+        
         .btn-send {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: background 0.2s;
         }
-        .btn-send:hover { background: var(--accent-hover); }
 
-        /* Custom Scrollbar for columns */
+        /* 7. Custom Scrollbars */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* Automatically reserve space on the right side of page headers for the notification bell */
-        .main-content > .page-header,
-        .main-content > .forum-header,
-        .main-content > .header-row,
-        .main-content > div:first-child {
-            padding-right: 3.75rem;
-        }
-
+        /* 8. Responsive Design */
         @media (max-width: 992px) {
             .forum-container { flex-direction: column; }
             .comments-column { flex: none; height: 500px; }
+            .main-content { height: auto; overflow: auto; }
         }
 
         @media (max-width: 768px) {
-        .global-notif-wrapper { top: 1rem; right: 1rem; }
-        .notif-popover { width: 300px; right: 0; }
-        .main-content > .page-header,
-        .main-content > .forum-header,
-        .main-content > .header-row,
-        .main-content > div:first-child {
-            padding-right: 3.25rem;
+            .forum-header { padding-right: 0 !important; }
         }
-    }
     </style>
 </head>
 <body>
-    <form id="form1" runat="server">
+   <form id="form1" runat="server">
+        <!-- 1. Required for partial-page async updates -->
+        <asp:ScriptManager ID="ScriptManager1" runat="server" />
+
         <div class="dashboard-layout">
             
             <!-- Sidebar Injected Here -->
@@ -257,95 +269,101 @@
                     <asp:Button ID="btnAddPost" runat="server" Text="Add new post" CssClass="btn-new-post" OnClick="btnAddPost_Click" />
                 </div>
 
-                <div class="forum-container">
-                   <!-- LEFT PANEL: Posts List -->
-                    <div class="posts-column">
-                        <asp:Repeater ID="rptPosts" runat="server" OnItemCommand="rptPosts_ItemCommand">
-                            <ItemTemplate>
-                                <div class="post-card">
-                                    <h2 class="post-title"><%# Eval("Title") %></h2>
-                                    <p class="post-desc"><%# Eval("Content") %></p>
-                                    <div class="post-tags">
-                                        <%# GetFormattedTags(Eval("Tags")) %>
-                                    </div>
-                                    <div class="action-group">
-                                        <asp:Button ID="btnComment" runat="server" CssClass='<%# Convert.ToBoolean(Eval("IsActive")) ? "btn-action active-comment" : "btn-action" %>' Text='<%# "Comment (" + Eval("ReplyCount") + ")" %>' CommandName="SelectPost" CommandArgument='<%# Eval("PostId") %>' />
+                <!-- 2. UpdatePanel ensures smooth AJAX switching without resetting scroll position -->
+                <asp:UpdatePanel ID="upForum" runat="server" UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <div class="forum-container">
+                           <!-- LEFT PANEL: Posts List -->
+                            <div class="posts-column">
+                                <asp:Repeater ID="rptPosts" runat="server" OnItemCommand="rptPosts_ItemCommand">
+                                    <ItemTemplate>
+                                        <div class="post-card">
+                                            <h2 class="post-title"><%# Eval("Title") %></h2>
+                                            <p class="post-desc"><%# Eval("Content") %></p>
+                                            <div class="post-tags">
+                                                <%# GetFormattedTags(Eval("Tags")) %>
+                                            </div>
+                                            <div class="action-group">
+                                                <asp:Button ID="btnComment" runat="server" CssClass='<%# Convert.ToBoolean(Eval("IsActive")) ? "btn-action active-comment" : "btn-action" %>' Text='<%# "Comment (" + Eval("ReplyCount") + ")" %>' CommandName="SelectPost" CommandArgument='<%# Eval("PostId") %>' />
+                                            </div>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+
+                            <!-- RIGHT PANEL: Comments Section -->
+                            <asp:Panel ID="pnlComments" runat="server" CssClass="comments-column" Visible="false">
+
+                                <div class="comments-header">
+                                    Discussion: <asp:Literal ID="litActivePostTitle" runat="server"></asp:Literal>
+                                </div>
+
+                                <div class="comments-list">
+                                    <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand" OnItemDataBound="rptComments_ItemDataBound">
+                                        <ItemTemplate>
+
+                                            <!-- Dynamic CSS classes for Pinning and Flagging -->
+                                            <div class='comment-item <%# Eval("IsPinned").ToString() == "Yes" ? "pinned" : "" %>'>
+
+                                                <!-- Only show if it's a reply -->
+                                                <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ParentThreadId").ToString()) %>'>
+                                                    <div class="reply-context">
+                                                        ↳ Replying to <%# GetReplyToName(Eval("ParentThreadId")) %>
+                                                    </div>
+                                                </asp:PlaceHolder>
+
+                                                <div class="comment-top">
+                                                    <div class="comment-user">
+                                                        <div class="c-avatar"><%# GetInitials(Eval("AuthorName").ToString()) %></div>
+                                                        <div class="c-name"><%# Eval("AuthorName") %></div>
+                                                    </div>
+                                                    <div class='role-badge <%# Eval("Role").ToString().ToLower().Replace(" ", "") %>'><%# Eval("Role") %></div>
+                                                </div>
+
+                                                <div class="comment-text">
+                                                    <asp:Literal runat="server" Visible='<%# Eval("IsPinned").ToString() == "Yes" %>' Text="📌 "></asp:Literal>
+                                                    <%# Eval("ReplyComment") %>
+                                                </div>
+
+                                                <div class="comment-actions">
+                                                    <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("ThreadId") %>' />
+                                
+                                                    <!-- Teachers and TAs see moderation controls (Hidden for Learners) -->
+                                                    <asp:PlaceHolder ID="phModControls" runat="server" Visible="false">
+                                                        <asp:Button ID="btnPin" runat="server" Text='<%# Eval("IsPinned").ToString() == "Yes" ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("ThreadId") %>' />
+                                                    </asp:PlaceHolder>
+                                                </div>
+                                            </div>
+
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+
+                                <!-- Chat Input -->
+                                <div class="comment-input-area" style="flex-direction: column; gap: 0.5rem;">
+            
+                                    <!-- Reply Preview Banner (Hidden by default) -->
+                                    <asp:Panel ID="pnlReplyPreview" runat="server" Visible="false" style="display: flex; justify-content: space-between; align-items: center; background: rgba(124, 58, 237, 0.1); border: 1px solid var(--accent-border); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; color: var(--accent-light);">
+                                        <span>Replying to <strong><asp:Literal ID="litReplyingToUser" runat="server"></asp:Literal></strong></span>
+                                        <asp:LinkButton ID="btnCancelReply" runat="server" OnClick="btnCancelReply_Click" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Cancel reply">×</asp:LinkButton>
+                                    </asp:Panel>
+
+                                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                                        <asp:HiddenField ID="hfReplyToId" runat="server" />
+                                        <asp:TextBox ID="txtComment" runat="server" CssClass="input-chat" placeholder="Type comment here..."></asp:TextBox>
+                                        <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send" OnClick="btnSendComment_Click">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                                            </svg>
+                                        </asp:LinkButton>
                                     </div>
                                 </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </div>
 
-                    <!-- RIGHT PANEL: Comments Section -->
-                    <asp:Panel ID="pnlComments" runat="server" CssClass="comments-column" Visible="false">
-
-                        <div class="comments-header">
-                            Discussion: <asp:Literal ID="litActivePostTitle" runat="server"></asp:Literal>
-                        </div>
-
-                        <div class="comments-list">
-                            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand" OnItemDataBound="rptComments_ItemDataBound">
-                                <ItemTemplate>
-
-                                    <!-- Dynamic CSS classes for Pinning and Flagging -->
-                                    <div class='comment-item <%# Eval("IsPinned").ToString() == "Yes" ? "pinned" : "" %>'>
-
-                                        <!-- Only show if it's a reply -->
-                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ParentThreadId").ToString()) %>'>
-                                            <div class="reply-context">
-                                                ↳ Replying to <%# GetReplyToName(Eval("ParentThreadId")) %>
-                                            </div>
-                                        </asp:PlaceHolder>
-
-                                        <div class="comment-top">
-                                            <div class="comment-user">
-                                                <div class="c-avatar"><%# GetInitials(Eval("AuthorName").ToString()) %></div>
-                                                <div class="c-name"><%# Eval("AuthorName") %></div>
-                                            </div>
-                                            <div class='role-badge <%# Eval("Role").ToString().ToLower().Replace(" ", "") %>'><%# Eval("Role") %></div>
-                                        </div>
-
-                                        <div class="comment-text">
-                                            <asp:Literal runat="server" Visible='<%# Eval("IsPinned").ToString() == "Yes" %>' Text="📌 "></asp:Literal>
-                                            <%# Eval("ReplyComment") %>
-                                        </div>
-
-                                        <div class="comment-actions">
-                                            <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("ThreadId") %>' />
-                        
-                                            <!-- Teachers and TAs see moderation controls (Hidden for Learners) -->
-                                            <asp:PlaceHolder ID="phModControls" runat="server" Visible="false">
-                                                <asp:Button ID="btnPin" runat="server" Text='<%# Eval("IsPinned").ToString() == "Yes" ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("ThreadId") %>' />
-                                            </asp:PlaceHolder>
-                                        </div>
-                                    </div>
-
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </div>
-
-                        <!-- Chat Input -->
-                        <div class="comment-input-area" style="flex-direction: column; gap: 0.5rem;">
-    
-                            <!-- Reply Preview Banner (Hidden by default) -->
-                            <asp:Panel ID="pnlReplyPreview" runat="server" Visible="false" style="display: flex; justify-content: space-between; align-items: center; background: rgba(124, 58, 237, 0.1); border: 1px solid var(--accent-border); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; color: var(--accent-light);">
-                                <span>Replying to <strong><asp:Literal ID="litReplyingToUser" runat="server"></asp:Literal></strong></span>
-                                <asp:LinkButton ID="btnCancelReply" runat="server" OnClick="btnCancelReply_Click" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Cancel reply">×</asp:LinkButton>
                             </asp:Panel>
-
-                            <div style="display: flex; gap: 0.5rem; width: 100%;">
-                                <asp:HiddenField ID="hfReplyToId" runat="server" />
-                                <asp:TextBox ID="txtComment" runat="server" CssClass="input-chat" placeholder="Type comment here..."></asp:TextBox>
-                                <asp:LinkButton ID="btnSendComment" runat="server" CssClass="btn-send" OnClick="btnSendComment_Click">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
-                                    </svg>
-                                </asp:LinkButton>
-                            </div>
                         </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
 
-                    </asp:Panel>
-                </div>
             </main>
         </div>
     </form>

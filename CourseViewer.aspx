@@ -101,9 +101,9 @@
             
             <aside class="course-sidebar">
                 <div class="sidebar-header">
-                    <a href="CourseCatalog.aspx" class="back-link">
+                    <a href='CourseDetails.aspx?id=<%= Request.QueryString["courseId"] %>' class="back-link">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                        Back to course
+                        Back
                     </a>
                     <div class="course-title-side">Course Content</div>
                     <div class="course-meta-side"><asp:Literal ID="litTotalChapters" runat="server"></asp:Literal></div>
@@ -186,7 +186,7 @@
                             <asp:Panel ID="pnlCode" runat="server" Visible="false">
                                 <div class="section-divider">Part 4: Coding Challenge</div>
                                 <div class="challenge-box">
-                                    <h3 style="color: white; margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
+                                    <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
                                     <p><asp:Literal ID="litCodeDesc" runat="server"></asp:Literal></p>
                                 </div>
                                 <asp:Label ID="lblCodeState" runat="server" Visible="false" style="display: block; margin-bottom: 1rem; font-weight: bold;"></asp:Label>
