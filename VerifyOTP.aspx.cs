@@ -11,7 +11,6 @@ namespace Codercept
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Security check: If they somehow reach this page without requesting an OTP, kick them back
             if (Session["ResetEmail"] == null || Session["ResetOTP"] == null)
             {
                 Response.Redirect("ForgotPassword.aspx");
@@ -36,7 +35,7 @@ namespace Codercept
                 if (DateTime.Now > expiryTime)
                 {
                     lblError.Text = "This OTP has expired. Please go back and request a new one.";
-                    Session.Remove("ResetOTP"); // Destroy the expired OTP
+                    Session.Remove("ResetOTP");
                     Session.Remove("OTPExpiry");
                     return;
                 }
@@ -44,10 +43,8 @@ namespace Codercept
 
             if (enteredOTP == expectedOTP)
             {
-                // Success! Clear the OTP from session so it cannot be reused
                 Session.Remove("ResetOTP");
 
-                // Send them to the final step to type a new password
                 Response.Redirect("ResetPassword.aspx");
             }
             else

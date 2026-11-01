@@ -21,7 +21,6 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                // Check if returning from LearnerAddPost
                 if (Session["NewPostId"] != null)
                 {
                     ViewState["ActivePostId"] = Session["NewPostId"].ToString();
@@ -36,7 +35,6 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // 1. Load visible posts (Exclude hidden moderation posts)
                 string postQuery = @"
                     SELECT 
                         f.PostId, 
@@ -57,13 +55,11 @@ namespace Codercept
                         sda.Fill(dt);
                         dt.Columns.Add("IsActive", typeof(bool));
 
-                        // If there is no active post in ViewState but posts exist, select the first one
                         if (ViewState["ActivePostId"] == null && dt.Rows.Count > 0)
                         {
                             ViewState["ActivePostId"] = dt.Rows[0]["PostId"].ToString();
                         }
 
-                        // Determine the active row
                         foreach (DataRow row in dt.Rows)
                         {
                             bool isActive = ViewState["ActivePostId"] != null && row["PostId"].ToString() == ViewState["ActivePostId"].ToString();
@@ -80,7 +76,6 @@ namespace Codercept
                     }
                 }
 
-                // 2. Load comments for the active post
                 if (ViewState["ActivePostId"] != null)
                 {
                     pnlComments.Visible = true;
@@ -134,7 +129,6 @@ namespace Codercept
             {
                 ViewState["ActivePostId"] = e.CommandArgument.ToString();
 
-                // Reset input box when changing threads
                 hfReplyToId.Value = "";
                 txtComment.Attributes["placeholder"] = "Type comment here...";
 
@@ -150,7 +144,6 @@ namespace Codercept
             int postId = Convert.ToInt32(ViewState["ActivePostId"]);
             int learnerId = Convert.ToInt32(Session["UserId"]);
 
-            // Allow parsing ParentThreadId if they clicked reply
             int? parentThreadId = null;
             if (!string.IsNullOrEmpty(hfReplyToId.Value))
             {
@@ -175,7 +168,6 @@ namespace Codercept
                     con.Close();
                 }
             }
-            // Reset Input & Reply Banner
             txtComment.Text = "";
             hfReplyToId.Value = "";
             pnlReplyPreview.Visible = false;
@@ -189,10 +181,8 @@ namespace Codercept
 
             if (e.CommandName == "Reply")
             {
-                // Store the ThreadId of the comment we are replying to
                 hfReplyToId.Value = threadId.ToString();
 
-                // Find the author name of the comment being replied to for the banner
                 string authorName = "User";
                 using (SqlConnection con = new SqlConnection(connString))
                 {
@@ -207,7 +197,6 @@ namespace Codercept
                     }
                 }
 
-                // Show the sleek preview banner
                 litReplyingToUser.Text = authorName;
                 pnlReplyPreview.Visible = true;
                 txtComment.Attributes["placeholder"] = $"Write a reply to {authorName}...";
@@ -215,7 +204,6 @@ namespace Codercept
             }
         }
 
-        // Event handler to cancel/close the active reply state
         protected void btnCancelReply_Click(object sender, EventArgs e)
         {
             hfReplyToId.Value = "";
@@ -224,7 +212,6 @@ namespace Codercept
             txtComment.Text = "";
         }
 
-        // Hide moderation controls (Pin/Flag) because the current user is a Learner
         protected void rptComments_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
@@ -241,9 +228,6 @@ namespace Codercept
         {
             Response.Redirect("LearnerAddPost.aspx");
         }
-
-        // --- Frontend UI Helpers ---
-
         protected string GetFormattedTags(object tagsObj)
         {
             if (tagsObj == DBNull.Value || tagsObj == null) return "";
@@ -263,7 +247,6 @@ namespace Codercept
         {
             if (parentThreadId == DBNull.Value || parentThreadId == null || string.IsNullOrEmpty(parentThreadId.ToString())) return "";
 
-            // Since we need to get the author of the parent thread, we do a quick lookup
             using (SqlConnection con = new SqlConnection(connString))
             {
                 string q = "SELECT COALESCE(l.Name, t.Name, ta.Name, 'System') FROM Post_Reply pr LEFT JOIN Learner l ON pr.LearnerId = l.LearnerId LEFT JOIN Teacher t ON pr.TeacherId = t.TeacherId LEFT JOIN Teaching_Assistant ta ON pr.TA_Id = ta.TA_Id WHERE pr.ThreadId = @ThreadId";

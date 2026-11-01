@@ -47,7 +47,6 @@ namespace Codercept
             }
             else
             {
-                // Ensure Email and MemberSince are populated on postback
                 LoadHeaderFieldsOnly();
             }
         }
@@ -113,7 +112,6 @@ namespace Codercept
                             ddlTeachingLevel.SelectedValue = "";
                         }
 
-                        // Qualifications
                         string qualName = reader["QualificationName"] != DBNull.Value ? reader["QualificationName"].ToString() : "";
                         string qualDoc = reader["QualificationDocument"] != DBNull.Value ? reader["QualificationDocument"].ToString() : "";
 

@@ -93,7 +93,6 @@ namespace Codercept
 
                 if (learnerProgress == 0) Response.Redirect("CourseCatalog.aspx");
 
-                // Check if this course has a Final Exam configured
                 bool hasExam = false;
                 int examId = 0;
                 string examTitle = "";
@@ -134,7 +133,6 @@ namespace Codercept
                 ViewState["TotalChapters"] = totalChapters;
                 ViewState["LearnerProgress"] = learnerProgress;
 
-                // Load Sidebar
                 List<NavChapter> sidebarChapters = new List<NavChapter>();
                 string chaptersQuery = "SELECT ChapterId, ChapterNum, ChapterTitle, ChapterDuration FROM Chapter WHERE CourseId = @CourseId ORDER BY ChapterNum ASC";
                 int activeChapterDbId = 0;
@@ -167,17 +165,14 @@ namespace Codercept
                     con.Close();
                 }
 
-                // Add Exam to Sidebar if it exists
                 if (hasExam)
                 {
                     int examChapNum = totalChapters + 1;
                     string examStatus = "locked";
 
-                    // If they have completed the exam, their progress might exceed examChapNum, or attempt is graded
                     if (learnerProgress > examChapNum) examStatus = "completed";
                     else if (learnerProgress == examChapNum) examStatus = "pending";
 
-                    // Check actual Attempt status to mark as completed even if progress maxes out
                     string checkExamAttempt = "SELECT AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND ExamId = @ExamId";
                     using (SqlCommand cmd = new SqlCommand(checkExamAttempt, con))
                     {
@@ -205,7 +200,6 @@ namespace Codercept
                 rptSidebar.DataSource = sidebarChapters;
                 rptSidebar.DataBind();
 
-                // Load Right Panel Content (Standard Chapter vs Exam)
                 if (activeChapterNum <= totalChapters)
                 {
                     pnlNormalChapter.Visible = true;
@@ -239,15 +233,20 @@ namespace Codercept
                                 pnlMedia.Visible = true;
                                 if (!string.IsNullOrEmpty(mediaLink))
                                 {
-                                    if (mediaLink.EndsWith(".mp4") || mediaLink.EndsWith(".webm") || mediaLink.Contains("youtube"))
+                                    if (mediaLink.EndsWith(".mp4") || mediaLink.EndsWith(".webm"))
                                     {
                                         litMediaHtml.Text = $@"
-                                        <div class='video-container' style=""background-image: url('{mediaLink}.jpg'); background-size: cover; background-position: center;"">
-                                            <div class='play-btn'>
-                                                <svg width='24' height='24' fill='currentColor' viewBox='0 0 16 16'><path d='M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z'/></svg>
-                                            </div>
-                                            <h3 style='color: white; margin-bottom: 0.5rem;'>Lecture Video</h3>
-                                        </div>";
+                                        <video width='100%' controls style='border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light); background: #000;'>
+                                            <source src='{mediaLink}' type='video/mp4'>
+                                            Your browser does not support the video tag.
+                                        </video>";
+                                    }
+                                    else if (mediaLink.Contains("youtube.com") || mediaLink.Contains("youtu.be"))
+                                    {
+                                        litMediaHtml.Text = $@"
+                                        <iframe width='100%' style='aspect-ratio: 16/9; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light);' 
+                                            src='{mediaLink}' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen>
+                                        </iframe>";
                                     }
                                     else
                                     {
@@ -312,7 +311,6 @@ namespace Codercept
                 }
                 else
                 {
-                    // WE ARE ON THE FINAL EXAM PAGE
                     pnlNormalChapter.Visible = false;
                     pnlExamContent.Visible = true;
 
@@ -321,7 +319,6 @@ namespace Codercept
                     LoadExamQuestions(examId, learnerId);
                 }
 
-                // Setup Navigation Bottom Links
                 litStepIndicator.Text = $"{activeChapterNum} / {maxAllowedChapter}";
                 lnkPrev.NavigateUrl = $"CourseViewer.aspx?courseId={courseId}&ch={activeChapterNum - 1}";
                 lnkPrev.Visible = activeChapterNum > 1;
@@ -329,7 +326,6 @@ namespace Codercept
                 if (activeChapterNum < learnerProgress) litNextText.Text = "Next";
                 else litNextText.Text = "Mark Complete & Continue";
 
-                // Hide Next button if we are on the very last available section (Exam or final chapter)
                 btnNext.Visible = activeChapterNum != maxAllowedChapter;
             }
         }
@@ -352,9 +348,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 1. QUIZ SUBMISSION LOGIC (Normal Chapter)
-        // ========================================================
         private void LoadQuizQuestions(int quizId, int learnerId)
         {
             List<ExamQuestion> questions = new List<ExamQuestion>();
@@ -476,6 +469,21 @@ namespace Codercept
 
         protected void btnSubmitQuiz_Click(object sender, EventArgs e)
         {
+            foreach (RepeaterItem item in rptQuizQuestions.Items)
+            {
+                HiddenField hfQuestionId = (HiddenField)item.FindControl("hfQuestionId");
+                int questionId = Convert.ToInt32(hfQuestionId.Value);
+                string submittedOptionId = Request.Form[$"quiz_q_{questionId}"];
+
+                if (string.IsNullOrEmpty(submittedOptionId))
+                {
+                    lblQuizState.Visible = true;
+                    lblQuizState.Text = "Please answer all questions before submitting.";
+                    lblQuizState.Style.Add("color", "#ef4444");
+                    return;
+                }
+            }
+
             int learnerId = Convert.ToInt32(Session["UserId"]);
             int quizId = Convert.ToInt32(ViewState["QuizId"]);
 
@@ -500,7 +508,6 @@ namespace Codercept
                         int questionId = Convert.ToInt32(hfQuestionId.Value);
 
                         string submittedOptionId = Request.Form[$"quiz_q_{questionId}"];
-                        if (string.IsNullOrEmpty(submittedOptionId)) submittedOptionId = "0";
 
                         string ansQuery = "INSERT INTO AttemptAnswer (AttemptId, QuestionId, AnswerContent, IsCorrect, ObtainedScore, TeacherComment) VALUES (@AttemptId, @QuestionId, @AnswerContent, 'pending', 0, '')";
                         using (SqlCommand ansCmd = new SqlCommand(ansQuery, con, transaction))
@@ -537,9 +544,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 2. ASSESSMENT SUBMISSION LOGIC (Normal Chapter)
-        // ========================================================
         private void LoadAssessmentContent(int assessmentId, int learnerId)
         {
             using (SqlConnection con = new SqlConnection(connString))
@@ -670,9 +674,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 3. FINAL EXAM LOAD & SUBMISSION LOGIC
-        // ========================================================
         private void LoadExamQuestions(int examId, int learnerId)
         {
             List<ExamQuestion> questions = new List<ExamQuestion>();
@@ -707,7 +708,7 @@ namespace Codercept
                     btnSubmitExam.Enabled = false;
                     btnSubmitExam.Text = "Submitted";
                     btnSubmitExam.CssClass = "btn-nav";
-                    phExamCheckmark.Visible = true; // Show completion badge
+                    phExamCheckmark.Visible = true;
                 }
 
                 string qQuery = "SELECT QuestionId, QuestionContent, QuestionType FROM Question WHERE ExamId = @ExamId ORDER BY QuestionOrder ASC";
@@ -731,7 +732,6 @@ namespace Codercept
                                 Options = new List<QuizOption>()
                             };
 
-                            // Fetch previous answer if submitted
                             string submittedAnswer = "";
                             if (isAlreadySubmitted && existingAttemptId > 0)
                             {
@@ -751,7 +751,6 @@ namespace Codercept
                             }
                             q.SelectedAnswer = submittedAnswer;
 
-                            // If MCQ, load options
                             if (type == "MCQ")
                             {
                                 using (SqlConnection con2 = new SqlConnection(connString))
@@ -810,6 +809,38 @@ namespace Codercept
 
         protected void btnSubmitExam_Click(object sender, EventArgs e)
         {
+            foreach (RepeaterItem item in rptExamQuestions.Items)
+            {
+                HiddenField hfQuestionId = (HiddenField)item.FindControl("hfExamQuestionId");
+                HiddenField hfType = (HiddenField)item.FindControl("hfExamQuestionType");
+                int questionId = Convert.ToInt32(hfQuestionId.Value);
+                string type = hfType.Value;
+                string checkAnswer = "";
+
+                if (type == "MCQ")
+                {
+                    checkAnswer = Request.Form[$"exam_q_{questionId}"];
+                }
+                else if (type == "FillBlank")
+                {
+                    TextBox txt = (TextBox)item.FindControl("txtFillBlank");
+                    checkAnswer = txt.Text.Trim();
+                }
+                else if (type == "Coding")
+                {
+                    TextBox txt = (TextBox)item.FindControl("txtExamCode");
+                    checkAnswer = txt.Text.Trim();
+                }
+
+                if (string.IsNullOrEmpty(checkAnswer))
+                {
+                    lblExamState.Visible = true;
+                    lblExamState.Text = "Please answer all exam questions before submitting.";
+                    lblExamState.Style.Add("color", "#ef4444");
+                    return;
+                }
+            }
+
             int learnerId = Convert.ToInt32(Session["UserId"]);
             int examId = Convert.ToInt32(ViewState["ExamId"]);
 
@@ -839,7 +870,6 @@ namespace Codercept
                         if (type == "MCQ")
                         {
                             submittedAnswer = Request.Form[$"exam_q_{questionId}"];
-                            if (string.IsNullOrEmpty(submittedAnswer)) submittedAnswer = "0";
                         }
                         else if (type == "FillBlank")
                         {
@@ -862,7 +892,6 @@ namespace Codercept
                         }
                     }
 
-                    // Advance LearnerProgress past the exam (TotalChapters + 2) so the course is officially marked 100% complete
                     int courseId = Convert.ToInt32(ViewState["CourseId"]);
                     int totalChapters = Convert.ToInt32(ViewState["TotalChapters"]);
                     string progUpdate = "UPDATE LearnerProgress SET ChapNum = @CompletedChapNum WHERE LearnerId = @LearnerId AND CourseId = @CourseId";
@@ -899,9 +928,6 @@ namespace Codercept
             }
         }
 
-        // ========================================================
-        // 4. PROGRESS VALIDATION
-        // ========================================================
         protected void btnNext_Click(object sender, EventArgs e)
         {
             int courseId = Convert.ToInt32(ViewState["CourseId"]);

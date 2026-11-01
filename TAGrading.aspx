@@ -1,4 +1,4 @@
-<%@ Page Title="Grade Assessments - Codercept" Language="C#" MasterPageFile="~/TASite.master" AutoEventWireup="true" CodeBehind="TAGrading.aspx.cs" Inherits="Codercept.TAGrading" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TASite.master" AutoEventWireup="true" CodeBehind="TAGrading.aspx.cs" Inherits="Codercept.TAGrading" %>
 <%@ MasterType VirtualPath="~/TASite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
@@ -17,7 +17,6 @@
         <p>Choose a course to review learner submissions and submit provisional grades.</p>
     </div>
 
-    <%-- Search / filter / grid-list / pagination: client-side (data-tp-cl-*) over the rendered cards --%>
     <section class="exam-selector-panel" data-tp-cardlist data-tp-cl-toggle data-tp-page-size="4" data-tp-grid-class="grading-course-grid">
         <div class="selector-toolbar">
             <label class="input-wrap">

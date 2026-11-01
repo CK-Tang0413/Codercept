@@ -3,7 +3,8 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Course Viewer - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <link href="css/global.css" rel="stylesheet" type="text/css" />
     <style>
         :root {
@@ -135,8 +136,7 @@
 
                 <div class="content-wrapper">
                     <div class="content-scrollable">
-            
-                        <!-- NORMAL CHAPTER CONTENT -->
+
                         <asp:Panel ID="pnlNormalChapter" runat="server">
                             <div class="content-header">
                                 <span class="ch-label">Ch. <asp:Literal ID="litChNumber" runat="server"></asp:Literal> • <asp:Literal ID="litChDuration" runat="server"></asp:Literal></span>
@@ -200,7 +200,6 @@
                             </asp:Panel>
                         </asp:Panel>
 
-                        <!-- FINAL EXAM CONTENT -->
                         <asp:Panel ID="pnlExamContent" runat="server" Visible="false">
                             <div class="content-header">
                                 <span class="ch-label">Final Certification</span>
@@ -222,8 +221,7 @@
                                         <asp:HiddenField ID="hfExamQuestionType" runat="server" Value='<%# Eval("Type") %>' />
                                         
                                         <div class="q-title"><%# Eval("Title") %></div>
-                
-                                        <!-- MCQ Options -->
+
                                         <asp:PlaceHolder ID="phMCQ" runat="server" Visible='<%# Eval("Type").ToString() == "MCQ" %>'>
                                             <asp:Repeater ID="rptExamOptions" runat="server">
                                                 <ItemTemplate>
@@ -236,12 +234,10 @@
                                             </asp:Repeater>
                                         </asp:PlaceHolder>
 
-                                        <!-- Fill Blank Option -->
                                         <asp:PlaceHolder ID="phFillBlank" runat="server" Visible='<%# Eval("Type").ToString() == "FillBlank" %>'>
                                             <asp:TextBox ID="txtFillBlank" runat="server" CssClass="exam-input" placeholder="Enter your answer..." Text='<%# Eval("SelectedAnswer") %>' Enabled='<%# !Convert.ToBoolean(Eval("IsLocked")) %>'></asp:TextBox>
                                         </asp:PlaceHolder>
 
-                                        <!-- Coding Option -->
                                         <asp:PlaceHolder ID="phCoding" runat="server" Visible='<%# Eval("Type").ToString() == "Coding" %>'>
                                             <div class="ide-placeholder" style="margin-bottom: 0;">
                                                 <div class="code-header">editor<div class="code-dots"><span class="dot-g"></span><span class="dot-y"></span><span class="dot-r"></span></div></div>

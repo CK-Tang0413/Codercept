@@ -1,4 +1,4 @@
-<%@ Page Title="Courses - Codercept" Language="C#" AutoEventWireup="true" CodeBehind="TACourses.aspx.cs" Inherits="Codercept.TACourses" MasterPageFile="~/TASite.master" %>
+<%@ Page Title="CODERCEPT" Language="C#" AutoEventWireup="true" CodeBehind="TACourses.aspx.cs" Inherits="Codercept.TACourses" MasterPageFile="~/TASite.master" %>
 <%@ MasterType VirtualPath="~/TASite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">

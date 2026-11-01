@@ -112,10 +112,8 @@ namespace Codercept
 
         protected void rptCourses_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            // Optional repeater actions
         }
 
-        // Helper: CSS styling for course language badges
         protected string GetLanguageBadgeClass(string language)
         {
             if (string.IsNullOrWhiteSpace(language)) return "badge-python";

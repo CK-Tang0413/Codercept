@@ -1,4 +1,4 @@
-<%@ Page Title="Forum - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherForum.aspx.cs" Inherits="Codercept.TeacherForum" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherForum.aspx.cs" Inherits="Codercept.TeacherForum" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Import Namespace="System.Linq" %>
 

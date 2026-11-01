@@ -5,7 +5,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Community Management - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/admin-portal.css" rel="stylesheet" type="text/css" />
@@ -69,7 +70,6 @@
             gap: 8px;
         }
 
-        /* Custom Delete Modal Elements */
         .confirm-delete-box {
             text-align: center;
             padding: 10px 0;
@@ -151,13 +151,11 @@
                                                 <%# Eval("Type") %>
                                             </span>
 
-                                            <!-- View Details Modal Trigger -->
                                             <button type="button" class="icon-btn" title="View Full Content"
                                                 onclick="openViewModal('<%# HttpUtility.JavaScriptStringEncode(Eval("Title").ToString()) %>', '<%# HttpUtility.JavaScriptStringEncode(Eval("Content").ToString()) %>', '<%# Eval("Type") %>', '<%# Eval("DateTime", "{0:yyyy-MM-dd HH:mm}") %>')">
                                                 <i class="fa-regular fa-eye"></i>
                                             </button>
 
-                                            <!-- Custom Modal Delete Trigger -->
                                             <button type="button" class="icon-btn btn-delete" title="Delete Announcement"
                                                 onclick="openCustomDeleteAnnouncementModal('<%# Eval("NotificationId") %>', '<%# HttpUtility.JavaScriptStringEncode(Eval("Title").ToString()) %>')">
                                                 <i class="fa-regular fa-trash-can"></i>
@@ -185,7 +183,6 @@
             </main>
         </div>
 
-        <!-- 1. Create Modal (Pin switch removed) -->
         <div class="modal-overlay" id="announcementModal">
             <div class="modal-container">
                 <div class="modal-header-row">
@@ -219,7 +216,6 @@
             </div>
         </div>
 
-        <!-- 2. View Modal -->
         <div class="modal-overlay" id="viewModal">
             <div class="modal-container" style="max-width: 600px;">
                 <div class="modal-header-row">
@@ -237,7 +233,6 @@
             </div>
         </div>
 
-        <!-- 3. Custom Delete Confirmation Modal -->
         <div class="modal-overlay" id="customDeleteModal">
             <div class="modal-container" style="max-width: 440px;">
                 <div class="confirm-delete-box">
@@ -256,7 +251,6 @@
         </div>
 
         <script>
-            // @ts-nocheck
             function openNewModal() {
                 var modal = document.getElementById('announcementModal');
                 if (modal) modal.classList.add('active');

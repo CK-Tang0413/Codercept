@@ -12,7 +12,6 @@ namespace Codercept
         {
             if (!IsPostBack)
             {
-                // If user is already logged in, you can optionally redirect them to their dashboard
                 if (Session["UserType"] != null)
                 {
                     if (Session["UserType"].ToString() == "Learner") Response.Redirect("LearnerDashboard.aspx");
@@ -30,7 +29,6 @@ namespace Codercept
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Fetch the Top 6 highest rated & most enrolled courses for the public preview
                 string query = @"
                     SELECT TOP 6 
                         c.CourseId, 
@@ -51,7 +49,6 @@ namespace Codercept
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
-                    // Add dynamic CSS class for thumbnail background
                     dt.Columns.Add("LanguageCSS", typeof(string));
 
                     foreach (DataRow row in dt.Rows)

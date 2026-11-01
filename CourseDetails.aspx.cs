@@ -20,7 +20,6 @@ namespace Codercept
 
             if (!IsPostBack)
             {
-                // --- Bulletproof Smart Back Navigation Logic ---
                 string cId = Request.QueryString["id"] ?? "0";
                 string sessionKey = "ReturnUrl_Course_" + cId;
 
@@ -28,7 +27,6 @@ namespace Codercept
                 {
                     string referrer = Request.UrlReferrer.ToString().ToLower();
 
-                    // Only save the referrer if it is one of the three valid origin pages
                     if (referrer.Contains("LearnerDashboard.aspx") ||
                         referrer.Contains("MyProgress.aspx") ||
                         referrer.Contains("CourseCatalog.aspx"))
@@ -37,9 +35,7 @@ namespace Codercept
                     }
                 }
 
-                // Retrieve the saved origin page. If none exists (direct link), default to Course Catalog.
                 lnkBack.NavigateUrl = Session[sessionKey] != null ? Session[sessionKey].ToString() : "CourseCatalog.aspx";
-                // ------------------------------------------------
 
                 LoadCourseDetails();
             }
@@ -59,7 +55,6 @@ namespace Codercept
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // 1. Fetch Main Course Details (Added HasCompletedExam subquery)
                 string courseQuery = @"
                     SELECT 
                         c.CourseId, 
@@ -110,8 +105,6 @@ namespace Codercept
                             string badges = $"<span class='badge badge-lang'>{lang}</span> <span class='badge badge-level' style='text-transform: capitalize;'>{level}</span>";
                             litTags.Text = badges;
 
-                            // Check Enrollment & Progress
-                            // Check Enrollment & Progress
                             if (reader["LearnerCurrentChapter"] != DBNull.Value)
                             {
                                 userIsEnrolled = true;
@@ -140,7 +133,6 @@ namespace Codercept
                                 btnCourseAction.CommandArgument = courseId.ToString();
                                 btnCourseAction.OnClientClick = "";
 
-                                // Show Review options when course is 100% completed
                                 if (isCourseCompleted)
                                 {
                                     learnerProgressChapter = maxAllowedChapter + 1;
@@ -172,22 +164,18 @@ namespace Codercept
                             }
                             else
                             {
-                                // --- User is NOT enrolled ---
                                 userIsEnrolled = false;
 
-                                // Hide the progress bar
                                 pnlEnrolledProgress.Visible = false;
 
-                                // Reset the button to "Enroll Now"
                                 btnCourseAction.Text = "Enroll Now";
                                 btnCourseAction.CommandArgument = courseId.ToString();
-                                btnCourseAction.OnClientClick = ""; // Removed guest modal popup
+                                btnCourseAction.OnClientClick = "";
                             }
                         }
                     }
                 }
 
-                // 2. Fetch Chapter List
                 string chapterQuery = @"
                     SELECT 
                         ch.ChapterNum,
@@ -202,7 +190,6 @@ namespace Codercept
                     WHERE ch.CourseId = @CourseId
                     ORDER BY ch.ChapterNum ASC";
 
-                // RENAMED from 'cmd' to 'chapterCmd' to resolve CS0136 scope collision
                 using (SqlCommand chapterCmd = new SqlCommand(chapterQuery, con))
                 {
                     chapterCmd.Parameters.AddWithValue("@CourseId", courseId);
@@ -269,7 +256,6 @@ namespace Codercept
             Response.Redirect($"CourseViewer.aspx?courseId={courseId}&ch=1");
         }
 
-        // --- NEW REVIEW MODAL HANDLERS ---
         protected void btnShowReviewModal_Click(object sender, EventArgs e)
         {
             pnlReviewModal.Visible = true;
@@ -306,10 +292,9 @@ namespace Codercept
             }
 
             pnlReviewModal.Visible = false;
-            LoadCourseDetails(); // Reload page to update UI
+            LoadCourseDetails();
         }
 
-        // --- Helper Methods ---
         protected string GetChapterUrl(string status, int chapterNum)
         {
             if (Session["UserType"].ToString() == "Guest") return "javascript:showGuestModal();";

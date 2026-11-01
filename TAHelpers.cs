@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 
 namespace Codercept
 {
-    // Small helpers shared by the Teaching Assistant pages
     public static class TAHelpers
     {
         public static string ConnectionString
@@ -24,7 +23,6 @@ namespace Codercept
             return $"{(int)span.TotalDays} days ago";
         }
 
-        // Maps a GradingProgress status (or "Pending") to its badge CSS class
         public static string GetStatusCss(string status)
         {
             switch (status)
@@ -38,8 +36,6 @@ namespace Codercept
 
         private static readonly Regex CodeFence = new Regex(@"```[ \t]*([A-Za-z0-9+#.\-]*)[ \t]*\r?\n(.*?)```[ \t]*\r?\n?", RegexOptions.Singleline | RegexOptions.Compiled);
 
-        // HTML-encodes user text and turns ```lang fenced blocks into formatted code blocks.
-        // The result is safe to write straight into the page; use it inside an element with white-space: pre-wrap.
         public static string FormatRichText(string text)
         {
             if (string.IsNullOrEmpty(text)) return "";
@@ -53,21 +49,16 @@ namespace Codercept
             });
         }
 
-        // SQL conditions on a Forum row aliased "f", shared by the forum page and the dashboard
-        // Deleted posts are gone for everyone, hidden posts are only visible to staff
         public const string ForumNotDeleted = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction = 'Delete')";
         public const string ForumVisibleToLearners = "NOT EXISTS (SELECT 1 FROM [dbo].[Moderate_Forum] m WHERE m.PostId = f.PostId AND m.ModerateAction IN ('Hide', 'Delete'))";
-        // A post is Verified once one of its replies is pinned as the answer
         public const string ForumHasVerifiedAnswer = "EXISTS (SELECT 1 FROM [dbo].[Post_Reply] r WHERE r.PostId = f.PostId AND r.IsPinned = 'Yes')";
 
-        // Wraps a whole answer (for example a Code question) as one code block
         public static string FormatCodeBlock(string code)
         {
             return "<div class=\"code-wrap\"><pre class=\"code-block\"><code>" + WebUtility.HtmlEncode(code ?? "") + "</code></pre></div>";
         }
     }
 
-    // Grading statuses stored in GradingProgress.ProgressStatus ("Pending" means no row exists yet)
     public static class GradingStatus
     {
         public const string Pending = "Pending";
@@ -76,7 +67,6 @@ namespace Codercept
         public const string Approved = "Approved";
     }
 
-    // Forum moderation actions stored in Moderate_Forum.ModerateAction
     public static class ModerateAction
     {
         public const string Hide = "Hide";

@@ -6,14 +6,14 @@
 <head id="tpHead" runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Portal - Codercept</title>
+    <title>CODERCEPT</title>
 
-    <!-- Prototype fonts (Inter / Plus Jakarta Sans / JetBrains Mono) -->
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- 1. Shared variables + layout, 2. Teacher portal styles (must load AFTER global.css) -->
     <link href="~/css/global.css" rel="stylesheet" type="text/css" />
     <link id="lnkTeacherCss" runat="server" href="~/css/teacher-portal.css" rel="stylesheet" type="text/css" />
 
@@ -51,7 +51,6 @@
             </div>
 
             <% if (TeacherAiSettings.IsReady) { %>
-            <%-- Floating assistant: questions go to TeacherAiHandler.ashx (feature "chat"); the answers are shown as plain text --%>
             <div class="tp-chat" data-tp-chat>
                 <section class="tp-chat-panel" id="tpChatPanel" role="dialog" aria-label="Codercept assistant" data-tp-chat-panel hidden>
                     <header class="tp-chat-head">
@@ -73,7 +72,6 @@
             </div>
             <% } %>
 
-            <!-- Page-specific modals live inside .tp-app so the scoped styles apply -->
             <asp:ContentPlaceHolder ID="cphModals" runat="server"></asp:ContentPlaceHolder>
         </div>
     </form>

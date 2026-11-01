@@ -3,10 +3,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Verify OTP - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <link href="css/global.css" rel="stylesheet" type="text/css" />
     <style>
-        /* Add your specific auth-page styling here to match ForgotPassword.aspx */
         .auth-container { max-width: 400px; margin: 5rem auto; padding: 2rem; background: var(--bg-surface); border-radius: 12px; text-align: center; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
         .form-control { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); background: transparent; color: var(--text-primary); }

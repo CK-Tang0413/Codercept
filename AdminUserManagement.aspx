@@ -7,7 +7,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>User Management - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -84,7 +85,6 @@
             gap: 4px;
         }
 
-        /* Custom Modal Elements */
         .confirm-delete-box {
             text-align: center;
             padding: 10px 0;
@@ -138,7 +138,6 @@
             <uc:AdminSidebar runat="server" ID="SidebarCtrl" />
             
             <main class="main-content" style="flex: 1; overflow-y: auto;">
-                <!-- Status Feedback Notification Banner -->
                 <asp:Panel ID="pnlNotification" runat="server" Visible="false" CssClass="alert-banner">
                     <div class="alert-banner-content">
                         <asp:Literal ID="litNotificationIcon" runat="server" />
@@ -162,13 +161,11 @@
                     </asp:Panel>
                 </div>
 
-                <!-- Search -->
                 <div class="search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="handleSearch()" />
                 </div>
 
-                <!-- Tabs: Includes Deleted tab -->
                 <div class="tabs-container">
                     <div class="tab active" onclick="filterUsers('all', this)">All</div>
                     <div class="tab" onclick="filterUsers('pending', this)">Pending <span class="dot"></span></div>
@@ -181,7 +178,6 @@
                     </div>
                 </div>
 
-                <!-- Automated Weekly Purge Notice -->
                 <div id="deletedNoticeBanner" class="deleted-notice-banner" style="justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <i class="fa-solid fa-clock-rotate-left" style="font-size: 20px; color: #f87171;"></i>
@@ -195,7 +191,6 @@
                     </div>
                 </div>
 
-                <!-- Grid Table -->
                 <div class="user-table">
                     <div class="list-header">
                         <div>User</div>
@@ -270,7 +265,6 @@
                                             <%# Eval("AccStatus").ToString().ToLower() == "active" ? "Deactivate" : "Activate" %>
                                         </asp:LinkButton>
 
-                                        <!-- Custom Delete Modal Trigger -->
                                         <%# (Eval("Role").ToString() != "SuperAdmin" && Eval("AccStatus").ToString().ToLower() != "pending" && Eval("AccStatus").ToString().ToLower() != "deleted") ? @"
                                             <button type='button' class='btn-icon' title='Move to Deleted' onclick=""openCustomUserDeleteModal('" + Eval("UserId") + @"', '" + Eval("RoleCategory") + @"', '" + HttpUtility.JavaScriptStringEncode(Eval("Name").ToString()) + @"')"">
                                                 <i class='fa-regular fa-trash-can'></i>
@@ -291,7 +285,6 @@
                     </div>
                 </div>
 
-                <!-- Custom User Soft-Delete Confirmation Modal -->
                 <div class="modal-overlay" id="customUserDeleteModal">
                     <div class="modal-container" style="max-width: 440px;">
                         <div class="confirm-delete-box">

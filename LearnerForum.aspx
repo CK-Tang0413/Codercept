@@ -4,32 +4,27 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Forum - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
 
-    <!-- 1. Import Global Variables & Shared Layout -->
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
-    <!-- 2. Page-Specific Styles -->
-<style>
+    <style>
         :root {
-            /* Local variables for Forum */
             --forum-panel-bg: var(--bg-surface);
             --forum-border: var(--border-light);
             --btn-action-bg: rgba(255, 255, 255, 0.05);
             --btn-action-hover: rgba(255, 255, 255, 0.1);
-            
-            /* Roles */
+
             --role-learner: #60a5fa;
             --role-ta: #fb923c;
             --role-teacher: #c084fc;
-            
-            /* Message States */
+
             --msg-flagged-bg: rgba(239, 68, 68, 0.1);
             --msg-flagged-border: rgba(239, 68, 68, 0.3);
             --msg-pinned-border: var(--accent-primary);
         }
 
-        /* 1. Main Layout & Viewport Boundaries */
         .main-content {
             display: flex;
             flex-direction: column;
@@ -38,7 +33,6 @@
             padding-bottom: 0; 
         }
 
-        /* 2. Forum Header */
         .forum-header { 
             display: flex; 
             justify-content: space-between; 
@@ -52,7 +46,6 @@
             color: var(--text-primary); 
         }
 
-        /* 3. Action Buttons (Sunset Gradient) */
         .btn-new-post, .btn-send {
             background: #7c3aed !important;
             color: #ffffff !important;
@@ -74,7 +67,6 @@
             transform: translateY(-1px);
         }
 
-        /* 4. UpdatePanel & Split Layout Containers */
         div[id$="upForum"] {
             display: flex;
             flex-direction: column;
@@ -92,7 +84,6 @@
             padding-bottom: 1.5rem;
         }
 
-        /* 5. Left Panel: Posts Column (Scrollable) */
         .posts-column {
             flex: 1.5;
             display: flex;
@@ -103,7 +94,6 @@
             min-height: 0;
         }
 
-        /* Post Card */
         .post-card {
             background: var(--forum-panel-bg);
             border: 1px solid var(--forum-border);
@@ -131,7 +121,6 @@
         .btn-action:hover { background: var(--btn-action-hover); color: var(--text-primary); }
         .btn-action.active-comment { background: var(--accent-transparent); color: var(--accent-light); border-color: var(--accent-border); }
 
-        /* 6. Right Panel: Comments Column */
         .comments-column {
             flex: 1;
             background: var(--forum-panel-bg);
@@ -161,7 +150,6 @@
             min-height: 0;
         }
 
-        /* Individual Comment */
         .comment-item {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--forum-border);
@@ -202,7 +190,6 @@
         }
         .action-btn:hover { color: var(--text-primary); }
 
-        /* Comment Input Area */
         .comment-input-area {
             padding: 1rem;
             border-top: 1px solid var(--forum-border);
@@ -233,13 +220,11 @@
             justify-content: center;
         }
 
-        /* 7. Custom Scrollbars */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* 8. Responsive Design */
         @media (max-width: 992px) {
             .forum-container { flex-direction: column; }
             .comments-column { flex: none; height: 500px; }
@@ -253,15 +238,12 @@
 </head>
 <body>
    <form id="form1" runat="server">
-        <!-- 1. Required for partial-page async updates -->
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
 
         <div class="dashboard-layout">
-            
-            <!-- Sidebar Injected Here -->
+
             <uc:Sidebar runat="server" ID="LearnerSideBarCtrl" />
 
-            <!-- Main Content -->
             <main class="main-content">
                 
                 <div class="forum-header">
@@ -269,11 +251,9 @@
                     <asp:Button ID="btnAddPost" runat="server" Text="Add new post" CssClass="btn-new-post" OnClick="btnAddPost_Click" />
                 </div>
 
-                <!-- 2. UpdatePanel ensures smooth AJAX switching without resetting scroll position -->
                 <asp:UpdatePanel ID="upForum" runat="server" UpdateMode="Conditional">
                     <ContentTemplate>
                         <div class="forum-container">
-                           <!-- LEFT PANEL: Posts List -->
                             <div class="posts-column">
                                 <asp:Repeater ID="rptPosts" runat="server" OnItemCommand="rptPosts_ItemCommand">
                                     <ItemTemplate>
@@ -291,7 +271,6 @@
                                 </asp:Repeater>
                             </div>
 
-                            <!-- RIGHT PANEL: Comments Section -->
                             <asp:Panel ID="pnlComments" runat="server" CssClass="comments-column" Visible="false">
 
                                 <div class="comments-header">
@@ -302,10 +281,8 @@
                                     <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand" OnItemDataBound="rptComments_ItemDataBound">
                                         <ItemTemplate>
 
-                                            <!-- Dynamic CSS classes for Pinning and Flagging -->
                                             <div class='comment-item <%# Eval("IsPinned").ToString() == "Yes" ? "pinned" : "" %>'>
 
-                                                <!-- Only show if it's a reply -->
                                                 <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("ParentThreadId").ToString()) %>'>
                                                     <div class="reply-context">
                                                         ↳ Replying to <%# GetReplyToName(Eval("ParentThreadId")) %>
@@ -327,8 +304,7 @@
 
                                                 <div class="comment-actions">
                                                     <asp:Button ID="btnReply" runat="server" Text="Reply" CssClass="action-btn" CommandName="Reply" CommandArgument='<%# Eval("ThreadId") %>' />
-                                
-                                                    <!-- Teachers and TAs see moderation controls (Hidden for Learners) -->
+
                                                     <asp:PlaceHolder ID="phModControls" runat="server" Visible="false">
                                                         <asp:Button ID="btnPin" runat="server" Text='<%# Eval("IsPinned").ToString() == "Yes" ? "Unpin" : "Pin" %>' CssClass="action-btn" CommandName="TogglePin" CommandArgument='<%# Eval("ThreadId") %>' />
                                                     </asp:PlaceHolder>
@@ -339,10 +315,8 @@
                                     </asp:Repeater>
                                 </div>
 
-                                <!-- Chat Input -->
                                 <div class="comment-input-area" style="flex-direction: column; gap: 0.5rem;">
-            
-                                    <!-- Reply Preview Banner (Hidden by default) -->
+
                                     <asp:Panel ID="pnlReplyPreview" runat="server" Visible="false" style="display: flex; justify-content: space-between; align-items: center; background: rgba(124, 58, 237, 0.1); border: 1px solid var(--accent-border); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; color: var(--accent-light);">
                                         <span>Replying to <strong><asp:Literal ID="litReplyingToUser" runat="server"></asp:Literal></strong></span>
                                         <asp:LinkButton ID="btnCancelReply" runat="server" OnClick="btnCancelReply_Click" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Cancel reply">×</asp:LinkButton>

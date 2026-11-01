@@ -3,7 +3,8 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Set New Password - Codercept</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body, html { height: 100%; background-color: #ffffff; }
@@ -31,29 +32,22 @@
         .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #71717a; }
         .auth-footer a { color: #7c3aed; text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
-        /* Tablet & Large Mobile (768px) */
+
         @media (max-width: 768px) { 
-            /* Break the flex row layout completely */
             .split-layout { display: block; } 
-            
-            /* Hide the dark left panel */
             .left-panel { display: none !important; } 
-            
-            /* Turn right panel into a standard block that fills the screen */
             .right-panel { 
                 display: block; 
                 padding: 3rem 2rem; 
                 min-height: 100vh; 
             } 
-            
-            /* Center the form within the full-width block */
+
             .form-container { 
                 margin: 0 auto; 
                 max-width: 480px; 
             }
         }
 
-        /* Small Mobile Phones (440px) */
         @media (max-width: 440px) {
             .right-panel { padding: 1.25rem; padding-top: 2rem; }
             .form-header h2 { font-size: 1.75rem; }
@@ -102,6 +96,12 @@
                             <label>New Password</label>
                             <asp:TextBox ID="txtNewPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="********"></asp:TextBox>
                             <asp:RequiredFieldValidator ID="rfvNewPassword" runat="server" ControlToValidate="txtNewPassword" ErrorMessage="New password is required" Display="Dynamic" CssClass="error-message" />
+                            <asp:RegularExpressionValidator ID="revNewPassword" runat="server" 
+                                ControlToValidate="txtNewPassword" 
+                                ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$" 
+                                ErrorMessage="Password must be 8-20 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character." 
+                                Display="Dynamic" 
+                                CssClass="error-message" />
                         </div>
                         
                         <div class="form-group">

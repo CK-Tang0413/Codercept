@@ -9,21 +9,35 @@
 
 namespace Codercept
 {
+
+
     public partial class TACourses
     {
+
         /// <summary>
         /// phNoAssigned control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.PlaceHolder phNoAssigned;
 
         /// <summary>
         /// rptCourses control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptCourses;
 
         /// <summary>
         /// Master property.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated property.
+        /// </remarks>
         public new Codercept.TASite Master
         {
             get

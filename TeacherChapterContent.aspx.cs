@@ -48,7 +48,6 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // ?chapter=<ChapterId>: a chapter of the signed-in teacher's, otherwise back to Manage Chapters
             int id;
             int.TryParse(Request.QueryString["chapter"], out id);
             chapter = TeacherChapterData.GetChapter(id);
@@ -64,7 +63,6 @@ namespace Codercept
                 if (notice == "1") Master.ShowToast("Subchapter created");
                 if (Request.QueryString["subdeleted"] == "1") Master.ShowToast("Subchapter deleted");
 
-                // ?sub=<SubChapterId> (for example right after adding one) selects that subchapter
                 int linked;
                 if (int.TryParse(Request.QueryString["sub"], out linked) && Contents.Any(c => c.Id == linked))
                 {
@@ -77,7 +75,6 @@ namespace Codercept
         {
             if (Contents.Count == 0) return;
 
-            // The hidden field must name the subchapter that is shown, so Update / Delete act on it even if nothing was clicked
             if (!IsPostBack) hfTeacherSubchapterId.Value = Active.Id.ToString();
 
             // Picking a subchapter is done in the browser (no postback), so after a postback the boxes already hold what the teacher typed
@@ -115,7 +112,6 @@ namespace Codercept
                 return;
             }
 
-            // the subchapter to save is the one posted, never "the first one" when the id is not in this chapter's list
             TeacherContentItem sub = PostedSubchapter();
             if (sub == null)
             {
@@ -123,7 +119,6 @@ namespace Codercept
                 return;
             }
 
-            // the file: a chosen file replaces it, "Remove file" clears it, otherwise it stays as it is
             string newMedia = null;
             bool changeMedia = false;
             if (dzTeacherSubchapterMedia.PostedFile != null)
@@ -156,15 +151,15 @@ namespace Codercept
                 if (newMedia != null) TeacherMediaStore.Delete(newMedia);
                 throw;
             }
-            contents = null; // reload so the list and the editor show what is stored
+            contents = null;
 
             if (result != TeacherChapterData.SaveResult.Saved)
             {
-                if (newMedia != null) TeacherMediaStore.Delete(newMedia); // nothing was saved, so the new file is not kept
+                if (newMedia != null) TeacherMediaStore.Delete(newMedia);
             }
             else if (changeMedia)
             {
-                TeacherMediaStore.Delete(oldMedia); // replaced or removed: the old file goes
+                TeacherMediaStore.Delete(oldMedia);
             }
 
             if (result == TeacherChapterData.SaveResult.NotFound)
@@ -197,7 +192,7 @@ namespace Codercept
                 return;
             }
 
-            TeacherMediaStore.Delete(file); // the row is gone, so its file goes too
+            TeacherMediaStore.Delete(file);
             Response.Redirect("~/TeacherChapterContent.aspx?chapter=" + ChapterId + "&subdeleted=1");
         }
 

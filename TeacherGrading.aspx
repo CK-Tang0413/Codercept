@@ -1,4 +1,4 @@
-<%@ Page Title="Grade Assessments - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherGrading.aspx.cs" Inherits="Codercept.TeacherGrading" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherGrading.aspx.cs" Inherits="Codercept.TeacherGrading" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">

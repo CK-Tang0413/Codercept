@@ -82,7 +82,6 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Added c.DifficultyLevel and renamed PrimarySubject to Language to match Eval()
                 string query = @"
                     SELECT TOP 3
                         c.CourseId, 
@@ -117,7 +116,6 @@ namespace Codercept
 
                         row["ProgressPercentage"] = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
 
-                        // Parse Language for CSS
                         string lang = row["Language"].ToString().ToLower();
                         if (lang.Contains("c++") || lang.Contains("cpp")) row["LanguageCSS"] = "cpp";
                         else if (lang == "c") row["LanguageCSS"] = "c";
@@ -136,7 +134,6 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // Updated Query: Filters out courses the user is already enrolled in
                 string query = @"
                     SELECT TOP 3 
                         c.CourseId, 
@@ -169,13 +166,10 @@ namespace Codercept
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        // Parse Language for CSS
                         string lang = row["Language"].ToString().ToLower();
                         if (lang.Contains("c++") || lang.Contains("cpp")) row["LanguageCSS"] = "cpp";
                         else if (lang == "c") row["LanguageCSS"] = "c";
                         else row["LanguageCSS"] = lang.Replace(" ", "");
-
-                        // By definition, these are unenrolled courses
                         row["ProgressPercentage"] = 0;
                     }
 
@@ -189,7 +183,6 @@ namespace Codercept
         {
             using (SqlConnection con = new SqlConnection(connString))
             {
-                // 1. Get Enrolled Courses & Total Chapters Done
                 string progressQuery = @"
                     SELECT 
                         COUNT(CourseId) as TotalEnrolled,
@@ -211,8 +204,6 @@ namespace Codercept
                     }
                     con.Close();
                 }
-
-                // 2. Get Average Score from Results table
                 string avgQuery = @"
                     SELECT AVG(Average) as OverallAverage 
                     FROM Result r
@@ -227,8 +218,6 @@ namespace Codercept
                     litStatAvgScore.Text = (result != DBNull.Value && result != null) ? $"{Convert.ToDouble(result):F0}%" : "0%";
                     con.Close();
                 }
-
-                // 3. Get Total Progress (Average of all course completion percentages)
                 string totalProgressQuery = @"
                     SELECT 
                         ISNULL(SUM(lp.ChapNum - 1), 0) as ChaptersDone,

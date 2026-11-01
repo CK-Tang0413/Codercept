@@ -1,4 +1,4 @@
-<%@ Page Title="TA Dashboard - Codercept" Language="C#" AutoEventWireup="true" CodeBehind="TADashboard.aspx.cs" Inherits="Codercept.TADashboard" MasterPageFile="~/TASite.master" %>
+<%@ Page Title="CODERCEPT" Language="C#" AutoEventWireup="true" CodeBehind="TADashboard.aspx.cs" Inherits="Codercept.TADashboard" MasterPageFile="~/TASite.master" %>
 
 <asp:Content ID="ContentHead" ContentPlaceHolderID="cphHead" runat="server">
     <style>
@@ -164,7 +164,6 @@
         </div>
     </div>
 
-    <!-- Welcome Banner matching Teacher Dashboard -->
     <section class="welcome-banner">
         <div class="welcome-pattern" aria-hidden="true">
             <span>&lt;/&gt;</span>
@@ -182,7 +181,6 @@
         </div>
     </section>
 
-    <!-- Overview Stats matching Teacher Stat Cards -->
     <section aria-labelledby="statistics-heading">
         <h2 class="sr-only" id="statistics-heading">Dashboard statistics</h2>
         <div class="stats-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
@@ -215,7 +213,6 @@
     </section>
 
     <div class="dashboard-panels-grid">
-        <!-- Grading Queue Section -->
         <section class="dashboard-section">
             <div class="section-heading section-heading--row">
                 <div>
@@ -252,7 +249,6 @@
             </div>
         </section>
 
-        <!-- Forum Activity Section -->
         <section class="dashboard-section">
             <div class="section-heading section-heading--row">
                 <div>

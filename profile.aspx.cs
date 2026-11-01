@@ -70,7 +70,6 @@ namespace Codercept
 
         protected void btnUpdateProfile_Click(object sender, EventArgs e)
         {
-            // 1. Reset the toast state in case they click it multiple times
             pnlToast.Visible = false;
 
             int learnerId = Convert.ToInt32(Session["UserId"]);
@@ -98,11 +97,9 @@ namespace Codercept
                 }
             }
 
-            // Update session name if changed
             Session["UserName"] = name;
             LoadUserProfile();
 
-            // 2. Trigger the success toast notification
             pnlToast.Visible = true;
         }
 
@@ -113,7 +110,6 @@ namespace Codercept
             using (SqlConnection con = new SqlConnection(connString))
             {
                 con.Open();
-                // Optional: Delete related progress records first if foreign keys require it, or directly delete learner
                 string deleteProgress = "DELETE FROM LearnerProgress WHERE LearnerId = @LearnerId";
                 using (SqlCommand cmdProgress = new SqlCommand(deleteProgress, con))
                 {
@@ -130,10 +126,9 @@ namespace Codercept
                 con.Close();
             }
 
-            // Clear session and redirect to sign in
             Session.Clear();
             Session.Abandon();
-            Response.Redirect("signIn.aspx");
+            Response.Redirect("LandingPage.aspx");
         }
     }
 }

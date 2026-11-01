@@ -23,10 +23,8 @@ namespace Codercept
                 string email = Session["ResetEmail"].ToString();
                 string role = Session["ResetRole"].ToString();
 
-                // Hash the password automatically generating a secure salt
                 string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
-                // Determine the correct table based on the role stored in the session
                 string tableName = "";
                 switch (role)
                 {
@@ -53,11 +51,8 @@ namespace Codercept
 
                 string connString = ConfigurationManager.ConnectionStrings["Codercept_db"].ConnectionString;
 
-                // Update the hashed password in the correct table
                 using (SqlConnection con = new SqlConnection(connString))
                 {
-                    // Using string interpolation for the table name is safe here because 
-                    // the table name is strictly controlled by our switch statement above, not user input.
                     string query = $"UPDATE {tableName} SET Password = @Password WHERE Email = @Email";
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
@@ -72,7 +67,6 @@ namespace Codercept
 
                             if (rowsAffected > 0)
                             {
-                                // Success! Hide the form and clear the session
                                 pnlResetForm.Visible = false;
                                 lblSuccess.Text = "Password successfully updated! You can now sign in.";
                                 lblSuccess.Visible = true;
@@ -88,7 +82,6 @@ namespace Codercept
                         }
                         catch (Exception ex)
                         {
-                            // For debugging, you can log ex.Message, but show a generic error to the user
                             lblSystemError.Text = "A database error occurred. Please try again later.";
                         }
                     }

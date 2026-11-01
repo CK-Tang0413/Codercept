@@ -1,4 +1,4 @@
-<%@ Page Title="Manage Learners - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherLearners.aspx.cs" Inherits="Codercept.TeacherLearners" MaintainScrollPositionOnPostBack="true" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherLearners.aspx.cs" Inherits="Codercept.TeacherLearners" MaintainScrollPositionOnPostBack="true" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherCourseSelector.ascx" TagPrefix="uc" TagName="CourseSelector" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>

@@ -11,7 +11,6 @@ namespace Codercept
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Only execute if a valid user is logged in
             if (Session["UserType"] != null && Session["UserName"] != null && Session["UserEmail"] != null)
             {
                 string fullName = Session["UserName"].ToString();
@@ -23,12 +22,10 @@ namespace Codercept
                     litUserInitial.Text = fullName.Substring(0, 1).ToUpper();
                 }
 
-                // Store Session Data in ViewState as a fallback if the Session times out
                 if (Session["LogId"] != null) ViewState["LogId"] = Session["LogId"];
                 if (Session["UserId"] != null) ViewState["UserId"] = Session["UserId"];
                 if (Session["UserRole"] != null) ViewState["UserRole"] = Session["UserRole"];
 
-                // --- Check if current page is one of the main allowed pages ---
                 string currentPage = System.IO.Path.GetFileNameWithoutExtension(Request.Url.AbsolutePath);
                 bool isMainPage =
                     string.Equals(currentPage, "LearnerDashboard", StringComparison.OrdinalIgnoreCase) ||
@@ -60,7 +57,6 @@ namespace Codercept
 
         protected void lnkSignOut_Click(object sender, EventArgs e)
         {
-            // Safely attempt to retrieve IDs from Session first, fallback to ViewState
             int logId = 0;
             if (Session["LogId"] != null) int.TryParse(Session["LogId"].ToString(), out logId);
             else if (ViewState["LogId"] != null) int.TryParse(ViewState["LogId"].ToString(), out logId);
@@ -74,18 +70,15 @@ namespace Codercept
                 ?? (ViewState["UserRole"] as string)
                 ?? "Learner";
 
-            // Record logout datetime into [dbo].[User_Log]
             if (logId > 0 || userId > 0)
             {
                 UserLogHelper.RecordLogout(logId, userRole, userId);
             }
             else
             {
-                // Absolute fallback
                 UserLogHelper.RecordLogout(Session);
             }
 
-            // Clear and Destroy Session
             Session.Clear();
             Session.Abandon();
             Response.Redirect("LandingPage.aspx");

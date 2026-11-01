@@ -3,14 +3,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Codercept - Master Coding Interactive</title>
+    <title>CODERCEPT</title>
+    <link rel="icon" type="image/png" href="~/img/Codercept_Icon.png" />
     
-    <!-- Import Global Variables -->
     <link href="css/global.css" rel="stylesheet" type="text/css" />
 
     <style>
-
-        /* 1. Base Public Page Reset & Enable Scrolling */
         html, body { 
             height: auto !important; 
             min-height: 100vh;
@@ -19,26 +17,23 @@
             background: var(--bg-main); 
             color: var(--text-primary); 
             font-family: 'Inter', sans-serif; 
-            overflow-y: auto !important; /* Forces vertical scrolling */
+            overflow-y: auto !important;
             overflow-x: hidden; 
         }
-        /* Base Public Page Reset */
         body { margin: 0; padding: 0; background: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
-        /* Public Navigation */
         .public-nav { position: fixed; top: 0; width: 100%; height: 70px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; padding: 0 5%; z-index: 1000; }
         .nav-brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: white; text-decoration: none; }
         .nav-brand img { width: 32px; height: 32px; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
-        /* 2. Brighter, Larger Nav Links */
         .nav-link { 
-            color: #f8fafc; /* Bright white/grey */
+            color: #f8fafc;
             text-decoration: none; 
             font-weight: 600; 
-            font-size: 1.05rem; /* Increased size */
+            font-size: 1.05rem;
             transition: color 0.2s; 
         }
-        .nav-link:hover { color: #c084fc; /* Light purple on hover */ }
+        .nav-link:hover { color: #c084fc;}
         .nav-actions { display: flex; gap: 1rem; align-items: center; }
         
         .btn-outline { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; color: white; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.2s; }
@@ -46,7 +41,6 @@
         .btn-sunset { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; color: white; background: linear-gradient(120deg, #7c3aed 0%, #db2777 50%, #f97316 100%); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25); transition: transform 0.2s, opacity 0.2s; }
         .btn-sunset:hover { opacity: 0.92; transform: translateY(-1px); }
 
-        /* Hero Section */
         .hero { position: relative; min-height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 100px 5% 50px; overflow: hidden; }
         .hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(124, 58, 237, 0.15), transparent 60%); z-index: 0; }
         .hero-content { position: relative; z-index: 1; max-width: 800px; display: flex; flex-direction: column; align-items: center; }
@@ -56,27 +50,24 @@
         .hero p { font-size: 1.15rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2.5rem; max-width: 600px; }
         .hero-buttons { display: flex; gap: 1rem; }
         .hero-buttons .btn-sunset { padding: 0.875rem 2rem; font-size: 1.05rem; }
-        /* 3. Visible Hero Outline Button */
         .hero-buttons .btn-outline { 
             padding: 0.875rem 2rem; 
             font-size: 1.05rem; 
             background: transparent; 
-            color: var(--text-primary) !important; /* Force dark text */
+            color: var(--text-primary) !important;
             border: 2px solid var(--border-light); 
             font-weight: 600;
         }
         .hero-buttons .btn-outline:hover { 
             border-color: var(--accent-primary); 
-            background: rgba(124, 58, 237, 0.05); /* Very light purple tint on hover */
+            background: rgba(124, 58, 237, 0.05);
         }
 
-        /* Container Standard */
         .container { max-width: 1200px; margin: 0 auto; padding: 5rem 5%; }
         .section-header { text-align: center; margin-bottom: 3.5rem; }
         .section-header h2 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1rem; }
         .section-header p { font-size: 1.05rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
 
-        /* About / Features Grid */
         .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
         .feature-card { background: var(--bg-surface); border: 1px solid var(--border-light); padding: 2.5rem 2rem; border-radius: 16px; text-align: center; transition: transform 0.2s; box-shadow: var(--shadow); }
         .feature-card:hover { transform: translateY(-5px); border-color: var(--accent-primary); }
@@ -85,51 +76,40 @@
         .feature-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: white; }
         .feature-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* Footer */
         .footer { background: var(--bg-surface); border-top: 1px solid var(--border-light); padding: 3rem 5%; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
 
-        /* Tablet Horizontal (1024px) */
         @media (max-width: 1024px) {
             .hero { min-height: 70vh; padding: 120px 5% 50px; }
             .hero h1 { font-size: 3rem; }
             
-            /* Squeeze grids to 2 columns */
             .features-grid { grid-template-columns: repeat(2, 1fr); }
             .course-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
 
-        /* Tablet Vertical (768px) */
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .hero p { font-size: 1rem; }
             
-            /* Stack grids to 1 column */
             .features-grid { grid-template-columns: 1fr; }
             .course-grid { grid-template-columns: 1fr !important; }
             
-            /* Hide middle nav links to make room for buttons */
             .nav-links { display: none; } 
         }
 
-        /* Mobile Phones (440px and below) */
         @media (max-width: 440px) {
             .public-nav { padding: 0 1rem; }
             .nav-brand { font-size: 1.1rem; }
             .nav-brand img { width: 24px; height: 24px; }
             
-            /* Shrink top nav buttons */
             .nav-actions { gap: 0.5rem; }
             .btn-outline, .btn-sunset { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
             
-            /* Adjust Hero for small screens */
             .hero { padding: 100px 1rem 40px; }
             .hero h1 { font-size: 2rem; margin-bottom: 1rem; }
             
-            /* Stack hero buttons vertically */
             .hero-buttons { flex-direction: column; width: 100%; gap: 0.75rem; }
             .hero-buttons .btn-sunset, .hero-buttons .btn-outline { width: 100%; text-align: center; }
             
-            /* Tighter container padding */
             .container { padding: 3rem 1rem; }
             .section-header h2 { font-size: 1.75rem; }
             .feature-card { padding: 1.5rem; }
@@ -139,7 +119,6 @@
 <body>
     <form id="form1" runat="server">
         
-        <!-- Public Navigation -->
         <nav class="public-nav">
             <a href="LandingPage.aspx" class="nav-brand">
                 <img src="img/Codercept_Icon.png" alt="Codercept" />
@@ -155,7 +134,6 @@
             </div>
         </nav>
 
-        <!-- Hero Section -->
         <header class="hero">
             <div class="hero-content">
                 <div class="hero-badge">Welcome to the future of learning</div>
@@ -168,7 +146,6 @@
             </div>
         </header>
 
-        <!-- About / Features Section -->
         <section id="about" class="container" style="background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); max-width: 100%;">
             <div style="max-width: 1200px; margin: 0 auto;">
                 <div class="section-header">
@@ -201,18 +178,15 @@
             </div>
         </section>
 
-        <!-- Course Preview Section -->
         <section id="courses" class="container">
             <div class="section-header">
                 <h2>Explore Our Courses</h2>
                 <p>Browse a preview of our top-rated programming courses. Sign up to unlock full syllabuses, chapters, and enroll.</p>
             </div>
 
-            <!-- Reuse the Course Grid layout from LearnerDashboard -->
             <div class="course-grid">
                 <asp:Repeater ID="rptPublicCourses" runat="server">
                     <ItemTemplate>
-                        <!-- Clicking intercept via JavaScript -->
                         <a href="javascript:showRegistrationModal();" class="course-card">
                             <div class='course-thumbnail course-thumbnail--<%# Eval("LanguageCSS") %>'>
                                 <span class='card-floating-badge badge-<%# Eval("DifficultyLevel").ToString().ToLower() %>'><%# Eval("DifficultyLevel") %></span>
@@ -238,12 +212,10 @@
             </div>
         </section>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>&copy; <%= DateTime.Now.Year %> Codercept. All rights reserved.</p>
         </footer>
 
-        <!-- Registration Intercept Modal -->
         <div id="registrationModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center;">
             <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 2.5rem; border-radius: 16px; max-width: 450px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; animation: popIn 0.3s ease-out;">
             
@@ -275,22 +247,21 @@
         </style>
 
         <script type="text/javascript">
-function showRegistrationModal() {
-    var modal = document.getElementById('registrationModal');
-    if (modal) modal.style.display = 'flex';
-}
+            function showRegistrationModal() {
+                var modal = document.getElementById('registrationModal');
+                if (modal) modal.style.display = 'flex';
+            }
 
-function hideRegistrationModal() {
-    var modal = document.getElementById('registrationModal');
-    if (modal) modal.style.display = 'none';
-}
+            function hideRegistrationModal() {
+                var modal = document.getElementById('registrationModal');
+                if (modal) modal.style.display = 'none';
+            }
 
-// Close on outside click
-window.onclick = function (event) {
-    var modal = document.getElementById('registrationModal');
-    if (event.target == modal) hideRegistrationModal();
-}
-</script>
+            window.onclick = function (event) {
+                var modal = document.getElementById('registrationModal');
+                if (event.target == modal) hideRegistrationModal();
+            }
+            </script>
     </form>
 </body>
 </html>

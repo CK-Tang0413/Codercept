@@ -12,15 +12,11 @@ namespace Codercept
         }
 
         private string kind = "chapter";
-
-        // the course a new chapter is added to (kind = chapter): one of the signed-in teacher's courses
         private TeacherCourse course;
 
-        // the chapter a new subchapter, quiz or assessment is added to: one of the signed-in teacher's chapters
         private TeacherChapter parent;
         protected KindLabels Labels;
 
-        // Shown instead of the form when the chapter already has a quiz or an assessment
         protected string ExistingTitle, ExistingText, ExistingType, EditUrl;
 
         /// <summary>True for a quiz or an assessment (they have questions and show the total marks).</summary>
@@ -85,7 +81,6 @@ namespace Codercept
 
             if (kind == "chapter")
             {
-                // a new chapter belongs to the course in ?course=<CourseId> (the teacher's first course when absent)
                 course = TeacherCourseData.Pick(TeacherCourseData.GetCourses(), Request.QueryString["course"]);
                 if (course == null) Response.Redirect("~/TeacherChapters.aspx");
                 bcTeacherChapter.CourseTitle = course.Title;
@@ -93,7 +88,6 @@ namespace Codercept
             }
             else
             {
-                // ?chapter=<ChapterId>: a chapter of the signed-in teacher's, otherwise back to Manage Chapters
                 int chapterId;
                 int.TryParse(Request.QueryString["chapter"], out chapterId);
                 parent = TeacherChapterData.GetChapter(chapterId);
@@ -102,7 +96,6 @@ namespace Codercept
                 bcTeacherChapter.ChapterTitle = "Chapter " + parent.Number + " - " + parent.Title;
             }
 
-            // A chapter has either one quiz or one assessment: if it already has one, offer to edit it instead of adding another
             bool alreadyHasTest = HasQuestions && parent.Test != null;
             pnlTeacherExists.Visible = alreadyHasTest;
             pnlTeacherForm.Visible = !alreadyHasTest;
@@ -130,8 +123,6 @@ namespace Codercept
             {
                 qcTeacherNewQuestion.Mode = kind;
 
-                // The question cards are plain HTML fields (see TeacherQuestionCard.ascx), rebuilt on every request: after a postback
-                // from what was posted (so a refused save loses nothing), otherwise one empty question to start from.
                 rptTeacherQuestions.DataSource = IsPostBack
                     ? TeacherQuestion.ReadPosted(Request.Unvalidated.Form, 1)
                     : new List<TeacherQuestion> { TeacherQuestion.Blank() };
@@ -170,12 +161,10 @@ namespace Codercept
                 }
             }
 
-            // a chapter's duration is in hours (0.5 to 1000); a subchapter's is in whole minutes (1 to 600); a test has none
             decimal hours = 0;
             int minutes = 0;
             if (HasQuestions)
             {
-                // no duration
             }
             else if (kind == "chapter")
             {
@@ -193,7 +182,6 @@ namespace Codercept
                 return;
             }
 
-            // the file is saved first so a refused file stops everything; if the row cannot be added the file is removed again
             int courseId = kind == "chapter" ? course.Id : parent.CourseId;
             string mediaLink = null;
             if (dzTeacherContentFile.PostedFile != null)
@@ -225,7 +213,6 @@ namespace Codercept
                     TeacherTestData.CreateResult created = TeacherTestData.CreateTest(parent.Id, kind, title, description, mediaLink, questions, out newId);
                     if (created == TeacherTestData.CreateResult.AlreadyHasTest)
                     {
-                        // somebody added one in the meantime: show the "already has" page instead
                         if (mediaLink != null) TeacherMediaStore.Delete(mediaLink);
                         Response.Redirect("~/TeacherChapterAdd.aspx?kind=" + kind + "&chapter=" + parent.Id);
                     }
@@ -242,7 +229,6 @@ namespace Codercept
                 Response.Redirect("~/TeacherChapters.aspx");
             }
 
-            // back to where the new item is listed, with it selected
             if (kind == "chapter")
             {
                 Response.Redirect("~/TeacherChapters.aspx?chapter=" + newId + "&created=" + (duplicate ? "dup" : "1"));

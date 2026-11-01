@@ -91,7 +91,8 @@ namespace Codercept
                 litNotificationMessage.Text = "<strong>Application Rejected.</strong> The applicant has been notified of the decision via email.";
             }
         }
-
+
+
         private void UpdatePurgeBannerInfo()
         {
             if (litPurgeScheduleInfo != null)

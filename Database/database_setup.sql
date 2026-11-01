@@ -1496,81 +1496,153 @@ INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore]
 -- =========================================================================
 -- 6.4. CUSTOM JOURNEYS FOR WAN HON KIT & KYLAN SHANE SEDRICK
 -- =========================================================================
-DELETE FROM [dbo].[LearnerProgress] WHERE [LearnerId] IN (@BcKylan, @BcWan);
-DELETE FROM [dbo].[Attempt] WHERE [LearnerId] IN (@BcKylan, @BcWan);
-DELETE FROM [dbo].[Certificate] WHERE [LearnerId] IN (@BcKylan, @BcWan);
-DELETE FROM [dbo].[Course_Review] WHERE [LearnerId] IN (@BcKylan, @BcWan);
+
+-- Safely clean up old Phase 2 mock data in correct foreign key dependency order
+DELETE FROM [dbo].[AttemptAnswer] WHERE AttemptId IN (SELECT AttemptId FROM [dbo].[Attempt] WHERE LearnerId IN (@BcKylan, @BcWan));
+DELETE FROM [dbo].[Result] WHERE AttemptId IN (SELECT AttemptId FROM [dbo].[Attempt] WHERE LearnerId IN (@BcKylan, @BcWan));
+DELETE FROM [dbo].[GradingProgress] WHERE AttemptId IN (SELECT AttemptId FROM [dbo].[Attempt] WHERE LearnerId IN (@BcKylan, @BcWan));
+DELETE FROM [dbo].[Attempt] WHERE LearnerId IN (@BcKylan, @BcWan);
+
+DELETE FROM [dbo].[LearnerProgress] WHERE LearnerId IN (@BcKylan, @BcWan);
+DELETE FROM [dbo].[Certificate] WHERE LearnerId IN (@BcKylan, @BcWan);
+DELETE FROM [dbo].[Course_Review] WHERE LearnerId IN (@BcKylan, @BcWan);
 
 -- 6.4.1. ENROLLMENTS & CURRENT CHAPTER PROGRESS
 INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate])
 VALUES
-    -- Kylan's Progress: Finished Python & Data Analysis, Ongoing Java (Ch 3), New Flask (Ch 1)
+    -- Kylan: Finished Python & Data Analysis, Ongoing Java (Ch 3), New Flask (Ch 1)
     (@BcKylan, @BcPythonCourse, 6, DATEADD(DAY, -45, GETDATE())),
     (@BcKylan, @BcDataCourse, 6, DATEADD(DAY, -30, GETDATE())),
     (@BcKylan, @BcJavaCourse, 3, DATEADD(DAY, -15, GETDATE())),
     (@BcKylan, @BcFlaskCourse, 1, DATEADD(DAY, -2, GETDATE())),
 
-    -- Wan's Progress: Finished Java & C++, Ongoing Python (Ch 4), New Databases (Ch 1)
+    -- Wan: Finished Java & C++, Ongoing Python (Ch 4), New Databases (Ch 1)
     (@BcWan, @BcJavaCourse, 6, DATEADD(DAY, -50, GETDATE())),
-    (@BcWan, @BcCppCourse, 3, DATEADD(DAY, -35, GETDATE())), -- C++ has 2 chapters + 1 exam (Chap 3 = complete)
+    (@BcWan, @BcCppCourse, 3, DATEADD(DAY, -35, GETDATE())), 
     (@BcWan, @BcPythonCourse, 4, DATEADD(DAY, -12, GETDATE())),
     (@BcWan, @BcDatabaseCourse, 1, DATEADD(DAY, -1, GETDATE()));
 
 
--- 6.4.2. COMPLETED FINAL EXAM ATTEMPTS (Grade Generating)
--- Kylan: Passed Python Final
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) 
-VALUES (DATEADD(DAY, -10, GETDATE()), 'completed', @BcKylan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse));
+-- ==========================================================
+-- 6.4.2. AUTO-COMPLETE ALL PAST QUIZZES & ASSESSMENTS
+-- ==========================================================
+DECLARE @DynAttempt INT;
+
+-- === KYLAN'S PAST ATTEMPTS ===
+-- Python (Chapters 1 to 5)
+DECLARE @KylanTests TABLE (TestName NVARCHAR(100), IsQuiz BIT);
+INSERT INTO @KylanTests VALUES ('Chapter 1 Assessment', 0), ('Variables Quiz', 1), ('Control Flow Quiz', 1), ('Functions Assessment', 0), ('Collections Quiz', 1), 
+                               ('Loading Data Quiz', 1), ('Data Cleaning Assessment', 0), ('Charts Quiz', 1), ('Grouping Assessment', 0), ('Reporting Quiz', 1),
+                               ('Java Basics Quiz', 1), ('OOP Assessment', 0);
+
+DECLARE @TestName NVARCHAR(100), @IsQuiz BIT;
+DECLARE KylanCursor CURSOR FOR SELECT TestName, IsQuiz FROM @KylanTests;
+OPEN KylanCursor; FETCH NEXT FROM KylanCursor INTO @TestName, @IsQuiz;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF @IsQuiz = 1
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -20, GETDATE()), 'completed', @BcKylan, (SELECT QuizId FROM Quiz WHERE QuizTitle = @TestName));
+    ELSE
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -20, GETDATE()), 'completed', @BcKylan, (SELECT AssessmentId FROM Assessment WHERE AssessmentTitle = @TestName));
+    
+    SET @DynAttempt = SCOPE_IDENTITY();
+    
+    INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+    SELECT @DynAttempt, QuestionId, 
+           CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1)
+                WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 
+           'correct', QuestionScore, 'Well done' 
+    FROM Question q WHERE (@IsQuiz = 1 AND QuizId = (SELECT QuizId FROM Quiz WHERE QuizTitle = @TestName)) OR (@IsQuiz = 0 AND AssessmentId = (SELECT AssessmentId FROM Assessment WHERE AssessmentTitle = @TestName));
+    
+    INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'A', 100, 'Perfect', @DynAttempt);
+    INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', '', @BcBryan, @DynAttempt);
+    FETCH NEXT FROM KylanCursor INTO @TestName, @IsQuiz;
+END;
+CLOSE KylanCursor; DEALLOCATE KylanCursor;
+
+-- === WAN'S PAST ATTEMPTS ===
+DECLARE @WanTests TABLE (TestName NVARCHAR(100), IsQuiz BIT);
+INSERT INTO @WanTests VALUES ('Java Basics Quiz', 1), ('OOP Assessment', 0), ('Exceptions Quiz', 1), ('Collections Assessment', 0), ('Testing Quiz', 1),
+                             ('Pointers Quiz', 1), ('Chapter 1 Assessment', 0), ('Variables Quiz', 1), ('Control Flow Quiz', 1);
+
+DECLARE WanCursor CURSOR FOR SELECT TestName, IsQuiz FROM @WanTests;
+OPEN WanCursor; FETCH NEXT FROM WanCursor INTO @TestName, @IsQuiz;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF @IsQuiz = 1
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -20, GETDATE()), 'completed', @BcWan, (SELECT QuizId FROM Quiz WHERE QuizTitle = @TestName));
+    ELSE
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -20, GETDATE()), 'completed', @BcWan, (SELECT AssessmentId FROM Assessment WHERE AssessmentTitle = @TestName));
+    
+    SET @DynAttempt = SCOPE_IDENTITY();
+    
+    INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+    SELECT @DynAttempt, QuestionId, 
+           CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1)
+                WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 
+           'correct', QuestionScore, 'Great job' 
+    FROM Question q WHERE (@IsQuiz = 1 AND QuizId = (SELECT QuizId FROM Quiz WHERE QuizTitle = @TestName)) OR (@IsQuiz = 0 AND AssessmentId = (SELECT AssessmentId FROM Assessment WHERE AssessmentTitle = @TestName));
+    
+    INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'A', 100, 'Perfect', @DynAttempt);
+    INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', '', @BcBryan, @DynAttempt);
+    FETCH NEXT FROM WanCursor INTO @TestName, @IsQuiz;
+END;
+CLOSE WanCursor; DEALLOCATE WanCursor;
+
+
+-- 6.4.3. COMPLETED FINAL EXAMS
+-- Kylan: Python Final
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -10, GETDATE()), 'completed', @BcKylan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse));
 SET @BcAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (18, 'A', 90.0, N'Excellent work.', @BcAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @BcBryan, NULL, @BcAttempt);
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT @BcAttempt, QuestionId, CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1) WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 'correct', QuestionScore, '' FROM Question q WHERE ExamId = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse);
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (20, 'A', 100.0, N'Excellent work.', @BcAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', N'', @BcBryan, @BcAttempt);
 
--- Kylan: Passed Data Analysis Final
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) 
-VALUES (DATEADD(DAY, -5, GETDATE()), 'completed', @BcKylan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcDataCourse));
+-- Kylan: Data Analysis Final
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -5, GETDATE()), 'completed', @BcKylan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcDataCourse));
 SET @BcAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (17, 'A', 85.0, N'Great analysis.', @BcAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @BcBryan, NULL, @BcAttempt);
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT @BcAttempt, QuestionId, CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1) WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 'correct', QuestionScore, '' FROM Question q WHERE ExamId = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcDataCourse);
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (20, 'A', 100.0, N'Great analysis.', @BcAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', N'', @BcBryan, @BcAttempt);
 
--- Wan: Passed Java Final
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) 
-VALUES (DATEADD(DAY, -15, GETDATE()), 'completed', @BcWan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcJavaCourse));
+-- Wan: Java Final
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -15, GETDATE()), 'completed', @BcWan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcJavaCourse));
 SET @BcAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (19, 'A', 95.0, N'Perfect architecture.', @BcAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @BcBryan, NULL, @BcAttempt);
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT @BcAttempt, QuestionId, CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1) WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 'correct', QuestionScore, '' FROM Question q WHERE ExamId = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcJavaCourse);
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (20, 'A', 100.0, N'Perfect architecture.', @BcAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', N'', @BcBryan, @BcAttempt);
 
--- Wan: Passed C++ Final
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) 
-VALUES (DATEADD(DAY, -4, GETDATE()), 'completed', @BcWan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcCppCourse));
+-- Wan: C++ Final
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'completed', @BcWan, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcCppCourse));
 SET @BcAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (16, 'B', 80.0, N'Good pointer logic.', @BcAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', (SELECT [TeacherId] FROM [dbo].[Teacher] WHERE [Email] = 'sarahlim@edu.com.my'), NULL, @BcAttempt);
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT @BcAttempt, QuestionId, CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1) WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 'correct', QuestionScore, '' FROM Question q WHERE ExamId = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcCppCourse);
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'B', 80.0, N'Good pointer logic.', @BcAttempt);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', N'', @BcSarah, @BcAttempt);
 
 
--- 6.4.3. ONGOING / IN-PROGRESS ATTEMPTS
--- Kylan: Currently taking Java OOP Assessment
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) 
-VALUES (DATEADD(HOUR, -2, GETDATE()), 'in_progress', @BcKylan, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment'));
-
--- Wan: Currently taking Python Functions Assessment
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) 
-VALUES (DATEADD(HOUR, -1, GETDATE()), 'in_progress', @BcWan, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Functions Assessment'));
+-- 6.4.4. IN-PROGRESS ATTEMPTS (Current Chapters)
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(HOUR, -2, GETDATE()), 'in_progress', @BcKylan, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Exceptions Quiz')); -- Note: UI considers all unfinished past components
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(HOUR, -1, GETDATE()), 'in_progress', @BcWan, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Functions Assessment'));
 
 
--- 6.4.4. CERTIFICATES ISSUED
+-- 6.4.5. CERTIFICATES ISSUED
 INSERT INTO [dbo].[Certificate] ([Issuer], [IssueDate], [LearnerId], [CourseId]) VALUES
     ('Bryan Yeong', DATEADD(DAY, -10, GETDATE()), @BcKylan, @BcPythonCourse),
     ('Bryan Yeong', DATEADD(DAY, -5, GETDATE()), @BcKylan, @BcDataCourse),
     ('Bryan Yeong', DATEADD(DAY, -15, GETDATE()), @BcWan, @BcJavaCourse),
     ('Sarah Lim', DATEADD(DAY, -4, GETDATE()), @BcWan, @BcCppCourse);
 
--- 6.4.5. COURSE REVIEWS
+
+-- 6.4.6. COURSE REVIEWS
 INSERT INTO [dbo].[Course_Review] ([CourseFeedBack], [Rating], [SubmissionDate], [CourseId], [LearnerId]) VALUES
     (N'Incredible Python course! Very hands-on.', 5, DATEADD(DAY, -9, GETDATE()), @BcPythonCourse, @BcKylan),
     (N'Data analysis made simple.', 4.5, DATEADD(DAY, -4, GETDATE()), @BcDataCourse, @BcKylan),
     (N'Java is tough, but the instructor was great.', 4, DATEADD(DAY, -14, GETDATE()), @BcJavaCourse, @BcWan),
     (N'Loved the C++ pointers lesson!', 5, DATEADD(DAY, -3, GETDATE()), @BcCppCourse, @BcWan);
-
 
 -- =========================================================================
 -- 6.5. GENERAL MOCK LEARNER ENROLLMENTS & ATTEMPTS

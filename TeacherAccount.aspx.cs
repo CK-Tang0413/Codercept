@@ -16,7 +16,6 @@ namespace Codercept
             TeacherProfile profile = TeacherAccountData.GetProfile();
             if (profile == null)
             {
-                // the account no longer exists: nothing to show
                 Response.Redirect("~/LandingPage.aspx");
                 return;
             }
@@ -31,7 +30,6 @@ namespace Codercept
                 txtTeacherAccountAge.Text = profile.Age.HasValue ? profile.Age.Value.ToString() : "";
                 txtTeacherAccountAddress.Text = profile.Region;
 
-                // a level that was never set shows a "Select a level" prompt that has to be changed before saving
                 if (profile.TeachingLevel != null && ddlTeacherAccountLevel.Items.FindByValue(profile.TeachingLevel) != null)
                 {
                     ddlTeacherAccountLevel.SelectedValue = profile.TeachingLevel;
@@ -43,7 +41,6 @@ namespace Codercept
                 }
             }
 
-            // The confirmation field is plain HTML inside the shared modal; its text is re-checked in the confirm handler
             mdlTeacherDeleteAccount.BodyHtml = "This deactivates your account and signs you out; you will not be able to sign in again. Your courses and their learners' results are kept. Type <strong>"
                 + HttpUtility.HtmlEncode(Email) + "</strong> to confirm."
                 + "<span class=\"portal-form-field\"><span>Email address</span>"
@@ -59,7 +56,6 @@ namespace Codercept
             string address = txtTeacherAccountAddress.Text.Trim();
             string level = ddlTeacherAccountLevel.SelectedValue;
 
-            // the name is shown in the sidebar, so it cannot hold markup
             bool nameError = name.Length < 2 || name.Length > 50 || name.IndexOfAny(new[] { '<', '>' }) >= 0;
             bool ageError = !int.TryParse(txtTeacherAccountAge.Text.Trim(), out age) || age < 18 || age > 100;
             bool addressError = address.Length > 50;
@@ -88,7 +84,6 @@ namespace Codercept
                 return;
             }
 
-            // the sidebar and greeting read the name from the session; reload the page so they show the new one
             Session["UserName"] = name;
             Response.Redirect("~/TeacherAccount.aspx?saved=1");
         }
@@ -125,9 +120,8 @@ namespace Codercept
                 return;
             }
 
-            // sign out, as the sidebar's Sign out link does
             Session.Abandon();
-            Response.Redirect("~/signIn.aspx");
+            Response.Redirect("~/LandingPage.aspx");
         }
     }
 }

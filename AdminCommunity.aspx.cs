@@ -29,7 +29,6 @@ namespace Codercept
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Fallback mock data when running without an active database connection
                 dt.Columns.Add("NotificationId", typeof(int));
                 dt.Columns.Add("Title", typeof(string));
                 dt.Columns.Add("Content", typeof(string));
@@ -62,7 +61,6 @@ namespace Codercept
                 {
                     conn.Open();
 
-                    // Query mapped to [dbo].[Notification], ordered by latest first
                     string query = @"
                         SELECT NotificationId, Title, Content, Type, DateTime
                         FROM [dbo].[Notification]
@@ -102,7 +100,6 @@ namespace Codercept
             }
         }
 
-        // 1. Post Announcement (Insert)
         protected void btnPostAnnouncement_Click(object sender, EventArgs e)
         {
             string title = txtTitle.Text.Trim();
@@ -149,7 +146,6 @@ namespace Codercept
             LoadAnnouncements();
         }
 
-        // 2. Command handling: Delete
         protected void rptAnnouncements_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             int notificationId = Convert.ToInt32(e.CommandArgument);
@@ -186,7 +182,6 @@ namespace Codercept
             }
         }
 
-        // Helper: Truncates content with ellipsis if exceeding max length
         protected string TruncateContent(string text, int maxLength)
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
@@ -195,7 +190,6 @@ namespace Codercept
             return text.Substring(0, maxLength).TrimEnd() + ".....";
         }
 
-        // Helper: Sanitizes text for JavaScript function call attributes
         protected string AntiXssEncode(string input)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
@@ -209,13 +203,11 @@ namespace Codercept
 
         protected void btnConfirmDeleteAnnouncement_Click(object sender, EventArgs e)
         {
-            // Retrieve the target announcement ID stored in the HiddenField by the custom modal
             if (int.TryParse(hfDeleteAnnouncementId.Value, out int notificationId))
             {
                 DeleteAnnouncement(notificationId);
             }
 
-            // Reset hidden field and reload the announcements grid
             hfDeleteAnnouncementId.Value = string.Empty;
             LoadAnnouncements();
         }

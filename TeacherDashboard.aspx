@@ -1,4 +1,4 @@
-<%@ Page Title="Dashboard - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherDashboard.aspx.cs" Inherits="Codercept.TeacherDashboard" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherDashboard.aspx.cs" Inherits="Codercept.TeacherDashboard" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherStatCard.ascx" TagPrefix="uc" TagName="StatCard" %>
 <%@ Register Src="~/TeacherCourseCard.ascx" TagPrefix="uc" TagName="CourseCard" %>

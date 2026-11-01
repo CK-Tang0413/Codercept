@@ -1,4 +1,4 @@
-<%@ Page Title="Forum - Codercept" Language="C#" MasterPageFile="~/TASite.master" AutoEventWireup="true" CodeBehind="TAForumModeration.aspx.cs" Inherits="Codercept.TAForumModeration" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TASite.master" AutoEventWireup="true" CodeBehind="TAForumModeration.aspx.cs" Inherits="Codercept.TAForumModeration" %>
 <%@ MasterType VirtualPath="~/TASite.master" %>
 <%@ Import Namespace="System.Linq" %>
 
@@ -115,13 +115,11 @@
 
             <section class="discussion-panel" aria-label="Discussion">
                 <div class="discussion-header">
-                    <!-- Row 1: Back button and Discussion Title -->
                     <div class="discussion-title-row">
                         <button type="button" class="discussion-back" aria-label="Back to forum posts" data-tp-forum-back><%= TeacherIcons.Svg("arrow", 18) %></button>
                         <h2>Discussion: <span data-tp-forum-title><%: SelectedPost != null ? SelectedPost.Title : "" %></span></h2>
                     </div>
 
-                    <!-- Row 2: Status Badge and Moderation Actions -->
                     <div id="tpDiscussionStatusBar" class="discussion-status-bar<%= (SelectedPost != null && (SelectedPost.IsFlagged || SelectedPost.IsHidden)) ? " is-visible" : "" %>" style="<%= (SelectedPost != null && (SelectedPost.IsFlagged || SelectedPost.IsHidden)) ? "display: flex;" : "display: none;" %><%= (SelectedPost != null && SelectedPost.IsFlagged) ? "background: #fff5f5; border: 1px solid #fed7d7;" : (SelectedPost != null && SelectedPost.IsHidden) ? "background: #f9fafb; border: 1px solid #e5e7eb;" : "" %>">
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <span id="tpDiscussionStatusBadge" class="badge <%= (SelectedPost != null && SelectedPost.IsFlagged) ? "badge--danger" : "badge--neutral" %>"><%= (SelectedPost != null && SelectedPost.IsFlagged) ? "Flagged" : (SelectedPost != null && SelectedPost.IsHidden) ? "Hidden" : "" %></span>

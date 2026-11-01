@@ -5,8 +5,7 @@ using System.Data.SqlClient;
 namespace Codercept
 {
     public partial class TADashboard : System.Web.UI.Page
-    {
-        // 1. Define Data Structures
+    { 
         public class GradingItem
         {
             public int AttemptId { get; set; }
@@ -53,18 +52,15 @@ namespace Codercept
             int unsolvedTotal;
             var forumActivity = GetUnsolvedPosts(out unsolvedTotal);
 
-            // Bind Grading Queue
             phQueueEmpty.Visible = gradingQueue.Count == 0;
             rptGradingQueue.Visible = gradingQueue.Count > 0;
             rptGradingQueue.DataSource = gradingQueue;
             rptGradingQueue.DataBind();
 
-            // Bind Forum Activity
             phForumEmpty.Visible = forumActivity.Count == 0;
             rptForumActivity.DataSource = forumActivity;
             rptForumActivity.DataBind();
 
-            // Overview Stats
             litStatPending.Text = toMark.ToString();
             litStatAwaiting.Text = awaiting.ToString();
             litStatUnsolved.Text = unsolvedTotal.ToString();
@@ -72,8 +68,6 @@ namespace Codercept
             litGreetingDesc.Text = BuildGreeting(toMark, unsolvedTotal);
         }
 
-        // Attempts the learner has submitted that this TA can still work on:
-        // nobody has started them (Pending), or this TA has a draft (In Progress).
         private List<GradingItem> GetGradingQueue(int taId, out int total)
         {
             total = 0;
@@ -165,7 +159,6 @@ namespace Codercept
             }
         }
 
-        // A post is "unsolved" until one of its replies is pinned as the Verified Answer. Hidden and deleted posts are excluded.
         private List<ForumItem> GetUnsolvedPosts(out int total)
         {
             total = 0;

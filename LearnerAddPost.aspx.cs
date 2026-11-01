@@ -19,7 +19,6 @@ namespace Codercept
 
         protected void btnPublishPost_Click(object sender, EventArgs e)
         {
-            // Enforce that all client/server validation checks passed successfully
             if (!Page.IsValid)
             {
                 return;
@@ -29,7 +28,6 @@ namespace Codercept
             string title = txtPostTitle.Text.Trim();
             string content = txtPostDesc.Text.Trim();
 
-            // Clean tags and store them as comma-separated values
             string rawTags = txtPostTags.Text;
             string formattedTags = "";
             if (!string.IsNullOrWhiteSpace(rawTags))
@@ -64,7 +62,6 @@ namespace Codercept
                 }
             }
 
-            // Store ID in Session so the main Forum page can highlight it immediately
             Session["NewPostId"] = newPostId;
             Response.Redirect("LearnerForum.aspx");
         }

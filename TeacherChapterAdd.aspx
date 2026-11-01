@@ -1,4 +1,4 @@
-<%@ Page Title="Add Content - Codercept" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterAdd.aspx.cs" Inherits="Codercept.TeacherChapterAdd" %>
+<%@ Page Title="CODERCEPT" Language="C#" MasterPageFile="~/TeacherSite.master" AutoEventWireup="true" CodeBehind="TeacherChapterAdd.aspx.cs" Inherits="Codercept.TeacherChapterAdd" %>
 <%@ MasterType VirtualPath="~/TeacherSite.master" %>
 <%@ Register Src="~/TeacherStepHeading.ascx" TagPrefix="uc" TagName="StepHeading" %>
 <%@ Register Src="~/TeacherBreadcrumb.ascx" TagPrefix="uc" TagName="Breadcrumb" %>
@@ -23,7 +23,6 @@
         <% } %>
     </div>
 
-    <%-- A chapter has one quiz or one assessment: when it already has one, the teacher is sent to edit it instead --%>
     <asp:Panel ID="pnlTeacherExists" runat="server" Visible="false">
         <article class="form-card content-form-card">
             <div class="form-card-heading">
@@ -89,7 +88,6 @@
             </asp:PlaceHolder>
         </div>
 
-        <%-- A quiz or assessment shows the total marks of its questions on the left, like the exam page --%>
         <div class="<%= HasQuestions ? "exam-sticky-bar" : "sticky-form-actions" %>">
             <% if (HasQuestions) { %>
             <div class="exam-marks-total">
@@ -108,7 +106,6 @@
 
 <asp:Content ID="ContentModals" ContentPlaceHolderID="cphModals" runat="server">
     <% if (CanSuggest) { %>
-    <%-- "Suggest with AI": the course (and its chapters) is read on the server; the suggestion only fills this form, the teacher edits and creates the chapter as usual. --%>
     <div class="modal-backdrop" role="presentation" id="tpAiChapterModal" data-tp-modal data-tp-region="tpAiChapterModal" data-tp-ai-chapter="<%= CourseId %>" hidden>
         <div class="modal ai-modal" role="dialog" aria-modal="true" aria-labelledby="tpAiChapterModalTitle">
             <h2 id="tpAiChapterModalTitle">Suggest with AI</h2>

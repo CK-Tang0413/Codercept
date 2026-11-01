@@ -1,6 +1,5 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="UserProfileDetails.ascx.cs" Inherits="Codercept.UserProfileDetails" %>
 
-<!-- Dynamic User Profile Modal -->
 <div class="modal-overlay" id="userProfileModal">
     <div class="modal-box">
         <div class="modal-header-row">
@@ -14,7 +13,6 @@
             <button type="button" class="btn-modal-close" onclick="closeUserProfileModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- Profile Content Placeholder dynamically generated via JavaScript -->
         <div id="modalDynamicBody"></div>
 
         <div class="modal-footer">
@@ -23,7 +21,6 @@
     </div>
 </div>
 
-<!-- Document Viewer Modal for User Profile (nested z-index so it overlays profile modal) -->
 <div class="modal-overlay" id="userProfileDocModal" style="z-index: 2200;">
     <div class="modal-box large">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -31,9 +28,8 @@
             <button type="button" class="btn-view-doc" onclick="closeUserProfileDocModal()"><i class="fa-solid fa-xmark"></i> Close</button>
         </div>
 
-        <!-- Dynamic Container that switches based on file extension -->
         <div id="userProfileDynamicPreviewContainer" style="flex: 1; min-height: 480px; display: flex; align-items: center; justify-content: center; background: #0b0c10; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
-            <!-- Content injected via JavaScript -->
+
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
@@ -150,7 +146,6 @@ function openUserProfileModal(button) {
     const email = row.getAttribute('data-email');
     const joined = row.getAttribute('data-joined') || 'N/A';
 
-    // Set Header
     const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
     document.getElementById('modalAvatar').innerText = initials;
     document.getElementById('modalName').innerHTML = `${escapeHtml(name)} <span class="badge badge-${escapeHtml(role)}">${escapeHtml(role.toUpperCase())}</span>`;
@@ -302,7 +297,6 @@ function closeUserProfileModal() {
     }
 }
 
-// Close on background backdrop click
 window.addEventListener('click', function (e) {
     const modal = document.getElementById('userProfileModal');
     if (e.target === modal) {

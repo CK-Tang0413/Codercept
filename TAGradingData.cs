@@ -470,7 +470,6 @@ namespace Codercept
                 con.Open();
                 using (SqlTransaction tx = con.BeginTransaction())
                 {
-                    // Check if already officially graded
                     using (SqlCommand cmd = new SqlCommand(
                         "SELECT CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) THEN 1 ELSE 0 END " +
                         "FROM Attempt a WITH (UPDLOCK, HOLDLOCK) WHERE a.AttemptId = @AttemptId", con, tx))
