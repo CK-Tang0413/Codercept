@@ -170,19 +170,24 @@
                                     <td><span class="score-text"><%# Eval("QuizAvg") %></span></td>
                                     <td><span class="score-text"><%# Eval("CodeAvg") %></span></td>
                                     <td><span class="grade-badge <%# Eval("GradeClass") %>"><%# Eval("Grade") %></span></td>
-                                    <td style="text-align: center;">
+                                    <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center; align-items: center; border-bottom: 1px solid var(--table-border);">
                                         <!-- State 1: Incomplete -> Continue Learning -->
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) < 100 %>'>
-                                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none;">Continue &rarr;</a>
+                                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none;">Continue Learning &rarr;</a>
+                                        </asp:PlaceHolder>
+
+                                        <!-- State 2 & 3: Completed -> Always allow Review Material -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 %>'>
+                                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(124, 58, 237, 0.1); color: var(--accent-light); border: 1px solid var(--accent-primary);">Review Material</a>
                                         </asp:PlaceHolder>
 
                                         <!-- State 2: Completed, but NOT reviewed -> Leave Review -->
                                         <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && !Convert.ToBoolean(Eval("HasReviewed")) %>'>
-                                            <a href='CourseReview.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn enroll" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">Leave Review ⭐</a>
+                                            <a href='CourseDetails.aspx?id=<%# Eval("CourseId") %>' class="course-action-btn enroll" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">Leave Review ⭐</a>
                                         </asp:PlaceHolder>
 
-                                        <!-- State 3: Completed AND reviewed -> View Certificate / Completed Badge -->
-                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && Convert.ToBoolean(Eval("HasReviewed")) %>'>
+                                        <!-- State 3: Completed AND got final grade -> View Certificate -->
+                                        <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("Progress")) == 100 && Eval("Grade").ToString() != "-" %>'>
                                             <a href='Certificates.aspx' class="course-action-btn active" style="padding: 6px 14px; font-size: 0.8rem; display: inline-block; text-decoration: none; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">View Certificate 🏆</a>
                                         </asp:PlaceHolder>
                                     </td>

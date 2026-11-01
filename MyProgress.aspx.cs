@@ -39,7 +39,7 @@ namespace Codercept
                         (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChapters,
                         
                         -- Quiz Average
-                        ISNULL((SELECT AVG(aa.ObtainedScore / q.QuestionScore * 100)
+                        ISNULL((SELECT AVG(CAST(aa.ObtainedScore AS FLOAT) / q.QuestionScore * 100)
                          FROM AttemptAnswer aa
                          JOIN Question q ON aa.QuestionId = q.QuestionId
                          JOIN Attempt a ON aa.AttemptId = a.AttemptId
@@ -49,7 +49,7 @@ namespace Codercept
                         ), -1) as QuizAvgRaw,
 
                         -- Coding Average
-                        ISNULL((SELECT AVG(aa.ObtainedScore / q.QuestionScore * 100)
+                        ISNULL((SELECT AVG(CAST(aa.ObtainedScore AS FLOAT) / q.QuestionScore * 100)
                          FROM AttemptAnswer aa
                          JOIN Question q ON aa.QuestionId = q.QuestionId
                          JOIN Attempt a ON aa.AttemptId = a.AttemptId

@@ -239,15 +239,20 @@ namespace Codercept
                                 pnlMedia.Visible = true;
                                 if (!string.IsNullOrEmpty(mediaLink))
                                 {
-                                    if (mediaLink.EndsWith(".mp4") || mediaLink.EndsWith(".webm") || mediaLink.Contains("youtube"))
+                                    if (mediaLink.EndsWith(".mp4") || mediaLink.EndsWith(".webm"))
                                     {
                                         litMediaHtml.Text = $@"
-                                        <div class='video-container' style=""background-image: url('{mediaLink}.jpg'); background-size: cover; background-position: center;"">
-                                            <div class='play-btn'>
-                                                <svg width='24' height='24' fill='currentColor' viewBox='0 0 16 16'><path d='M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z'/></svg>
-                                            </div>
-                                            <h3 style='color: white; margin-bottom: 0.5rem;'>Lecture Video</h3>
-                                        </div>";
+                                        <video width='100%' controls style='border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light); background: #000;'>
+                                            <source src='{mediaLink}' type='video/mp4'>
+                                            Your browser does not support the video tag.
+                                        </video>";
+                                    }
+                                    else if (mediaLink.Contains("youtube.com") || mediaLink.Contains("youtu.be"))
+                                    {
+                                        litMediaHtml.Text = $@"
+                                        <iframe width='100%' style='aspect-ratio: 16/9; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light);' 
+                                            src='{mediaLink}' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen>
+                                        </iframe>";
                                     }
                                     else
                                     {
@@ -476,6 +481,22 @@ namespace Codercept
 
         protected void btnSubmitQuiz_Click(object sender, EventArgs e)
         {
+            // 1. Validate that ALL questions have been answered first
+            foreach (RepeaterItem item in rptQuizQuestions.Items)
+            {
+                HiddenField hfQuestionId = (HiddenField)item.FindControl("hfQuestionId");
+                int questionId = Convert.ToInt32(hfQuestionId.Value);
+                string submittedOptionId = Request.Form[$"quiz_q_{questionId}"];
+
+                if (string.IsNullOrEmpty(submittedOptionId))
+                {
+                    lblQuizState.Visible = true;
+                    lblQuizState.Text = "Please answer all questions before submitting.";
+                    lblQuizState.Style.Add("color", "#ef4444");
+                    return; // Stop execution, do not submit to DB
+                }
+            }
+
             int learnerId = Convert.ToInt32(Session["UserId"]);
             int quizId = Convert.ToInt32(ViewState["QuizId"]);
 
@@ -500,7 +521,6 @@ namespace Codercept
                         int questionId = Convert.ToInt32(hfQuestionId.Value);
 
                         string submittedOptionId = Request.Form[$"quiz_q_{questionId}"];
-                        if (string.IsNullOrEmpty(submittedOptionId)) submittedOptionId = "0";
 
                         string ansQuery = "INSERT INTO AttemptAnswer (AttemptId, QuestionId, AnswerContent, IsCorrect, ObtainedScore, TeacherComment) VALUES (@AttemptId, @QuestionId, @AnswerContent, 'pending', 0, '')";
                         using (SqlCommand ansCmd = new SqlCommand(ansQuery, con, transaction))
@@ -810,6 +830,39 @@ namespace Codercept
 
         protected void btnSubmitExam_Click(object sender, EventArgs e)
         {
+            // 1. Validate that ALL exam questions have been answered first
+            foreach (RepeaterItem item in rptExamQuestions.Items)
+            {
+                HiddenField hfQuestionId = (HiddenField)item.FindControl("hfExamQuestionId");
+                HiddenField hfType = (HiddenField)item.FindControl("hfExamQuestionType");
+                int questionId = Convert.ToInt32(hfQuestionId.Value);
+                string type = hfType.Value;
+                string checkAnswer = "";
+
+                if (type == "MCQ")
+                {
+                    checkAnswer = Request.Form[$"exam_q_{questionId}"];
+                }
+                else if (type == "FillBlank")
+                {
+                    TextBox txt = (TextBox)item.FindControl("txtFillBlank");
+                    checkAnswer = txt.Text.Trim();
+                }
+                else if (type == "Coding")
+                {
+                    TextBox txt = (TextBox)item.FindControl("txtExamCode");
+                    checkAnswer = txt.Text.Trim();
+                }
+
+                if (string.IsNullOrEmpty(checkAnswer))
+                {
+                    lblExamState.Visible = true;
+                    lblExamState.Text = "Please answer all exam questions before submitting.";
+                    lblExamState.Style.Add("color", "#ef4444");
+                    return; // Stop execution, do not submit to DB
+                }
+            }
+
             int learnerId = Convert.ToInt32(Session["UserId"]);
             int examId = Convert.ToInt32(ViewState["ExamId"]);
 
@@ -839,7 +892,6 @@ namespace Codercept
                         if (type == "MCQ")
                         {
                             submittedAnswer = Request.Form[$"exam_q_{questionId}"];
-                            if (string.IsNullOrEmpty(submittedAnswer)) submittedAnswer = "0";
                         }
                         else if (type == "FillBlank")
                         {
