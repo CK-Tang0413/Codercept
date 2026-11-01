@@ -15,8 +15,7 @@
             <button type="button" class="btn-modal-close" onclick="closeAddAdminModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <asp:Panel ID="pnlModalError" runat="server" Visible="false" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; 
-                    padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <asp:Panel ID="pnlModalError" runat="server" Visible="false" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-circle-exclamation"></i>
             <div><asp:Literal ID="litModalError" runat="server"></asp:Literal></div>
         </asp:Panel>
