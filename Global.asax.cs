@@ -26,5 +26,24 @@ namespace Codercept
             // Cleanup automated weekly purge service
             UserPurgeService.StopScheduledPurge();
         }
+
+        protected void Session_End(object sender, EventArgs e)
+        {
+            if (Session != null && Session["LogId"] != null)
+            {
+                int logId;
+                if (int.TryParse(Session["LogId"].ToString(), out logId))
+                {
+                    string userRole = (Session["UserRole"] as string) ?? (Session["UserType"] as string);
+
+                    int userId = 0;
+                    if (Session["UserId"] != null)
+                    {
+                        int.TryParse(Session["UserId"].ToString(), out userId);
+                    }
+                    UserLogHelper.RecordLogout(logId, userRole, userId);
+                }
+            }
+        }
     }
 }
