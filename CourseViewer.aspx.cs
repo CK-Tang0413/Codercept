@@ -266,7 +266,7 @@ namespace Codercept
 
                                 using (SqlConnection subCon = new SqlConnection(connString))
                                 {
-                                    string subQuery = "SELECT SubChapterTitle, SubChapterContent FROM SubChapter WHERE ChapterId = @ChapId ORDER BY SubChapterOrder ASC";
+                                    string subQuery = "SELECT SubChapterTitle, SubChapterContent, SubChapterMediaLink FROM SubChapter WHERE ChapterId = @ChapId ORDER BY SubChapterOrder ASC";
                                     using (SqlCommand subCmd = new SqlCommand(subQuery, subCon))
                                     {
                                         subCmd.Parameters.AddWithValue("@ChapId", activeChapterDbId);
@@ -277,7 +277,42 @@ namespace Codercept
                                             while (subReader.Read())
                                             {
                                                 theoryHtml += $"<h2>{subReader["SubChapterTitle"]}</h2><p>{subReader["SubChapterContent"]}</p>";
+
+                                                if (subReader["SubChapterMediaLink"] != DBNull.Value)
+                                                {
+                                                    string subMedia = subReader["SubChapterMediaLink"].ToString().Trim();
+                                                    if (!string.IsNullOrEmpty(subMedia))
+                                                    {
+                                                        if (subMedia.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || subMedia.EndsWith(".webm", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            theoryHtml += $@"
+                                                            <video width='100%' controls style='border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light); background: #000;'>
+                                                                <source src='{subMedia}' type='video/mp4'>
+                                                                Your browser does not support the video tag.
+                                                            </video>";
+                                                        }
+                                                        else if (subMedia.Contains("youtube.com") || subMedia.Contains("youtu.be"))
+                                                        {
+                                                            theoryHtml += $@"
+                                                            <iframe width='100%' style='aspect-ratio: 16/9; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light);' 
+                                                                src='{subMedia}' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen>
+                                                            </iframe>";
+                                                        }
+                                                        else if (subMedia.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            theoryHtml += $@"
+                                                            <object data='{subMedia}' type='application/pdf' style='width: 100%; height: 600px; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light);'>
+                                                                <p>Your browser does not support PDFs. <a href='{subMedia}' style='color: var(--accent-primary);'>Download the PDF</a>.</p>
+                                                            </object>";
+                                                        }
+                                                        else
+                                                        {
+                                                            theoryHtml += $"<img src='{subMedia}' style='width: 100%; border-radius: 12px; margin-bottom: 2rem;' />";
+                                                        }
+                                                    }
+                                                }
                                             }
+
                                             if (!string.IsNullOrEmpty(theoryHtml))
                                             {
                                                 pnlTheory.Visible = true;
