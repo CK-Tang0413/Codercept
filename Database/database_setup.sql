@@ -2636,3 +2636,41 @@ DROP TABLE #TcAllCorrect;
 DROP TABLE #TcMissing;
 
 PRINT 'Missing answers of earlier attempts added.';
+
+-- Resolve missing C++ Chapter 2 Quiz for Wan Hon Kit
+DECLARE @FixWanId INT = (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = 'wan1234@gmail.com');
+
+DECLARE @FixCppChap2QuizId INT = (
+    SELECT q.[QuizId] 
+    FROM [dbo].[Quiz] q
+    INNER JOIN [dbo].[Chapter] ch ON ch.[ChapterId] = q.[ChapterId]
+    INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId]
+    WHERE c.[CourseTitle] = 'C++ Algorithms & Data Structures' AND ch.[ChapterNum] = 2
+);
+
+DECLARE @FixTeacherId INT = (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = 'C++ Algorithms & Data Structures');
+DECLARE @FixNewAttemptId INT;
+
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId])
+VALUES (GETDATE(), 'completed', @FixWanId, @FixCppChap2QuizId);
+
+SET @FixNewAttemptId = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT 
+    @FixNewAttemptId, 
+    q.[QuestionId], 
+    (SELECT TOP 1 CAST([MCQ_OptionId] AS NVARCHAR(20)) FROM [dbo].[MCQ_Option] WHERE [QuestionId] = q.[QuestionId] AND [IsCorrect] = 1),
+    'correct', 
+    q.[QuestionScore], 
+    ''
+FROM [dbo].[Question] q
+WHERE q.[QuizId] = @FixCppChap2QuizId;
+
+DECLARE @FixTotalScore FLOAT = (SELECT SUM([QuestionScore]) FROM [dbo].[Question] WHERE [QuizId] = @FixCppChap2QuizId);
+
+INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId])
+VALUES (@FixTotalScore, 'A', 100.0, 'Auto-completed missing attempt', @FixNewAttemptId);
+
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId])
+VALUES ('completed', '', @FixTeacherId, @FixNewAttemptId);
