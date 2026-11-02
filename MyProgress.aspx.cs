@@ -36,6 +36,7 @@ namespace Codercept
                         ISNULL((SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language'), 'General') as Language,
                         lp.ChapNum,
                         (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChapters,
+                        (SELECT COUNT(*) FROM Exam WHERE CourseId = c.CourseId) as ExamCount,
                         
                         -- Quiz Average
                         ISNULL((SELECT AVG(CAST(aa.ObtainedScore AS FLOAT) / q.QuestionScore * 100)
@@ -106,10 +107,20 @@ namespace Codercept
 
                         int currentChapter = Convert.ToInt32(row["ChapNum"]);
                         int totalChapters = Convert.ToInt32(row["TotalChapters"]);
-                        int chaptersCompleted = currentChapter - 1;
-                        if (currentChapter > totalChapters) chaptersCompleted = totalChapters;
+                        bool hasExam = Convert.ToInt32(row["ExamCount"]) > 0;
+                        int maxAllowedChapter = totalChapters + (hasExam ? 1 : 0);
 
-                        int progress = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
+                        int chaptersCompleted;
+                        if (currentChapter > maxAllowedChapter)
+                        {
+                            chaptersCompleted = maxAllowedChapter;
+                        }
+                        else
+                        {
+                            chaptersCompleted = currentChapter - 1;
+                        }
+
+                        int progress = maxAllowedChapter > 0 ? (chaptersCompleted * 100) / maxAllowedChapter : 0;
                         row["Progress"] = progress;
 
                         if (progress == 100) completedCount++;
