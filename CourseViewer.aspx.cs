@@ -173,18 +173,9 @@ namespace Codercept
                     if (learnerProgress > examChapNum) examStatus = "completed";
                     else if (learnerProgress == examChapNum) examStatus = "pending";
 
-                    string checkExamAttempt = "SELECT AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND ExamId = @ExamId";
-                    using (SqlCommand cmd = new SqlCommand(checkExamAttempt, con))
+                    if (GetSubmittedAttemptId(learnerId, "ExamId", examId) > 0)
                     {
-                        cmd.Parameters.AddWithValue("@LearnerId", learnerId);
-                        cmd.Parameters.AddWithValue("@ExamId", examId);
-                        con.Open();
-                        object res = cmd.ExecuteScalar();
-                        if (res != null && (res.ToString() == "completed" || res.ToString() == "graded"))
-                        {
-                            examStatus = "completed";
-                        }
-                        con.Close();
+                        examStatus = "completed";
                     }
 
                     sidebarChapters.Add(new NavChapter
@@ -383,111 +374,126 @@ namespace Codercept
             }
         }
 
-        private void LoadQuizQuestions(int quizId, int learnerId)
+        // =====================================================================
+        // Shared helpers: find the learner's submitted attempt and load every
+        // question of a quiz / assessment / exam together with the saved answer.
+        // =====================================================================
+
+        // Returns the newest SUBMITTED attempt (completed / graded), or 0 if there is none.
+        // A learner can also have 'in_progress' or 'incomplete' attempts for the same activity,
+        // so we must not simply take the first Attempt row.
+        private int GetSubmittedAttemptId(int learnerId, string idColumn, int activityId)
+        {
+            using (SqlConnection con = new SqlConnection(connString))
+            {
+                string sql = $"SELECT TOP 1 AttemptId FROM Attempt WHERE LearnerId = @LearnerId AND {idColumn} = @ActivityId AND AttemptStatus IN ('completed', 'graded') ORDER BY AttemptDate DESC, AttemptId DESC";
+                using (SqlCommand cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@LearnerId", learnerId);
+                    cmd.Parameters.AddWithValue("@ActivityId", activityId);
+                    con.Open();
+                    object res = cmd.ExecuteScalar();
+                    return (res == null || res == DBNull.Value) ? 0 : Convert.ToInt32(res);
+                }
+            }
+        }
+
+        // ownerColumn is one of "QuizId", "AssessmentId", "ExamId" (never user input).
+        // attemptId > 0 means the learner already submitted: answers are filled in and the inputs are locked.
+        private List<ExamQuestion> LoadQuestionsWithAnswers(string ownerColumn, int ownerId, int attemptId)
         {
             List<ExamQuestion> questions = new List<ExamQuestion>();
-            bool isAlreadySubmitted = false;
+            Dictionary<int, ExamQuestion> byId = new Dictionary<int, ExamQuestion>();
+            Dictionary<int, string> answers = new Dictionary<int, string>();
+            bool locked = attemptId > 0;
 
             using (SqlConnection con = new SqlConnection(connString))
             {
-                string checkQuery = "SELECT AttemptId, AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND QuizId = @QuizId";
-                int existingAttemptId = 0;
-                using (SqlCommand checkCmd = new SqlCommand(checkQuery, con))
+                con.Open();
+
+                // 1. everything the learner submitted for this attempt (one row per question)
+                if (locked)
                 {
-                    checkCmd.Parameters.AddWithValue("@LearnerId", learnerId);
-                    checkCmd.Parameters.AddWithValue("@QuizId", quizId);
-                    con.Open();
-                    using (SqlDataReader reader = checkCmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand("SELECT QuestionId, AnswerContent FROM AttemptAnswer WHERE AttemptId = @AttemptId", con))
                     {
-                        if (reader.Read())
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        using (SqlDataReader r = cmd.ExecuteReader())
                         {
-                            existingAttemptId = Convert.ToInt32(reader["AttemptId"]);
-                            string status = reader["AttemptStatus"].ToString();
-                            isAlreadySubmitted = (status == "completed" || status == "graded");
+                            while (r.Read())
+                                answers[Convert.ToInt32(r["QuestionId"])] = r["AnswerContent"] == DBNull.Value ? "" : r["AnswerContent"].ToString();
                         }
                     }
-                    con.Close();
                 }
 
-                if (isAlreadySubmitted)
+                // 2. the questions
+                using (SqlCommand cmd = new SqlCommand($"SELECT QuestionId, QuestionContent, QuestionType FROM Question WHERE {ownerColumn} = @OwnerId ORDER BY QuestionOrder ASC, QuestionId ASC", con))
                 {
-                    lblQuizState.Visible = true;
-                    lblQuizState.Text = "You have already submitted this quiz.";
-                    lblQuizState.Style.Add("color", "#4ade80");
-                    btnSubmitQuiz.Enabled = false;
-                    btnSubmitQuiz.Text = "Submitted";
-                    btnSubmitQuiz.CssClass = "btn-nav";
-                }
-
-                string qQuery = "SELECT QuestionId, QuestionContent FROM Question WHERE QuizId = @QuizId ORDER BY QuestionOrder ASC";
-                using (SqlCommand cmd = new SqlCommand(qQuery, con))
-                {
-                    cmd.Parameters.AddWithValue("@QuizId", quizId);
-                    con.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    cmd.Parameters.AddWithValue("@OwnerId", ownerId);
+                    using (SqlDataReader r = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
+                        while (r.Read())
                         {
-                            int questionId = Convert.ToInt32(reader["QuestionId"]);
+                            int qId = Convert.ToInt32(r["QuestionId"]);
+                            string answer;
                             ExamQuestion q = new ExamQuestion
                             {
-                                QuestionId = questionId,
-                                Title = $"Q. {reader["QuestionContent"]}",
+                                QuestionId = qId,
+                                Title = $"Q. {r["QuestionContent"]}",
+                                Type = r["QuestionType"].ToString(),
+                                IsLocked = locked,
+                                SelectedAnswer = answers.TryGetValue(qId, out answer) ? answer : "",
                                 Options = new List<QuizOption>()
                             };
-
-                            string submittedOptionId = "";
-                            if (isAlreadySubmitted && existingAttemptId > 0)
-                            {
-                                using (SqlConnection ansCon = new SqlConnection(connString))
-                                {
-                                    string ansQuery = "SELECT AnswerContent FROM AttemptAnswer WHERE AttemptId = @AttemptId AND QuestionId = @QuestionId";
-                                    using (SqlCommand ansCmd = new SqlCommand(ansQuery, ansCon))
-                                    {
-                                        ansCmd.Parameters.AddWithValue("@AttemptId", existingAttemptId);
-                                        ansCmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                        ansCon.Open();
-                                        object res = ansCmd.ExecuteScalar();
-                                        if (res != null) submittedOptionId = res.ToString();
-                                        ansCon.Close();
-                                    }
-                                }
-                            }
-                            q.SelectedAnswer = submittedOptionId;
-
-                            using (SqlConnection con2 = new SqlConnection(connString))
-                            {
-                                string optQuery = "SELECT MCQ_OptionId, OptionContent FROM MCQ_Option WHERE QuestionId = @QuestionId ORDER BY OptionOrder ASC";
-                                using (SqlCommand optCmd = new SqlCommand(optQuery, con2))
-                                {
-                                    optCmd.Parameters.AddWithValue("@QuestionId", questionId);
-                                    con2.Open();
-                                    using (SqlDataReader optReader = optCmd.ExecuteReader())
-                                    {
-                                        while (optReader.Read())
-                                        {
-                                            int optId = Convert.ToInt32(optReader["MCQ_OptionId"]);
-                                            q.Options.Add(new QuizOption
-                                            {
-                                                OptionId = optId,
-                                                QuestionId = questionId,
-                                                OptionContent = optReader["OptionContent"].ToString(),
-                                                IsSelected = (optId.ToString() == submittedOptionId),
-                                                IsLocked = isAlreadySubmitted
-                                            });
-                                        }
-                                    }
-                                    con2.Close();
-                                }
-                            }
                             questions.Add(q);
+                            byId[qId] = q;
                         }
                     }
-                    con.Close();
+                }
+
+                // 3. all MCQ options of those questions in one query
+                using (SqlCommand cmd = new SqlCommand($"SELECT o.MCQ_OptionId, o.QuestionId, o.OptionContent FROM MCQ_Option o INNER JOIN Question q ON q.QuestionId = o.QuestionId WHERE q.{ownerColumn} = @OwnerId ORDER BY o.OptionOrder ASC", con))
+                {
+                    cmd.Parameters.AddWithValue("@OwnerId", ownerId);
+                    using (SqlDataReader r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            int qId = Convert.ToInt32(r["QuestionId"]);
+                            ExamQuestion q;
+                            if (!byId.TryGetValue(qId, out q)) continue;
+
+                            int optId = Convert.ToInt32(r["MCQ_OptionId"]);
+                            q.Options.Add(new QuizOption
+                            {
+                                OptionId = optId,
+                                QuestionId = qId,
+                                OptionContent = r["OptionContent"].ToString(),
+                                IsSelected = locked && optId.ToString() == (q.SelectedAnswer ?? "").Trim(),
+                                IsLocked = locked
+                            });
+                        }
+                    }
                 }
             }
 
-            rptQuizQuestions.DataSource = questions;
+            return questions;
+        }
+
+        private void LoadQuizQuestions(int quizId, int learnerId)
+        {
+            int attemptId = GetSubmittedAttemptId(learnerId, "QuizId", quizId);
+
+            if (attemptId > 0)
+            {
+                lblQuizState.Visible = true;
+                lblQuizState.Text = "You have already submitted this quiz.";
+                lblQuizState.Style.Add("color", "#4ade80");
+                btnSubmitQuiz.Enabled = false;
+                btnSubmitQuiz.Text = "Submitted";
+                btnSubmitQuiz.CssClass = "btn-nav";
+            }
+
+            rptQuizQuestions.DataSource = LoadQuestionsWithAnswers("QuizId", quizId, attemptId);
             rptQuizQuestions.DataBind();
         }
 
@@ -598,63 +604,100 @@ namespace Codercept
                     }
                     con.Close();
                 }
+            }
 
-                string checkQuery = "SELECT AttemptId, AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND AssessmentId = @AssessmentId";
-                int existingAttemptId = 0;
-                bool isAlreadySubmitted = false;
+            int attemptId = GetSubmittedAttemptId(learnerId, "AssessmentId", assessmentId);
 
-                using (SqlCommand checkCmd = new SqlCommand(checkQuery, con))
-                {
-                    checkCmd.Parameters.AddWithValue("@LearnerId", learnerId);
-                    checkCmd.Parameters.AddWithValue("@AssessmentId", assessmentId);
-                    con.Open();
-                    using (SqlDataReader reader = checkCmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            existingAttemptId = Convert.ToInt32(reader["AttemptId"]);
-                            string status = reader["AttemptStatus"].ToString();
-                            isAlreadySubmitted = (status == "completed" || status == "graded");
-                        }
-                    }
-                    con.Close();
-                }
+            if (attemptId > 0)
+            {
+                lblCodeState.Visible = true;
+                lblCodeState.Text = "You have already submitted this assessment.";
+                lblCodeState.Style.Add("color", "#4ade80");
+                btnSubmitAssessment.Enabled = false;
+                btnSubmitAssessment.Text = "Submitted";
+                btnSubmitAssessment.CssClass = "btn-nav";
+            }
 
-                if (isAlreadySubmitted && existingAttemptId > 0)
-                {
-                    lblCodeState.Visible = true;
-                    lblCodeState.Text = "You have already submitted this assessment.";
-                    lblCodeState.Style.Add("color", "#4ade80");
-                    btnSubmitAssessment.Enabled = false;
-                    btnSubmitAssessment.Text = "Submitted";
-                    btnSubmitAssessment.CssClass = "btn-nav";
-                    txtCodeEditor.Enabled = false;
+            // An assessment can hold several questions (MCQ, fill-in-the-blank and coding),
+            // so every question is listed with its own answer, the same way the exam does it.
+            rptAssessmentQuestions.DataSource = LoadQuestionsWithAnswers("AssessmentId", assessmentId, attemptId);
+            rptAssessmentQuestions.DataBind();
+        }
 
-                    string getAnsQuery = "SELECT TOP 1 AnswerContent FROM AttemptAnswer WHERE AttemptId = @AttemptId";
-                    using (SqlCommand ansCmd = new SqlCommand(getAnsQuery, con))
-                    {
-                        ansCmd.Parameters.AddWithValue("@AttemptId", existingAttemptId);
-                        con.Open();
-                        object res = ansCmd.ExecuteScalar();
-                        if (res != null) txtCodeEditor.Text = res.ToString();
-                        con.Close();
-                    }
-                }
+        protected void rptAssessmentQuestions_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem) return;
+
+            var question = (ExamQuestion)e.Item.DataItem;
+            Repeater rptOptions = (Repeater)e.Item.FindControl("rptAsmOptions");
+            TextBox txtFill = (TextBox)e.Item.FindControl("txtAsmFill");
+            TextBox txtCode = (TextBox)e.Item.FindControl("txtAsmCode");
+
+            rptOptions.Visible = (question.Type == "MCQ");
+            txtFill.Visible = (question.Type == "FillBlank");
+            txtCode.Visible = (question.Type == "Coding");
+
+            if (question.Type == "MCQ")
+            {
+                rptOptions.DataSource = question.Options;
+                rptOptions.DataBind();
+            }
+            else if (question.Type == "FillBlank")
+            {
+                txtFill.Text = question.SelectedAnswer;
+                txtFill.Enabled = !question.IsLocked;
+            }
+            else if (question.Type == "Coding")
+            {
+                txtCode.Text = question.SelectedAnswer;
+                txtCode.Enabled = !question.IsLocked;
             }
         }
 
         protected void btnSubmitAssessment_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCodeEditor.Text))
+            int learnerId = Convert.ToInt32(Session["UserId"]);
+            int assessmentId = Convert.ToInt32(ViewState["AssessmentId"]);
+
+            // already submitted (for example a second click): just show the saved answers again
+            if (GetSubmittedAttemptId(learnerId, "AssessmentId", assessmentId) > 0)
             {
-                lblCodeState.Visible = true;
-                lblCodeState.Text = "Cannot submit an empty code block.";
-                lblCodeState.Style.Add("color", "#ef4444");
+                LoadAssessmentContent(assessmentId, learnerId);
                 return;
             }
 
-            int learnerId = Convert.ToInt32(Session["UserId"]);
-            int assessmentId = Convert.ToInt32(ViewState["AssessmentId"]);
+            // collect one answer per question
+            List<KeyValuePair<int, string>> answers = new List<KeyValuePair<int, string>>();
+            foreach (RepeaterItem item in rptAssessmentQuestions.Items)
+            {
+                HiddenField hfQuestionId = (HiddenField)item.FindControl("hfAsmQuestionId");
+                HiddenField hfType = (HiddenField)item.FindControl("hfAsmQuestionType");
+                int questionId = Convert.ToInt32(hfQuestionId.Value);
+                string type = hfType.Value;
+                string answer = "";
+
+                if (type == "MCQ") answer = Request.Form[$"asm_q_{questionId}"];
+                else if (type == "FillBlank") answer = ((TextBox)item.FindControl("txtAsmFill")).Text.Trim();
+                else if (type == "Coding") answer = ((TextBox)item.FindControl("txtAsmCode")).Text.Trim();
+
+                if (string.IsNullOrWhiteSpace(answer))
+                {
+                    lblCodeState.Visible = true;
+                    lblCodeState.Text = "Please answer all assessment questions before submitting.";
+                    lblCodeState.Style.Add("color", "#ef4444");
+                    return;
+                }
+
+                answers.Add(new KeyValuePair<int, string>(questionId, answer));
+            }
+
+            if (answers.Count == 0)
+            {
+                lblCodeState.Visible = true;
+                lblCodeState.Text = "Assessment question configuration missing.";
+                lblCodeState.Style.Add("color", "#ef4444");
+                return;
+            }
 
             using (SqlConnection con = new SqlConnection(connString))
             {
@@ -662,17 +705,6 @@ namespace Codercept
                 SqlTransaction transaction = con.BeginTransaction();
                 try
                 {
-                    int questionId = 0;
-                    string qQuery = "SELECT TOP 1 QuestionId FROM Question WHERE AssessmentId = @AssessmentId";
-                    using (SqlCommand qCmd = new SqlCommand(qQuery, con, transaction))
-                    {
-                        qCmd.Parameters.AddWithValue("@AssessmentId", assessmentId);
-                        object res = qCmd.ExecuteScalar();
-                        if (res != null) questionId = Convert.ToInt32(res);
-                    }
-
-                    if (questionId == 0) throw new Exception("Assessment question configuration missing.");
-
                     string attemptQuery = "INSERT INTO Attempt (AttemptDate, AttemptStatus, LearnerId, AssessmentId) OUTPUT INSERTED.AttemptId VALUES (GETDATE(), 'completed', @LearnerId, @AssessmentId)";
                     int newAttemptId = 0;
                     using (SqlCommand cmd = new SqlCommand(attemptQuery, con, transaction))
@@ -683,12 +715,15 @@ namespace Codercept
                     }
 
                     string ansQuery = "INSERT INTO AttemptAnswer (AttemptId, QuestionId, AnswerContent, IsCorrect, ObtainedScore, TeacherComment) VALUES (@AttemptId, @QuestionId, @AnswerContent, 'pending', 0, '')";
-                    using (SqlCommand ansCmd = new SqlCommand(ansQuery, con, transaction))
+                    foreach (KeyValuePair<int, string> a in answers)
                     {
-                        ansCmd.Parameters.AddWithValue("@AttemptId", newAttemptId);
-                        ansCmd.Parameters.AddWithValue("@QuestionId", questionId);
-                        ansCmd.Parameters.AddWithValue("@AnswerContent", txtCodeEditor.Text.Trim());
-                        ansCmd.ExecuteNonQuery();
+                        using (SqlCommand ansCmd = new SqlCommand(ansQuery, con, transaction))
+                        {
+                            ansCmd.Parameters.AddWithValue("@AttemptId", newAttemptId);
+                            ansCmd.Parameters.AddWithValue("@QuestionId", a.Key);
+                            ansCmd.Parameters.AddWithValue("@AnswerContent", a.Value);
+                            ansCmd.ExecuteNonQuery();
+                        }
                     }
 
                     transaction.Commit();
@@ -711,117 +746,20 @@ namespace Codercept
 
         private void LoadExamQuestions(int examId, int learnerId)
         {
-            List<ExamQuestion> questions = new List<ExamQuestion>();
-            bool isAlreadySubmitted = false;
-            int existingAttemptId = 0;
+            int attemptId = GetSubmittedAttemptId(learnerId, "ExamId", examId);
 
-            using (SqlConnection con = new SqlConnection(connString))
+            if (attemptId > 0)
             {
-                string checkQuery = "SELECT AttemptId, AttemptStatus FROM Attempt WHERE LearnerId = @LearnerId AND ExamId = @ExamId";
-                using (SqlCommand checkCmd = new SqlCommand(checkQuery, con))
-                {
-                    checkCmd.Parameters.AddWithValue("@LearnerId", learnerId);
-                    checkCmd.Parameters.AddWithValue("@ExamId", examId);
-                    con.Open();
-                    using (SqlDataReader reader = checkCmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            existingAttemptId = Convert.ToInt32(reader["AttemptId"]);
-                            string status = reader["AttemptStatus"].ToString();
-                            isAlreadySubmitted = (status == "completed" || status == "graded");
-                        }
-                    }
-                    con.Close();
-                }
-
-                if (isAlreadySubmitted)
-                {
-                    lblExamState.Visible = true;
-                    lblExamState.Text = "You have already submitted this exam. Awaiting grading.";
-                    lblExamState.Style.Add("color", "#4ade80");
-                    btnSubmitExam.Enabled = false;
-                    btnSubmitExam.Text = "Submitted";
-                    btnSubmitExam.CssClass = "btn-nav";
-                    phExamCheckmark.Visible = true;
-                }
-
-                string qQuery = "SELECT QuestionId, QuestionContent, QuestionType FROM Question WHERE ExamId = @ExamId ORDER BY QuestionOrder ASC";
-                using (SqlCommand cmd = new SqlCommand(qQuery, con))
-                {
-                    cmd.Parameters.AddWithValue("@ExamId", examId);
-                    con.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int qId = Convert.ToInt32(reader["QuestionId"]);
-                            string type = reader["QuestionType"].ToString();
-
-                            ExamQuestion q = new ExamQuestion
-                            {
-                                QuestionId = qId,
-                                Title = $"Q. {reader["QuestionContent"]}",
-                                Type = type,
-                                IsLocked = isAlreadySubmitted,
-                                Options = new List<QuizOption>()
-                            };
-
-                            string submittedAnswer = "";
-                            if (isAlreadySubmitted && existingAttemptId > 0)
-                            {
-                                using (SqlConnection ansCon = new SqlConnection(connString))
-                                {
-                                    string ansQuery = "SELECT AnswerContent FROM AttemptAnswer WHERE AttemptId = @AttemptId AND QuestionId = @QuestionId";
-                                    using (SqlCommand ansCmd = new SqlCommand(ansQuery, ansCon))
-                                    {
-                                        ansCmd.Parameters.AddWithValue("@AttemptId", existingAttemptId);
-                                        ansCmd.Parameters.AddWithValue("@QuestionId", qId);
-                                        ansCon.Open();
-                                        object res = ansCmd.ExecuteScalar();
-                                        if (res != null) submittedAnswer = res.ToString();
-                                        ansCon.Close();
-                                    }
-                                }
-                            }
-                            q.SelectedAnswer = submittedAnswer;
-
-                            if (type == "MCQ")
-                            {
-                                using (SqlConnection con2 = new SqlConnection(connString))
-                                {
-                                    string optQuery = "SELECT MCQ_OptionId, OptionContent FROM MCQ_Option WHERE QuestionId = @QuestionId ORDER BY OptionOrder ASC";
-                                    using (SqlCommand optCmd = new SqlCommand(optQuery, con2))
-                                    {
-                                        optCmd.Parameters.AddWithValue("@QuestionId", qId);
-                                        con2.Open();
-                                        using (SqlDataReader optReader = optCmd.ExecuteReader())
-                                        {
-                                            while (optReader.Read())
-                                            {
-                                                int optId = Convert.ToInt32(optReader["MCQ_OptionId"]);
-                                                q.Options.Add(new QuizOption
-                                                {
-                                                    OptionId = optId,
-                                                    QuestionId = qId,
-                                                    OptionContent = optReader["OptionContent"].ToString(),
-                                                    IsSelected = (optId.ToString() == submittedAnswer),
-                                                    IsLocked = isAlreadySubmitted
-                                                });
-                                            }
-                                        }
-                                        con2.Close();
-                                    }
-                                }
-                            }
-                            questions.Add(q);
-                        }
-                    }
-                    con.Close();
-                }
+                lblExamState.Visible = true;
+                lblExamState.Text = "You have already submitted this exam. Awaiting grading.";
+                lblExamState.Style.Add("color", "#4ade80");
+                btnSubmitExam.Enabled = false;
+                btnSubmitExam.Text = "Submitted";
+                btnSubmitExam.CssClass = "btn-nav";
+                phExamCheckmark.Visible = true;
             }
 
-            rptExamQuestions.DataSource = questions;
+            rptExamQuestions.DataSource = LoadQuestionsWithAnswers("ExamId", examId, attemptId);
             rptExamQuestions.DataBind();
         }
 

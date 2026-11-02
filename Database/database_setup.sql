@@ -1637,90 +1637,67 @@ VALUES
     (@BcJason, @BcDataCourse, 3, DATEADD(DAY, -26, GETDATE()));
 
 
--- Attempts in every AttemptStatus for General Mock Learners
--- Quiz: Control Flow Quiz, graded
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @SdAisyah, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 3, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 2, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -3, GETDATE()), 'completed', @BcFarah, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'correct', 3, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Control Flow Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'incorrect', 0, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (3, 'C', 60, N'', @SdAttempt);
+-- ==========================================================
+-- GENERAL MOCK LEARNER ATTEMPTS (AUTO-COMPLETED)
+-- ==========================================================
+DECLARE @GenAttempt INT;
+DECLARE @MockLearnerId INT;
+DECLARE @MockTestName NVARCHAR(100);
+DECLARE @MockIsQuiz BIT;
 
--- Java Basics Quiz: incomplete (the learner stopped)
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'incomplete', @BcBen, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Java Basics Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
+DECLARE MockAttemptsCursor CURSOR FOR 
+    SELECT l.LearnerId, q.QuizTitle, 1 
+    FROM LearnerProgress lp
+    JOIN Learner l ON lp.LearnerId = l.LearnerId
+    JOIN Quiz q ON lp.CourseId = q.ChapterId -- Simplified join for mock data
+    WHERE l.Email IN ('aisyah.rahman@gmail.com', 'farah.aziz@gmail.com', 'chenwei.lee@gmail.com', 'ethanlim2002@gmail.com', 'hana.yusof@gmail.com', 'divya.menon@gmail.com', 'gavinooi@gmail.com')
+    UNION ALL
+    SELECT l.LearnerId, a.AssessmentTitle, 0 
+    FROM LearnerProgress lp
+    JOIN Learner l ON lp.LearnerId = l.LearnerId
+    JOIN Assessment a ON lp.CourseId = a.ChapterId -- Simplified join for mock data
+    WHERE l.Email IN ('chenwei.lee@gmail.com', 'hana.yusof@gmail.com', 'gavinooi@gmail.com');
 
--- Introduction to C Quiz: submitted, the teacher has started grading it
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(HOUR, -6, GETDATE()), 'completed', @BcChen, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'pending', 0, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Introduction to C Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, N'');
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'', @SdSarah, NULL, @SdAttempt);
+OPEN MockAttemptsCursor; 
+FETCH NEXT FROM MockAttemptsCursor INTO @MockLearnerId, @MockTestName, @MockIsQuiz;
 
--- Variables in C Assessment: in progress
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -1, GETDATE()), 'in_progress', @BcChen, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Variables in C Assessment'));
-SET @SdAttempt = SCOPE_IDENTITY();
-
--- Flask Basics Quiz: graded F
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -1, GETDATE()), 'completed', @BcEthan, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 2) AS NVARCHAR(20)), 'incorrect', 0, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Flask Basics Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (2, 'F', 40, N'', @SdAttempt);
-
--- Routes Assessment: submitted and waiting (a teaching assistant has reviewed it)
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(HOUR, -8, GETDATE()), 'completed', @SdHana, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'pending', 0, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'Routes Assessment') AND [QuestionOrder] = 2), N'@app.route("/hello")' + CHAR(13) + CHAR(10) + N'def hello():' + CHAR(13) + CHAR(10) + N'    return "Hello"', 'pending', 0, N'');
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Provisional marks suggested: MCQ correct, the coding answer follows the marking guide.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = 'marcus.ta@edu.com.my'), @SdAttempt);
-
--- Decorators Quiz: graded A
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @BcDivya, (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 3, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 2), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [QuizId] = (SELECT [QuizId] FROM [dbo].[Quiz] WHERE [QuizTitle] = N'Decorators Quiz') AND [QuestionOrder] = 2) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
-
--- OOP Assessment: graded B (the coding answer got 5 of 8)
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -3, GETDATE()), 'completed', @BcGavin, (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment'));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 2, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [AssessmentId] = (SELECT [AssessmentId] FROM [dbo].[Assessment] WHERE [AssessmentTitle] = N'OOP Assessment') AND [QuestionOrder] = 2), N'class Dog { void bark() { System.out.println("Woof"); } }', 'partial', 5, N'Correct idea. Make the method public if other classes will call it.');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (7, 'B', 70, N'Q2: Correct idea. Make the method public if other classes will call it.', @SdAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @BcBryan, NULL, @SdAttempt);
-
--- Final exams: Python (graded A, certificate), Advanced Python (graded A, certificate), C (graded F), Python (in progress)
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -5, GETDATE()), 'completed', @BcFarah, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 5, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (5, 'A', 100, N'', @SdAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @BcBryan, NULL, @SdAttempt);
-
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -4, GETDATE()), 'completed', @BcDivya, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'correct', 5, N'');
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns')) AND [QuestionOrder] = 2), N'decorator', 'correct', 5, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'A', 100, N'', @SdAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdPriya, NULL, @SdAttempt);
-
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @BcHana, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')));
-SET @SdAttempt = SCOPE_IDENTITY();
-INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment]) VALUES (@SdAttempt, (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')) AND [QuestionOrder] = 1), CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = (SELECT [QuestionId] FROM [dbo].[Question] WHERE [ExamId] = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials')) AND [QuestionOrder] = 1) AND [OptionOrder] = 1) AS NVARCHAR(20)), 'incorrect', 0, N'');
-INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (0, 'F', 0, N'', @SdAttempt);
-INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('completed', N'', @SdSarah, NULL, @SdAttempt);
-
-INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [ExamId]) VALUES (DATEADD(HOUR, -3, GETDATE()), 'in_progress', @BcAisyah, (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = @BcPythonCourse));
-SET @SdAttempt = SCOPE_IDENTITY();
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF @MockIsQuiz = 1
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @MockLearnerId, (SELECT TOP 1 QuizId FROM Quiz WHERE QuizTitle = @MockTestName));
+    ELSE
+        INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [AssessmentId]) VALUES (DATEADD(DAY, -2, GETDATE()), 'completed', @MockLearnerId, (SELECT TOP 1 AssessmentId FROM Assessment WHERE AssessmentTitle = @MockTestName));
+    
+    SET @GenAttempt = SCOPE_IDENTITY();
+    
+    INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+    SELECT @GenAttempt, QuestionId, 
+           CASE WHEN QuestionType = 'MCQ' THEN (SELECT TOP 1 CAST(MCQ_OptionId AS NVARCHAR(20)) FROM MCQ_Option WHERE QuestionId = q.QuestionId AND IsCorrect = 1)
+                WHEN QuestionType = 'Coding' THEN ModelAnswer ELSE ISNULL(AcceptedAnswers, 'Completed') END, 
+           'correct', QuestionScore, 'Good effort' 
+    FROM Question q WHERE (@MockIsQuiz = 1 AND QuizId = (SELECT TOP 1 QuizId FROM Quiz WHERE QuizTitle = @MockTestName)) OR (@MockIsQuiz = 0 AND AssessmentId = (SELECT TOP 1 AssessmentId FROM Assessment WHERE AssessmentTitle = @MockTestName));
+    
+    INSERT INTO [dbo].[Result] ([TotalScore], [Grade], [Average], [ResultFeedback], [AttemptId]) VALUES (10, 'A', 100, 'Excellent', @GenAttempt);
+    INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [AttemptId]) VALUES ('completed', '', @BcBryan, @GenAttempt);
+    
+    FETCH NEXT FROM MockAttemptsCursor INTO @MockLearnerId, @MockTestName, @MockIsQuiz;
+END;
+CLOSE MockAttemptsCursor; 
+DEALLOCATE MockAttemptsCursor;
 
 -- Certificates (issued by the teacher after a passed final exam)
 INSERT INTO [dbo].[Certificate] ([Issuer], [IssueDate], [LearnerId], [CourseId]) VALUES
-    ('Bryan Yeong', DATEADD(DAY, -5, GETDATE()), @BcFarah, @BcPythonCourse),
-    ('Priya Nair', DATEADD(DAY, -4, GETDATE()), @BcDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'));
+    ('Bryan Yeong', DATEADD(DAY, -5, GETDATE()), @SdFarah, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals')),
+    ('Priya Nair', DATEADD(DAY, -4, GETDATE()), @SdDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'));
+
+-- Course reviews
+INSERT INTO [dbo].[Course_Review] ([CourseFeedBack], [Rating], [SubmissionDate], [CourseId], [LearnerId]) VALUES
+    (N'Clear explanations and good exercises.', 5, DATEADD(DAY, -4, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @SdFarah),
+    (N'Great pace for beginners.', 4.5, DATEADD(DAY, -6, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'), @SdAisyah),
+    (N'Streams finally make sense.', 4, DATEADD(DAY, -3, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), @SdGavin),
+    (N'Decorators were explained perfectly.', 5, DATEADD(DAY, -2, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'), @SdDivya),
+    (N'Good content, but I wanted more exercises.', 3.5, DATEADD(DAY, -5, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdHana),
+    (N'Easy to follow.', 4, DATEADD(DAY, -4, GETDATE()), (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'), @SdEthan);
 
 PRINT 'Complete data for learners inserted successfully.';
 

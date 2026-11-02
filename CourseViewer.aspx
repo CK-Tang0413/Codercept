@@ -184,18 +184,43 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlCode" runat="server" Visible="false">
-                                <div class="section-divider">Part 4: Coding Challenge</div>
+                                <div class="section-divider">Part 4: Assessment</div>
                                 <div class="challenge-box">
                                     <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;"><asp:Literal ID="litCodeTitle" runat="server"></asp:Literal></h3>
                                     <p><asp:Literal ID="litCodeDesc" runat="server"></asp:Literal></p>
                                 </div>
                                 <asp:Label ID="lblCodeState" runat="server" Visible="false" style="display: block; margin-bottom: 1rem; font-weight: bold;"></asp:Label>
-                                <div class="ide-placeholder">
-                                    <div class="code-header">editor<div class="code-dots"><span class="dot-g"></span><span class="dot-y"></span><span class="dot-r"></span></div></div>
-                                    <div class="code-body" style="padding: 0;">
-                                        <asp:TextBox ID="txtCodeEditor" runat="server" TextMode="MultiLine" placeholder="# Write your solution here..." style="width: 100%; min-height: 200px; background: transparent; border: none; color: #e4e4e7; padding: 1rem; font-family: monospace; font-size: 0.95rem; resize: vertical; outline: none;"></asp:TextBox>
-                                    </div>
-                                </div>
+                                <asp:Repeater ID="rptAssessmentQuestions" runat="server" OnItemDataBound="rptAssessmentQuestions_ItemDataBound">
+                                    <ItemTemplate>
+                                        <div class="quiz-question">
+                                            <asp:HiddenField ID="hfAsmQuestionId" runat="server" Value='<%# Eval("QuestionId") %>' />
+                                            <asp:HiddenField ID="hfAsmQuestionType" runat="server" Value='<%# Eval("Type") %>' />
+
+                                            <div class="q-title"><%# Eval("Title") %></div>
+
+                                            <asp:Repeater ID="rptAsmOptions" runat="server">
+                                                <ItemTemplate>
+                                                    <label class="q-option">
+                                                        <input type="radio" name='<%# "asm_q_" + Eval("QuestionId") %>' value='<%# Eval("OptionId") %>' <%# Convert.ToBoolean(Eval("IsSelected")) ? "checked" : "" %> <%# Convert.ToBoolean(Eval("IsLocked")) ? "disabled" : "" %> />
+                                                        <div class="q-radio"></div>
+                                                        <span><%# Eval("OptionContent") %></span>
+                                                    </label>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+
+                                            <asp:TextBox ID="txtAsmFill" runat="server" CssClass="exam-input" placeholder="Enter your answer..."></asp:TextBox>
+
+                                            <asp:PlaceHolder ID="phAsmCoding" runat="server">
+                                                <div class="ide-placeholder" style="margin-bottom: 0;">
+                                                    <div class="code-header">editor<div class="code-dots"><span class="dot-g"></span><span class="dot-y"></span><span class="dot-r"></span></div></div>
+                                                    <div class="code-body" style="padding: 0;">
+                                                        <asp:TextBox ID="txtAsmCode" runat="server" TextMode="MultiLine" placeholder="# Write your solution here..." style="width: 100%; min-height: 150px; background: transparent; border: none; color: #e4e4e7; padding: 1rem; font-family: monospace; font-size: 0.95rem; resize: vertical; outline: none;"></asp:TextBox>
+                                                    </div>
+                                                </div>
+                                            </asp:PlaceHolder>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
                                 <asp:Button ID="btnSubmitAssessment" runat="server" Text="Submit Assessment" CssClass="btn-nav primary" style="padding: 0.75rem 2rem; border-radius: 8px; font-size: 1rem; cursor: pointer; display: inline-block;" OnClick="btnSubmitAssessment_Click" />
                             </asp:Panel>
                         </asp:Panel>
