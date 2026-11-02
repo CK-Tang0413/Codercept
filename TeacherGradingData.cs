@@ -16,7 +16,11 @@ namespace Codercept
         AlreadyGraded,
         /// <summary>A mark was not a whole number from 0 up to the question's marks.</summary>
         InvalidMarks,
-        CommentTooLong
+        CommentTooLong,
+        /// <summary>The grading notes are longer than TeacherGradingData.MaxNotesLength.</summary>
+        NotesTooLong,
+        /// <summary>The teacher has taken the grading over (a GradingProgress row with a TeacherId), so a teaching assistant can no longer change it.</summary>
+        LockedByTeacher
     }
 
     /// <summary>What a confirmed grade came to (set by ConfirmGrade).</summary>
@@ -144,7 +148,9 @@ namespace Codercept
         /// <summary>
         /// Every learner who has submitted (completed) an attempt on one of the course's exam, quizzes or assessments. TestKey says which
         /// one ("exam:1", "quiz:3", "assessment:2", the same keys as TeacherAssessment.Key). Status is "Graded" once the attempt has a Result,
-        /// "In progress" while the teacher has started grading it (a GradingProgress row), otherwise "Not graded".
+        /// "TA reviewed" while a teaching assistant has finished marking it and it waits for the teacher (GradingProgress 'Reviewed'),
+        /// "In progress" while the teacher has started grading it (any other GradingProgress row), otherwise "Not graded".
+        /// TaName and Notes come from the GradingProgress row; the page only shows them until the grade is confirmed.
         /// Waiting submissions come first, newest first.
         /// </summary>
         public static List<TeacherSubmission> GetSubmissions(int courseId)
@@ -154,20 +160,24 @@ namespace Codercept
 
             const string status =
                 "CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) THEN 'Graded' " +
+                "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId AND g.ProgressStatus = 'Reviewed') THEN 'TA reviewed' " +
                 "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId) THEN 'In progress' ELSE 'Not graded' END";
+            const string taName =
+                "ISNULL((SELECT TOP 1 ta.Name FROM GradingProgress g INNER JOIN Teaching_Assistant ta ON ta.TA_Id = g.TA_Id WHERE g.AttemptId = a.AttemptId), '')";
+            const string notes = "ISNULL((SELECT TOP 1 g.ProgressNotes FROM GradingProgress g WHERE g.AttemptId = a.AttemptId), '')";
 
             string sql =
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'exam', a.ExamId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'exam', a.ExamId, " + taName + ", " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Exam t ON t.ExamId = a.ExamId " +
                 "INNER JOIN Course c ON c.CourseId = t.CourseId " +
                 "WHERE t.CourseId = @CourseId AND c.TeacherId = @TeacherId AND a.AttemptStatus = 'completed' " +
                 "UNION ALL " +
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'quiz', a.QuizId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'quiz', a.QuizId, " + taName + ", " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Quiz t ON t.QuizId = a.QuizId " +
                 "INNER JOIN Chapter ch ON ch.ChapterId = t.ChapterId INNER JOIN Course c ON c.CourseId = ch.CourseId " +
                 "WHERE ch.CourseId = @CourseId AND c.TeacherId = @TeacherId AND a.AttemptStatus = 'completed' " +
                 "UNION ALL " +
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'assessment', a.AssessmentId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'assessment', a.AssessmentId, " + taName + ", " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Assessment t ON t.AssessmentId = a.AssessmentId " +
                 "INNER JOIN Chapter ch ON ch.ChapterId = t.ChapterId INNER JOIN Course c ON c.CourseId = ch.CourseId " +
                 "WHERE ch.CourseId = @CourseId AND c.TeacherId = @TeacherId AND a.AttemptStatus = 'completed'";
@@ -195,15 +205,17 @@ namespace Codercept
                             Tone = Tones[reader.GetInt32(1) % Tones.Length],
                             Status = reader.GetString(5),
                             Submitted = when.ToString("d MMM yyyy, h:mm tt", CultureInfo.InvariantCulture),
-                            TestKey = reader.GetString(6) + ":" + reader.GetInt32(7)
+                            TestKey = reader.GetString(6) + ":" + reader.GetInt32(7),
+                            TaName = reader.GetString(8),
+                            Notes = RealNotes(reader.GetString(9))
                         });
                     }
                 }
             }
 
-            // waiting submissions first (not graded, then in progress, then graded), newest first within each
+            // waiting submissions first (not graded, then TA reviewed, then in progress, then graded), newest first within each
             return list.Select((s, i) => new { s, when = dates[i] })
-                .OrderBy(x => x.s.Status == "Not graded" ? 0 : x.s.Status == "In progress" ? 1 : 2)
+                .OrderBy(x => x.s.Status == "Not graded" ? 0 : x.s.Status == "TA reviewed" ? 1 : x.s.Status == "In progress" ? 2 : 3)
                 .ThenByDescending(x => x.when)
                 .Select(x => x.s)
                 .ToList();
@@ -359,6 +371,32 @@ namespace Codercept
         /// <summary>The longest comment a teacher can leave on one answer.</summary>
         public const int MaxCommentLength = 2000;
 
+        /// <summary>The longest grading note (GradingProgress.ProgressNotes) a teacher can save for one submission.</summary>
+        public const int MaxNotesLength = 1000;
+
+        /// <summary>
+        /// The grading notes posted for an attempt (field tpn_&lt;AttemptId&gt;): null when the form has no such field (the saved notes stay as they are),
+        /// otherwise the trimmed text, which may be empty to clear the notes.
+        /// </summary>
+        /// <summary>The notes the TA page stored before it had a notes box ("Draft saved by TA", "Provisional marks submitted by TA") are not real notes.</summary>
+        public static string RealNotes(string stored)
+        {
+            return stored == "Draft saved by TA" || stored == "Provisional marks submitted by TA" ? "" : stored;
+        }
+
+        private static string PostedNotes(System.Collections.Specialized.NameValueCollection form, int attemptId)
+        {
+            string field = form["tpn_" + attemptId];
+            return field == null ? null : field.Trim();
+        }
+
+        private static SqlParameter NotesParameter(string notes)
+        {
+            SqlParameter p = new SqlParameter("@Notes", System.Data.SqlDbType.NVarChar, -1);
+            p.Value = notes == null ? (object)DBNull.Value : notes;
+            return p;
+        }
+
         /// <summary>
         /// Saves the marks and comments typed for one submission's fill-in-the-blank and coding answers, and records that the teacher has
         /// started grading it (a GradingProgress row, kept once per attempt). The form holds tpm_&lt;AttemptId&gt;_&lt;QuestionId&gt; (marks) and
@@ -397,6 +435,9 @@ namespace Codercept
                         }
                     }
 
+                    string notes = PostedNotes(form, attemptId);
+                    if (notes != null && notes.Length > MaxNotesLength) return GradingSaveResult.NotesTooLong;
+
                     // check every posted value before writing any
                     List<int> toSave = new List<int>();
                     List<int> marks = new List<int>();
@@ -433,14 +474,16 @@ namespace Codercept
                         }
                     }
 
-                    // one GradingProgress row per attempt: "the teacher has started grading it"
+                    // one GradingProgress row per attempt: "the teacher has started grading it". A teaching assistant's 'Reviewed' row becomes
+                    // 'in_progress' (the teacher has now taken it over); TA_Id stays, and the notes only change when the form has a notes field.
                     using (SqlCommand cmd = new SqlCommand(
-                        "UPDATE GradingProgress SET ProgressStatus = 'in_progress', TeacherId = @TeacherId WHERE AttemptId = @AttemptId; " +
+                        "UPDATE GradingProgress SET ProgressStatus = 'in_progress', TeacherId = @TeacherId, ProgressNotes = ISNULL(@Notes, ProgressNotes) WHERE AttemptId = @AttemptId; " +
                         "IF @@ROWCOUNT = 0 INSERT INTO GradingProgress (ProgressStatus, ProgressNotes, TeacherId, TA_Id, AttemptId) " +
-                        "VALUES ('in_progress', '', @TeacherId, NULL, @AttemptId)", con, tx))
+                        "VALUES ('in_progress', ISNULL(@Notes, ''), @TeacherId, NULL, @AttemptId)", con, tx))
                     {
                         cmd.Parameters.AddWithValue("@AttemptId", attemptId);
                         cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        cmd.Parameters.Add(NotesParameter(notes));
                         cmd.ExecuteNonQuery();
                     }
 
@@ -545,6 +588,9 @@ namespace Codercept
                         }
                     }
 
+                    string notes = PostedNotes(form, attemptId);
+                    if (notes != null && notes.Length > MaxNotesLength) return GradingSaveResult.NotesTooLong;
+
                     // work out every mark first, so that one bad value changes nothing
                     int count = ids.Count;
                     int[] given = new int[count];
@@ -611,12 +657,13 @@ namespace Codercept
                     }
 
                     using (SqlCommand cmd = new SqlCommand(
-                        "UPDATE GradingProgress SET ProgressStatus = 'completed', TeacherId = @TeacherId WHERE AttemptId = @AttemptId; " +
+                        "UPDATE GradingProgress SET ProgressStatus = 'completed', TeacherId = @TeacherId, ProgressNotes = ISNULL(@Notes, ProgressNotes) WHERE AttemptId = @AttemptId; " +
                         "IF @@ROWCOUNT = 0 INSERT INTO GradingProgress (ProgressStatus, ProgressNotes, TeacherId, TA_Id, AttemptId) " +
-                        "VALUES ('completed', '', @TeacherId, NULL, @AttemptId)", con, tx))
+                        "VALUES ('completed', ISNULL(@Notes, ''), @TeacherId, NULL, @AttemptId)", con, tx))
                     {
                         cmd.Parameters.AddWithValue("@AttemptId", attemptId);
                         cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                        cmd.Parameters.Add(NotesParameter(notes));
                         cmd.ExecuteNonQuery();
                     }
 

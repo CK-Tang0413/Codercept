@@ -90,11 +90,17 @@ namespace Codercept
         public static Dictionary<int, TACourseGradingStats> GetGradingStats(int? taId = null)
         {
             var stats = new Dictionary<int, TACourseGradingStats>();
+
+            // A draft is the teaching assistant's own unfinished marking: an in-progress row that the teacher has not taken over (TeacherId is empty)
+            // and, for one teaching assistant, that was saved by that teaching assistant. A row with a TeacherId belongs to the teacher: it is neither
+            // "to mark" nor a draft here. A submission a teaching assistant has already submitted ('Reviewed') is not "to mark" any more.
+            string ownDraft = "gp.TeacherId IS NULL AND gp.ProgressStatus IN ('In Progress', 'in_progress', 'Draft')"
+                + (taId.HasValue && taId.Value > 0 ? " AND gp.TA_Id = @TA_Id" : "");
             string sql = @"
                 SELECT c.CourseId,
                        SUM(CASE WHEN r.ResultId IS NULL AND gp.ProgressStatus = 'Reviewed' THEN 1 ELSE 0 END) AS ReviewedCount,
-                       SUM(CASE WHEN r.ResultId IS NULL AND gp.ProgressStatus IN ('In Progress', 'in_progress', 'Draft') THEN 1 ELSE 0 END) AS DraftCount,
-                       SUM(CASE WHEN r.ResultId IS NULL AND (gp.ProgressStatus IS NULL OR gp.ProgressStatus NOT IN ('Reviewed', 'In Progress', 'in_progress', 'Draft')) THEN 1 ELSE 0 END) AS ToMarkCount,
+                       SUM(CASE WHEN r.ResultId IS NULL AND " + ownDraft + @" THEN 1 ELSE 0 END) AS DraftCount,
+                       SUM(CASE WHEN r.ResultId IS NULL AND (gp.AttemptId IS NULL OR (gp.TeacherId IS NULL AND gp.ProgressStatus <> 'Reviewed' AND NOT (" + ownDraft + @"))) THEN 1 ELSE 0 END) AS ToMarkCount,
                        SUM(CASE WHEN r.ResultId IS NOT NULL THEN 1 ELSE 0 END) AS GradedCount
                 FROM Attempt a
                 LEFT JOIN Result r ON r.AttemptId = a.AttemptId
@@ -162,7 +168,7 @@ namespace Codercept
 
             const string pendingOf = "(SELECT COUNT(*) FROM Attempt a WHERE a.{0} = t.{0} AND a.AttemptStatus = 'completed' " +
                                      "AND NOT EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) " +
-                                     "AND NOT EXISTS (SELECT 1 FROM GradingProgress gp WHERE gp.AttemptId = a.AttemptId AND gp.ProgressStatus = 'Reviewed'))";
+                                     "AND NOT EXISTS (SELECT 1 FROM GradingProgress gp WHERE gp.AttemptId = a.AttemptId AND (gp.ProgressStatus = 'Reviewed' OR gp.TeacherId IS NOT NULL)))";
             const string questionsOf = "(SELECT COUNT(*) FROM Question q WHERE q.{0} = t.{0})";
             const string marksOf = "ISNULL((SELECT SUM(q.QuestionScore) FROM Question q WHERE q.{0} = t.{0}), 0)";
 
@@ -215,20 +221,23 @@ namespace Codercept
 
             const string status =
                 "CASE WHEN EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = a.AttemptId) THEN 'Graded' " +
+                "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId AND g.TeacherId IS NOT NULL AND g.TA_Id IS NOT NULL) THEN 'Seen by teacher' " +
+                "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId AND g.TeacherId IS NOT NULL) THEN 'With teacher' " +
                 "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId AND g.ProgressStatus = 'Reviewed') THEN 'Reviewed' " +
                 "WHEN EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = a.AttemptId) THEN 'In progress' ELSE 'Not graded' END";
+            const string notes = "ISNULL((SELECT TOP 1 g.ProgressNotes FROM GradingProgress g WHERE g.AttemptId = a.AttemptId), '')";
 
             string sql =
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'exam', a.ExamId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'exam', a.ExamId, " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Exam t ON t.ExamId = a.ExamId " +
                 "WHERE t.CourseId = @CourseId AND a.AttemptStatus = 'completed' " +
                 "UNION ALL " +
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'quiz', a.QuizId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'quiz', a.QuizId, " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Quiz t ON t.QuizId = a.QuizId " +
                 "INNER JOIN Chapter ch ON ch.ChapterId = t.ChapterId " +
                 "WHERE ch.CourseId = @CourseId AND a.AttemptStatus = 'completed' " +
                 "UNION ALL " +
-                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'assessment', a.AssessmentId " +
+                "SELECT a.AttemptId, a.LearnerId, l.Name, l.Email, a.AttemptDate, " + status + ", 'assessment', a.AssessmentId, " + notes + " " +
                 "FROM Attempt a INNER JOIN Learner l ON l.LearnerId = a.LearnerId INNER JOIN Assessment t ON t.AssessmentId = a.AssessmentId " +
                 "INNER JOIN Chapter ch ON ch.ChapterId = t.ChapterId " +
                 "WHERE ch.CourseId = @CourseId AND a.AttemptStatus = 'completed'";
@@ -255,7 +264,8 @@ namespace Codercept
                             Tone = Tones[reader.GetInt32(1) % Tones.Length],
                             Status = reader.GetString(5),
                             Submitted = when.ToString("d MMM yyyy, h:mm tt", CultureInfo.InvariantCulture),
-                            TestKey = reader.GetString(6) + ":" + reader.GetInt32(7)
+                            TestKey = reader.GetString(6) + ":" + reader.GetInt32(7),
+                            Notes = TeacherGradingData.RealNotes(reader.GetString(8))
                         });
                     }
                 }
@@ -428,13 +438,13 @@ namespace Codercept
 
         public static GradingSaveResult SaveProgress(int courseId, int attemptId, int taId, System.Collections.Specialized.NameValueCollection form)
         {
-            return ApplyMarks(courseId, attemptId, taId, form, "in_progress", "Draft saved by TA");
+            return ApplyMarks(courseId, attemptId, taId, form, "in_progress");
         }
 
         public static GradingSaveResult SubmitReview(int courseId, int attemptId, int taId, System.Collections.Specialized.NameValueCollection form, out GradeOutcome outcome)
         {
             outcome = new GradeOutcome();
-            GradingSaveResult res = ApplyMarks(courseId, attemptId, taId, form, "Reviewed", "Provisional marks submitted by TA");
+            GradingSaveResult res = ApplyMarks(courseId, attemptId, taId, form, "Reviewed");
             if (res != GradingSaveResult.Saved) return res;
 
             // Calculate current total
@@ -463,7 +473,7 @@ namespace Codercept
             return GradingSaveResult.Saved;
         }
 
-        private static GradingSaveResult ApplyMarks(int courseId, int attemptId, int taId, System.Collections.Specialized.NameValueCollection form, string progressStatus, string notes)
+        private static GradingSaveResult ApplyMarks(int courseId, int attemptId, int taId, System.Collections.Specialized.NameValueCollection form, string progressStatus)
         {
             using (SqlConnection con = new SqlConnection(TAHelpers.ConnectionString))
             {
@@ -478,6 +488,22 @@ namespace Codercept
                         object val = cmd.ExecuteScalar();
                         if (val == null) return GradingSaveResult.NotFound;
                         if ((int)val == 1) return GradingSaveResult.AlreadyGraded;
+                    }
+
+                    // once the teacher has saved or confirmed grading (GradingProgress.TeacherId is set) only the teacher edits it
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT COUNT(*) FROM GradingProgress WITH (UPDLOCK, HOLDLOCK) WHERE AttemptId = @AttemptId AND TeacherId IS NOT NULL", con, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@AttemptId", attemptId);
+                        if ((int)cmd.ExecuteScalar() > 0) return GradingSaveResult.LockedByTeacher;
+                    }
+
+                    // the grading notes (tpn_<AttemptId>) for the teacher: no field keeps the saved notes, an empty one clears them
+                    string notes = form["tpn_" + attemptId];
+                    if (notes != null)
+                    {
+                        notes = notes.Trim();
+                        if (notes.Length > TeacherGradingData.MaxNotesLength) return GradingSaveResult.NotesTooLong;
                     }
 
                     List<int> questionIds = new List<int>();
@@ -533,14 +559,16 @@ namespace Codercept
                     }
 
                     using (SqlCommand cmd = new SqlCommand(
-                        "UPDATE GradingProgress SET ProgressStatus = @Status, ProgressNotes = @Notes, TA_Id = @TA_Id WHERE AttemptId = @AttemptId; " +
+                        "UPDATE GradingProgress SET ProgressStatus = @Status, ProgressNotes = ISNULL(@Notes, ProgressNotes), TA_Id = @TA_Id WHERE AttemptId = @AttemptId; " +
                         "IF @@ROWCOUNT = 0 INSERT INTO GradingProgress (ProgressStatus, ProgressNotes, TeacherId, TA_Id, AttemptId) " +
-                        "VALUES (@Status, @Notes, NULL, @TA_Id, @AttemptId)", con, tx))
+                        "VALUES (@Status, ISNULL(@Notes, ''), NULL, @TA_Id, @AttemptId)", con, tx))
                     {
                         cmd.Parameters.AddWithValue("@AttemptId", attemptId);
                         cmd.Parameters.AddWithValue("@TA_Id", taId);
                         cmd.Parameters.AddWithValue("@Status", progressStatus);
-                        cmd.Parameters.AddWithValue("@Notes", notes);
+                        SqlParameter notesParam = new SqlParameter("@Notes", System.Data.SqlDbType.NVarChar, -1);
+                        notesParam.Value = notes == null ? (object)DBNull.Value : notes;
+                        cmd.Parameters.Add(notesParam);
                         cmd.ExecuteNonQuery();
                     }
 

@@ -52,7 +52,7 @@
                 <div class="course-thumbnail course-thumbnail--<%= c.Theme %> grading-course-thumbnail">
                     <span><%: c.Glyph %></span>
                     <i class="code-symbol code-symbol--one">{ }</i>
-                    <span class="pending-floating-badge"><%= stats.ToMark > 0 ? stats.ToMark + " to mark" : (stats.Draft > 0 ? stats.Draft + " in draft" : (stats.Reviewed > 0 ? stats.Reviewed + " reviewed" : "All caught up")) %></span>
+                    <span class="pending-floating-badge"><%= stats.ToMark > 0 ? stats.ToMark + " to mark" : (stats.Draft > 0 ? stats.Draft + " in draft" : "All caught up") %></span>
                 </div>
                 <div class="grading-course-content">
                     <h3><%: c.Title %></h3>
@@ -60,8 +60,7 @@
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                             <% if (stats.ToMark > 0) { %><span class="badge badge--warning"><%= stats.ToMark %> to mark</span><% } %>
                             <% if (stats.Draft > 0) { %><span class="badge badge--secondary"><%= stats.Draft %> draft</span><% } %>
-                            <% if (stats.Reviewed > 0) { %><span class="badge badge--indigo"><%= stats.Reviewed %> reviewed</span><% } %>
-                            <% if (stats.ToMark == 0 && stats.Draft == 0 && stats.Reviewed == 0) { %><span class="badge badge--success">All caught up</span><% } %>
+                            <% if (stats.ToMark == 0 && stats.Draft == 0) { %><span class="badge badge--success">All caught up</span><% } %>
                         </div>
                         <span style="margin-left: auto;"><%= TeacherIcons.Svg("arrow", 14) %>Start grading</span>
                     </div>

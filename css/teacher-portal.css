@@ -4817,6 +4817,15 @@
   background: #e0e7ff;
 }
 
+.tp-app .submission-status.is-reviewed {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.tp-app .marking-notes .manual-grading-fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .tp-app .submission-status.is-graded {
   color: #15803d;
   background: #dcfce7;

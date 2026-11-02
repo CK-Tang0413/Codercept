@@ -117,7 +117,7 @@
                 <div class="marking-questions-scroll">
                     <% foreach (TeacherSubmission s in Submissions) { foreach (TeacherMarkingQuestion q in Sheets[s.Id]) { %>
                     <% if (q.IsAuto) { %>
-                    <article class="marking-question" data-tp-marking="<%= s.Id %>" data-tp-auto-marks="<%= q.AutoScore %>"<%= s.Status == "Graded" ? " inert" : "" %> hidden>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>" data-tp-auto-marks="<%= q.AutoScore %>"<%= s.Status == "Graded" || s.Status == "With teacher" || s.Status == "Seen by teacher" ? " inert" : "" %> hidden>
                         <div class="marking-question-heading">
                             <span class="question-number">Q<%= q.Number %></span>
                             <div>
@@ -136,7 +136,7 @@
                         <div class="auto-score"><%= TeacherIcons.Svg("info", 14) %>Automatically scored &middot; <%= q.AutoScore %> / <%= q.Marks %> marks</div>
                     </article>
                     <% } else { bool code = q.Type == "Coding"; %>
-                    <article class="marking-question" data-tp-marking="<%= s.Id %>"<%= s.Status == "Graded" ? " inert" : "" %> hidden>
+                    <article class="marking-question" data-tp-marking="<%= s.Id %>"<%= s.Status == "Graded" || s.Status == "With teacher" || s.Status == "Seen by teacher" ? " inert" : "" %> hidden>
                         <div class="marking-question-heading">
                             <span class="question-number">Q<%= q.Number %></span>
                             <div>
@@ -185,7 +185,26 @@
                             </label>
                         </div>
                     </article>
-                    <% } } } %>
+                    <% } } %>
+                    <%-- The grading notes (GradingProgress.ProgressNotes) the teaching assistant leaves for the teacher, posted as tpn_<AttemptId>.
+                         Hidden once the teacher has confirmed the grade; read-only once the teacher has taken the submission over. --%>
+                    <% if (s.Status != "Graded") { %>
+                    <article class="marking-question marking-notes" data-tp-marking="<%= s.Id %>"<%= s.Status == "With teacher" || s.Status == "Seen by teacher" ? " inert" : "" %> hidden>
+                        <div class="marking-question-heading">
+                            <span class="question-number"><%= TeacherIcons.Svg("info", 16) %></span>
+                            <div>
+                                <span>GRADING NOTES</span>
+                                <h3>Notes for the teacher</h3>
+                            </div>
+                        </div>
+                        <div class="manual-grading-fields">
+                            <label class="form-field">
+                                <span>Notes</span>
+                                <textarea name="tpn_<%= s.Id %>" rows="3" maxlength="<%= TeacherGradingData.MaxNotesLength %>" placeholder="Add notes for the teacher about this review..."><%: s.Notes %></textarea>
+                            </label>
+                        </div>
+                    </article>
+                    <% } } %>
                 </div>
             </div>
         </section>
@@ -220,15 +239,22 @@
                 var btnSave = document.getElementById('<%= btnTASaveGrading.ClientID %>');
                 var btnSubmit = document.getElementById('btnOpenTAConfirmModal');
 
-                var isReviewed = (status === 'Reviewed');
+                // 'Reviewed' = this review was submitted and the teacher has not looked at it yet; 'Seen by teacher' = the teacher has opened and saved it;
+                // 'With teacher' = the teacher started grading it on their own. All of them wait for the teacher, so the TA can no longer edit them.
+                var isReviewed = (status === 'Reviewed' || status === 'Seen by teacher');
+                var isWithTeacher = (status === 'With teacher');
                 var isGraded = (status === 'Graded');
-                var isLocked = isReviewed || isGraded;
+                var isLocked = isReviewed || isWithTeacher || isGraded;
 
                 if (notice) {
                     if (isReviewed) {
                         notice.style.display = 'inline-flex';
                         notice.className = 'badge badge--indigo';
-                        notice.textContent = 'Provisional Review Submitted — Awaiting Approval';
+                        notice.textContent = 'Provisional Review Submitted \u2014 Awaiting Approval';
+                    } else if (isWithTeacher) {
+                        notice.style.display = 'inline-flex';
+                        notice.className = 'badge badge--indigo';
+                        notice.textContent = 'The teacher is grading this submission';
                     } else if (isGraded) {
                         notice.style.display = 'inline-flex';
                         notice.className = 'badge badge--success';

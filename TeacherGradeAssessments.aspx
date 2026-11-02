@@ -192,7 +192,27 @@
                             </label>
                         </div>
                     </article>
-                    <% } } } %>
+                    <% } } %>
+                    <%-- The grading notes (GradingProgress.ProgressNotes) of a submission that is not graded yet: the teaching assistant's note when
+                         they reviewed it, which the teacher can read, edit or replace. Posted as tpn_<AttemptId>; shown with the chosen learner only. --%>
+                    <% if (s.Status != "Graded") { bool byTa = s.Status == "TA reviewed"; %>
+                    <article class="marking-question marking-notes" data-tp-marking="<%= s.Id %>" hidden>
+                        <div class="marking-question-heading">
+                            <span class="question-number"><%= TeacherIcons.Svg("info", 16) %></span>
+                            <div>
+                                <span>GRADING NOTES</span>
+                                <h3><%= byTa ? "Reviewed by " + Server.HtmlEncode(s.TaName) : "Notes for this grading" %></h3>
+                            </div>
+                            <% if (byTa) { %><span class="badge badge--warning">Waiting for your confirmation</span><% } %>
+                        </div>
+                        <div class="manual-grading-fields">
+                            <label class="form-field">
+                                <span>Notes</span>
+                                <textarea name="tpn_<%= s.Id %>" rows="3" maxlength="<%= TeacherGradingData.MaxNotesLength %>" placeholder="Add notes about this grading..."><%: s.Notes %></textarea>
+                            </label>
+                        </div>
+                    </article>
+                    <% } } %>
                 </div>
             </div>
         </section>

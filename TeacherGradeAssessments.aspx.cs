@@ -111,6 +111,7 @@ namespace Codercept
         {
             if (status == "Graded") return "is-graded";
             if (status == "In progress") return "is-progress";
+            if (status == "TA reviewed") return "is-reviewed";
             return "is-ungraded";
         }
 
@@ -152,6 +153,9 @@ namespace Codercept
                     break;
                 case GradingSaveResult.CommentTooLong:
                     Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was saved.");
+                    break;
+                case GradingSaveResult.NotesTooLong:
+                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was saved.");
                     break;
                 default:
                     Master.ShowToast("That submission could not be found, so nothing was saved.");
@@ -195,6 +199,9 @@ namespace Codercept
                     break;
                 case GradingSaveResult.CommentTooLong:
                     Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was confirmed.");
+                    break;
+                case GradingSaveResult.NotesTooLong:
+                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was confirmed.");
                     break;
                 default:
                     Master.ShowToast("That submission could not be found, so nothing was confirmed.");

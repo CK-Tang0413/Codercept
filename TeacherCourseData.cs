@@ -358,6 +358,33 @@ namespace Codercept
             return counts;
         }
 
+        /// <summary>
+        /// Per course of the signed-in teacher, how many submissions the teacher has started grading but not confirmed (a GradingProgress row with this
+        /// teacher's TeacherId and no Result). A teaching assistant's drafts and reviews are not counted: those belong to the teaching assistant.
+        /// </summary>
+        public static Dictionary<int, int> GetDraftCounts()
+        {
+            Dictionary<int, int> counts = new Dictionary<int, int>();
+            int teacherId = TeacherDb.GetTeacherId();
+            using (SqlConnection con = TeacherDb.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                CourseAttemptsCte +
+                "SELECT ca.CourseId, COUNT(*) FROM CourseAttempt ca INNER JOIN Course c ON c.CourseId = ca.CourseId " +
+                "WHERE c.TeacherId = @TeacherId AND ca.AttemptStatus = 'completed' " +
+                "AND NOT EXISTS (SELECT 1 FROM Result r WHERE r.AttemptId = ca.AttemptId) " +
+                "AND EXISTS (SELECT 1 FROM GradingProgress g WHERE g.AttemptId = ca.AttemptId AND g.TeacherId = @TeacherId AND g.ProgressStatus IN ('in_progress', 'In Progress', 'Draft')) " +
+                "GROUP BY ca.CourseId", con))
+            {
+                cmd.Parameters.AddWithValue("@TeacherId", teacherId);
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read()) counts[reader.GetInt32(0)] = reader.GetInt32(1);
+                }
+            }
+            return counts;
+        }
+
         /// <summary>Replaces the language and domain rows of a course. The caller has already checked ownership.</summary>
         private static void SaveSubjects(SqlConnection con, SqlTransaction tx, int courseId, string language, List<string> domains)
         {

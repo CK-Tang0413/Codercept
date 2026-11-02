@@ -159,8 +159,12 @@ namespace Codercept
         public string Name { get; set; }
         public string Email { get; set; }
         public string Tone { get; set; }
-        /// <summary>Not graded | In progress | Graded</summary>
+        /// <summary>Not graded | In progress | TA reviewed | Graded</summary>
         public string Status { get; set; }
+        /// <summary>The teaching assistant who reviewed it (GradingProgress.TA_Id), or "" when none did.</summary>
+        public string TaName { get; set; }
+        /// <summary>GradingProgress.ProgressNotes: the notes of the teaching assistant or teacher for this grading ("" when none).</summary>
+        public string Notes { get; set; }
         public string Submitted { get; set; }
         /// <summary>Which exam, quiz or assessment it is a submission of: the Key of its TeacherAssessment.</summary>
         public string TestKey { get; set; }

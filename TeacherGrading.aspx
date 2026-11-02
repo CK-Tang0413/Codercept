@@ -49,7 +49,10 @@
                 <div class="grading-course-content">
                     <h3><%: c.Title %></h3>
                     <div class="select-course-footer">
-                        <span class="badge badge--warning"><%= pending %> pending</span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <span class="badge badge--warning"><%= pending %> pending</span>
+                            <% int drafts = DraftOf(c.Id); if (drafts > 0) { %><span class="badge badge--secondary"><%= drafts %> draft</span><% } %>
+                        </div>
                         <span><%= TeacherIcons.Svg("arrow", 14) %>Start grading</span>
                     </div>
                 </div>

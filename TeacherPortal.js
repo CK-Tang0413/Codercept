@@ -1119,7 +1119,7 @@
         var trigger = qs("[data-tp-submission-trigger]", root);
         var menu = qs("[data-tp-submission-menu]", root);
         var options = qsa("[data-tp-submission]", root);
-        var statusClass = { "Graded": "is-graded", "In progress": "is-progress", "Not graded": "is-ungraded" };
+        var statusClass = { "Graded": "is-graded", "In progress": "is-progress", "TA reviewed": "is-reviewed", "Reviewed": "is-graded", "With teacher": "is-progress", "Seen by teacher": "is-progress", "Not graded": "is-ungraded" };
         var assessment = { key: "", type: "", title: "", questions: "", marks: "", pending: 0 };
 
         function esc(text) {

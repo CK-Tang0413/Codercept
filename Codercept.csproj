@@ -169,6 +169,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="AdminCommunity.aspx" />
     <Content Include="AdminCourseReviews.aspx" />
     <Content Include="AdminCourses.aspx" />
@@ -834,10 +835,10 @@
     <Content Include="Scripts\jquery-3.7.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.1.min.map" />
     <Content Include="TeacherSite.master" />
-    <Content Include="secrets.config" />
     <Content Include="TeacherLearnerReportPdf.ashx" />
     <Content Include="TeacherCourseStatsPdf.ashx" />
     <Content Include="TeacherAiHandler.ashx" />
+    <Content Include="secrets.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

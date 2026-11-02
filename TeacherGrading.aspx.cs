@@ -27,6 +27,16 @@ namespace Codercept
             return pendingCounts.TryGetValue(courseId, out count) ? count : 0;
         }
 
+        private Dictionary<int, int> draftCounts;
+
+        /// <summary>Submissions of a course that the teacher has started grading and not confirmed yet (0 when none).</summary>
+        protected int DraftOf(int courseId)
+        {
+            if (draftCounts == null) draftCounts = TeacherCourseData.GetDraftCounts();
+            int count;
+            return draftCounts.TryGetValue(courseId, out count) ? count : 0;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
         }

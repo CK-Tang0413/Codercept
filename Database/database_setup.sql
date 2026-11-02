@@ -2442,3 +2442,197 @@ UPDATE [dbo].[Teacher] SET [QualificationName] = N'Postgraduate Certificate in E
 UPDATE [dbo].[Teacher] SET [QualificationName] = N'BSc in Information Systems', [QualificationDocument] = N'~/media/uploads/qualifications/qual_seed_omar_farouk.pdf' WHERE [Email] = N'omarfarouk@edu.com.my';
 
 PRINT 'Teacher qualifications added.';
+
+-- =========================================================================
+-- 9. SUBMISSIONS TO MARK FOR EVERY TEACHER WHO HAS A COURSE WITH TESTS
+-- =========================================================================
+-- Every teacher with courses gets learner submissions waiting for grading: some untouched ("Not graded"), some marked by a teaching
+-- assistant and waiting for the teacher (GradingProgress 'Reviewed' with notes and provisional marks, TA_Id set) and some the teacher has started
+-- (GradingProgress 'in_progress'). Hafiz Rahman's and Mei Ling Tan's courses had no tests, so each gets a final exam first.
+-- A multiple-choice answer is the id of the option the learner chose; fill-in-the-blank and coding answers are text, marked 'pending'.
+-- Rows are found by course title, chapter number and e-mail address, never by identity numbers.
+DECLARE @PsTest INT, @PsTeacher INT, @PsQ INT;
+
+-- 9.1. FINAL EXAMS FOR THE COURSES THAT HAD NONE
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId])
+SELECT DATEADD(DAY, -5, GETDATE()), DATEADD(DAY, -5, GETDATE()), N'Final Course Examination', N'Final exam for C Pointers Workshop.', 50, 60, 1, 0, c.[CourseId], c.[TeacherId] FROM [dbo].[Course] c WHERE c.[CourseTitle] = N'C Pointers Workshop';
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Pointers Workshop'));
+SET @PsTeacher = (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Pointers Workshop');
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'What does the * operator do when it is applied to a pointer?', 'MCQ', 5, 1, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Reads or writes the value at the address', 1, 1, @PsQ), (N'Returns the address of a variable', 0, 2, @PsQ), (N'Declares a new array', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Which function allocates memory on the heap in C?', 'MCQ', 5, 2, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'new', 0, 1, @PsQ), (N'malloc', 1, 2, @PsQ), (N'create', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'What should you do when you have finished with memory from malloc?', 'MCQ', 5, 3, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Call delete on it', 0, 1, @PsQ), (N'Nothing, it is released automatically', 0, 2, @PsQ), (N'Call free on it', 1, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'What does int *p = NULL; mean?', 'MCQ', 5, 4, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'p points to nothing', 1, 1, @PsQ), (N'p points to the value 0', 0, 2, @PsQ), (N'p is an array of zero ints', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'The ____ operator gives the address of a variable.', 'FillBlank', 5, 5, N'&, ampersand', NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'A pointer that is used after its memory was freed is called a ____ pointer.', 'FillBlank', 5, 6, N'dangling', NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Write code that declares an int x with the value 7 and a pointer p that points to x.', 'Coding', 5, 7, NULL, N'int x = 7;
+int *p = &x;', N'2 marks for x, 2 marks for the pointer declaration, 1 mark for taking the address', @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Write a C function void addOne(int *n) that adds 1 to the integer n points to.', 'Coding', 5, 8, NULL, N'void addOne(int *n) {
+    *n = *n + 1;
+}', N'2 marks for the signature, 2 marks for dereferencing n, 1 mark for adding one', @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Exam] ([DateCreation], [DateUpdate], [ExamTitle], [ExamDescription], [PassMark], [TimeLimitMinutes], [StrictSyntax], [AllowLibraries], [CourseId], [TeacherId])
+SELECT DATEADD(DAY, -5, GETDATE()), DATEADD(DAY, -5, GETDATE()), N'Final Course Examination', N'Final exam for Cybersecurity Basics with Python.', 50, 60, 0, 1, c.[CourseId], c.[TeacherId] FROM [dbo].[Course] c WHERE c.[CourseTitle] = N'Cybersecurity Basics with Python';
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Cybersecurity Basics with Python'));
+SET @PsTeacher = (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Cybersecurity Basics with Python');
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Why should passwords be stored as hashes instead of plain text?', 'MCQ', 5, 1, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'A leaked database does not reveal the passwords', 1, 1, @PsQ), (N'Hashes are shorter to type', 0, 2, @PsQ), (N'Hashes can easily be turned back into the password', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'What is SQL injection?', 'MCQ', 5, 2, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Copying a database to a backup', 0, 1, @PsQ), (N'Inserting malicious SQL through user input', 1, 2, @PsQ), (N'Speeding up a query with an index', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Which is the best defence against SQL injection?', 'MCQ', 5, 3, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Longer passwords', 0, 1, @PsQ), (N'Hiding the table names', 0, 2, @PsQ), (N'Parameterised queries', 1, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'What does HTTPS add to HTTP?', 'MCQ', 5, 4, NULL, NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+SET @PsQ = SCOPE_IDENTITY();
+INSERT INTO [dbo].[MCQ_Option] ([OptionContent], [IsCorrect], [OptionOrder], [QuestionId]) VALUES (N'Encryption of the traffic', 1, 1, @PsQ), (N'Faster downloads', 0, 2, @PsQ), (N'Larger pages', 0, 3, @PsQ);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'A ____ is a one-way function that turns text into a fixed-length string.', 'FillBlank', 5, 5, N'hash', NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Checking that a user is who they say they are is called ____.', 'FillBlank', 5, 6, N'authentication', NULL, NULL, @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Write Python code that hashes the text password with SHA-256 using hashlib and prints the hex digest.', 'Coding', 5, 7, NULL, N'import hashlib
+print(hashlib.sha256(b"password").hexdigest())', N'1 mark for the import, 2 marks for sha256, 2 marks for hexdigest and print', @PsTeacher, NULL, NULL, @PsTest);
+INSERT INTO [dbo].[Question] ([QuestionContent], [QuestionType], [QuestionScore], [QuestionOrder], [AcceptedAnswers], [ModelAnswer], [MarkingGuide], [TeacherId], [QuizId], [AssessmentId], [ExamId]) VALUES (N'Write a Python function is_strong(pw) that returns True when pw has at least 8 characters.', 'Coding', 5, 8, NULL, N'def is_strong(pw):
+    return len(pw) >= 8', N'2 marks for the function, 2 marks for the length test, 1 mark for returning the result', @PsTeacher, NULL, NULL, @PsTest);
+
+-- 9.2. ENROLMENTS (a learner who submitted must be enrolled in the course)
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'ethanlim2002@gmail.com' AND c.[CourseTitle] = N'Python Programming Fundamentals' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'gavinooi@gmail.com' AND c.[CourseTitle] = N'Python Programming Fundamentals' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'lucasng99@gmail.com' AND c.[CourseTitle] = N'Python Programming Fundamentals' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'hana.yusof@gmail.com' AND c.[CourseTitle] = N'Java Programming Masterclass' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'iman.hakim@gmail.com' AND c.[CourseTitle] = N'Java Programming Masterclass' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'jasonkoh@gmail.com' AND c.[CourseTitle] = N'Data Analysis with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'kavitha.raj@gmail.com' AND c.[CourseTitle] = N'Data Analysis with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'aisyah.rahman@gmail.com' AND c.[CourseTitle] = N'C Programming Essentials' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'bentan88@gmail.com' AND c.[CourseTitle] = N'C Programming Essentials' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'chenwei.lee@gmail.com' AND c.[CourseTitle] = N'C++ Algorithms & Data Structures' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'divya.menon@gmail.com' AND c.[CourseTitle] = N'Machine Learning with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'ethanlim2002@gmail.com' AND c.[CourseTitle] = N'Web Apps with Python and Flask' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'farah.aziz@gmail.com' AND c.[CourseTitle] = N'Web Apps with Python and Flask' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'gavinooi@gmail.com' AND c.[CourseTitle] = N'Advanced Python Patterns' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'hana.yusof@gmail.com' AND c.[CourseTitle] = N'Advanced Python Patterns' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'iman.hakim@gmail.com' AND c.[CourseTitle] = N'Java Collections and Streams' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'jasonkoh@gmail.com' AND c.[CourseTitle] = N'Databases with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'kavitha.raj@gmail.com' AND c.[CourseTitle] = N'Databases with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'lucasng99@gmail.com' AND c.[CourseTitle] = N'C Pointers Workshop' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'aisyah.rahman@gmail.com' AND c.[CourseTitle] = N'C Pointers Workshop' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'bentan88@gmail.com' AND c.[CourseTitle] = N'Cybersecurity Basics with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate]) SELECT l.[LearnerId], c.[CourseId], 1, DATEADD(DAY, -14, GETDATE()) FROM [dbo].[Learner] l CROSS JOIN [dbo].[Course] c WHERE l.[Email] = N'chenwei.lee@gmail.com' AND c.[CourseTitle] = N'Cybersecurity Basics with Python' AND NOT EXISTS (SELECT 1 FROM [dbo].[LearnerProgress] p WHERE p.[LearnerId] = l.[LearnerId] AND p.[CourseId] = c.[CourseId]);
+
+-- 9.3. SUBMISSIONS: the attempts and their grading progress first, then the learners' answers and the provisional marks for all of them at once
+DECLARE @PsFirst INT = (SELECT ISNULL(MAX([AttemptId]), 0) FROM [dbo].[Attempt]);
+
+-- Python Programming Fundamentals | asm ch1 | ethanlim2002@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Python Programming Fundamentals' AND ch.[ChapterNum] = 1);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -30, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'ethanlim2002@gmail.com'), NULL, @PsTest, NULL);
+
+-- Python Programming Fundamentals | asm ch4 | gavinooi@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Python Programming Fundamentals' AND ch.[ChapterNum] = 4);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -26, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'gavinooi@gmail.com'), NULL, @PsTest, NULL);
+
+-- Python Programming Fundamentals | exam | lucasng99@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Python Programming Fundamentals'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -22, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'lucasng99@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Marks follow the marking guide. The loop answer is correct, the function answer is missing the return.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'ta1234@gmail.com'), SCOPE_IDENTITY());
+
+-- Java Programming Masterclass | asm ch2 | hana.yusof@gmail.com | draft
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Java Programming Masterclass' AND ch.[ChapterNum] = 2);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -20, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'hana.yusof@gmail.com'), NULL, @PsTest, NULL);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'Checking the Dog class against the model answer before confirming.', (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'), NULL, SCOPE_IDENTITY());
+
+-- Java Programming Masterclass | exam | iman.hakim@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Programming Masterclass'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -18, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'iman.hakim@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Good attempt overall. Please double-check the isEven method marks.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'marcus.ta@edu.com.my'), SCOPE_IDENTITY());
+
+-- Data Analysis with Python | asm ch2 | jasonkoh@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Data Analysis with Python' AND ch.[ChapterNum] = 2);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -16, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'jasonkoh@gmail.com'), NULL, @PsTest, NULL);
+
+-- Data Analysis with Python | exam | kavitha.raj@gmail.com | pending
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Data Analysis with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -14, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'kavitha.raj@gmail.com'), NULL, NULL, @PsTest);
+
+-- C Programming Essentials | asm ch2 | aisyah.rahman@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'C Programming Essentials' AND ch.[ChapterNum] = 2);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -28, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'aisyah.rahman@gmail.com'), NULL, @PsTest, NULL);
+
+-- C Programming Essentials | exam | bentan88@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Programming Essentials'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -24, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'bentan88@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Syntax is strict in this exam: the printf answer is missing a semicolon, so I gave partial marks.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'ta1234@gmail.com'), SCOPE_IDENTITY());
+
+-- C++ Algorithms & Data Structures | exam | chenwei.lee@gmail.com | pending
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C++ Algorithms & Data Structures'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -12, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'chenwei.lee@gmail.com'), NULL, NULL, @PsTest);
+
+-- Machine Learning with Python | exam | divya.menon@gmail.com | draft
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Machine Learning with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -10, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'divya.menon@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'Compare the train_test_split answer with the marking guide.', (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Machine Learning with Python'), NULL, SCOPE_IDENTITY());
+
+-- Web Apps with Python and Flask | asm ch2 | ethanlim2002@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Web Apps with Python and Flask' AND ch.[ChapterNum] = 2);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -8, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'ethanlim2002@gmail.com'), NULL, @PsTest, NULL);
+
+-- Web Apps with Python and Flask | exam | farah.aziz@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Web Apps with Python and Flask'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -6, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'farah.aziz@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Routes are right. The /user route returns text but not a greeting, so partial marks.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'marcus.ta@edu.com.my'), SCOPE_IDENTITY());
+
+-- Advanced Python Patterns | asm ch2 | gavinooi@gmail.com | pending
+SET @PsTest = (SELECT t.[AssessmentId] FROM [dbo].[Assessment] t INNER JOIN [dbo].[Chapter] ch INNER JOIN [dbo].[Course] c ON c.[CourseId] = ch.[CourseId] ON ch.[ChapterId] = t.[ChapterId] WHERE c.[CourseTitle] = N'Advanced Python Patterns' AND ch.[ChapterNum] = 2);
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -40, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'gavinooi@gmail.com'), NULL, @PsTest, NULL);
+
+-- Advanced Python Patterns | exam | hana.yusof@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -36, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'hana.yusof@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'The decorator works; the generator answer yields the wrong range.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'ta1234@gmail.com'), SCOPE_IDENTITY());
+
+-- Java Collections and Streams | exam | iman.hakim@gmail.com | draft
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -32, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'iman.hakim@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'Streams answers need a second look.', (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Java Collections and Streams'), NULL, SCOPE_IDENTITY());
+
+-- Databases with Python | exam | jasonkoh@gmail.com | pending
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Databases with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -34, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'jasonkoh@gmail.com'), NULL, NULL, @PsTest);
+
+-- Databases with Python | exam | kavitha.raj@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Databases with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -4, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'kavitha.raj@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'The SQL query is correct. The sqlite3 answer forgets to close the connection.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'marcus.ta@edu.com.my'), SCOPE_IDENTITY());
+
+-- C Pointers Workshop | exam | lucasng99@gmail.com | pending
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Pointers Workshop'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -3, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'lucasng99@gmail.com'), NULL, NULL, @PsTest);
+
+-- C Pointers Workshop | exam | aisyah.rahman@gmail.com | ta
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'C Pointers Workshop'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -2, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'aisyah.rahman@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('Reviewed', N'Pointer declaration is right; addOne does not dereference n.', NULL, (SELECT [TA_Id] FROM [dbo].[Teaching_Assistant] WHERE [Email] = N'ta1234@gmail.com'), SCOPE_IDENTITY());
+
+-- Cybersecurity Basics with Python | exam | bentan88@gmail.com | pending
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Cybersecurity Basics with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -5, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'bentan88@gmail.com'), NULL, NULL, @PsTest);
+
+-- Cybersecurity Basics with Python | exam | chenwei.lee@gmail.com | draft
+SET @PsTest = (SELECT [ExamId] FROM [dbo].[Exam] WHERE [CourseId] = (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Cybersecurity Basics with Python'));
+INSERT INTO [dbo].[Attempt] ([AttemptDate], [AttemptStatus], [LearnerId], [QuizId], [AssessmentId], [ExamId]) VALUES (DATEADD(HOUR, -1, GETDATE()), 'completed', (SELECT [LearnerId] FROM [dbo].[Learner] WHERE [Email] = N'chenwei.lee@gmail.com'), NULL, NULL, @PsTest);
+INSERT INTO [dbo].[GradingProgress] ([ProgressStatus], [ProgressNotes], [TeacherId], [TA_Id], [AttemptId]) VALUES ('in_progress', N'Checking the hashing answer.', (SELECT [TeacherId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Cybersecurity Basics with Python'), NULL, SCOPE_IDENTITY());
+
+-- The answers of every new attempt, one row per question. A multiple-choice answer is the id of the option picked (mostly the right one),
+-- a fill-in-the-blank answer is the first accepted answer or 'not sure', a coding answer is the model answer or its first part.
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT a.[AttemptId], q.[QuestionId], CASE q.[QuestionType] WHEN 'MCQ' THEN CAST((SELECT TOP 1 o.[MCQ_OptionId] FROM [dbo].[MCQ_Option] o WHERE o.[QuestionId] = q.[QuestionId] AND o.[IsCorrect] = IIF((q.[QuestionOrder] + a.[AttemptId]) % 3 = 0, 0, 1) ORDER BY o.[OptionOrder]) AS NVARCHAR(MAX)) WHEN 'FillBlank' THEN IIF((q.[QuestionOrder] + a.[AttemptId]) % 2 = 0, LTRIM(RTRIM(LEFT(q.[AcceptedAnswers] + ',', CHARINDEX(',', q.[AcceptedAnswers] + ',') - 1))), N'not sure') ELSE IIF((q.[QuestionOrder] + a.[AttemptId]) % 2 = 0, q.[ModelAnswer], LEFT(q.[ModelAnswer], CEILING(LEN(q.[ModelAnswer]) * 0.6))) END, 'pending', 0, N''
+FROM [dbo].[Attempt] a INNER JOIN [dbo].[Question] q ON (q.[ExamId] = a.[ExamId] OR q.[QuizId] = a.[QuizId] OR q.[AssessmentId] = a.[AssessmentId]) WHERE a.[AttemptId] > @PsFirst;
+-- the teaching assistants' provisional marks (80 percent) and the teacher's started marks (50 percent) on the written answers
+UPDATE aa SET aa.[ObtainedScore] = FLOOR(q.[QuestionScore] * 0.8), aa.[TeacherComment] = N'Provisional mark from the teaching assistant.' FROM [dbo].[AttemptAnswer] aa INNER JOIN [dbo].[Question] q ON q.[QuestionId] = aa.[QuestionId] INNER JOIN [dbo].[GradingProgress] g ON g.[AttemptId] = aa.[AttemptId] WHERE aa.[AttemptId] > @PsFirst AND g.[ProgressStatus] = 'Reviewed' AND q.[QuestionType] IN ('FillBlank', 'Coding');
+UPDATE aa SET aa.[ObtainedScore] = FLOOR(q.[QuestionScore] * 0.5), aa.[TeacherComment] = N'Needs a closer look.' FROM [dbo].[AttemptAnswer] aa INNER JOIN [dbo].[Question] q ON q.[QuestionId] = aa.[QuestionId] INNER JOIN [dbo].[GradingProgress] g ON g.[AttemptId] = aa.[AttemptId] WHERE aa.[AttemptId] > @PsFirst AND g.[ProgressStatus] = 'in_progress' AND q.[QuestionType] IN ('FillBlank', 'Coding');
+
+PRINT 'Submissions to mark added for every teacher with tests.';
