@@ -213,13 +213,13 @@ namespace Codercept
         protected global::System.Web.UI.WebControls.Label lblCodeState;
 
         /// <summary>
-        /// txtCodeEditor control.
+        /// rptAssessmentQuestions control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCodeEditor;
+        protected global::System.Web.UI.WebControls.Repeater rptAssessmentQuestions;
 
         /// <summary>
         /// btnSubmitAssessment control.

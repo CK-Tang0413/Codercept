@@ -2580,3 +2580,59 @@ UPDATE aa SET aa.[ObtainedScore] = FLOOR(q.[QuestionScore] * 0.8), aa.[TeacherCo
 UPDATE aa SET aa.[ObtainedScore] = FLOOR(q.[QuestionScore] * 0.5), aa.[TeacherComment] = N'Needs a closer look.' FROM [dbo].[AttemptAnswer] aa INNER JOIN [dbo].[Question] q ON q.[QuestionId] = aa.[QuestionId] INNER JOIN [dbo].[GradingProgress] g ON g.[AttemptId] = aa.[AttemptId] WHERE aa.[AttemptId] > @PsFirst AND g.[ProgressStatus] = 'in_progress' AND q.[QuestionType] IN ('FillBlank', 'Coding');
 
 PRINT 'Submissions to mark added for every teacher with tests.';
+
+-- =========================================================================
+-- 10. ANSWERS FOR THE QUESTIONS THAT WERE ADDED AFTER AN ATTEMPT WAS MADE
+-- =========================================================================
+-- Section 7 gave every quiz, assessment and exam more questions, but the learner attempts made before that only hold answers for the earlier
+-- ones, so viewing such an attempt showed the new questions unanswered. This adds the missing answers of every submitted attempt:
+--   * an attempt that is already graded (it has a Result) gets answers that fit its other answers: all correct when its earlier answers were all
+--     correct, otherwise mostly correct, with the marks and the verdict of each answer; the Result (total, average, grade) is then worked out
+--     again from the answers, so the attempt, its answers and its result agree;
+--   * an attempt that is still waiting for marking gets 'pending' answers worth 0 marks, like the answers it already has.
+-- A multiple-choice answer is the id of the chosen option; fill-in-the-blank and coding answers are text.
+CREATE TABLE #TcMissing ([AttemptId] INT NOT NULL, [QuestionId] INT NOT NULL, PRIMARY KEY ([AttemptId], [QuestionId]));
+
+INSERT INTO #TcMissing ([AttemptId], [QuestionId])
+SELECT a.[AttemptId], q.[QuestionId]
+FROM [dbo].[Attempt] a
+INNER JOIN [dbo].[Question] q ON (q.[ExamId] = a.[ExamId] OR q.[QuizId] = a.[QuizId] OR q.[AssessmentId] = a.[AssessmentId])
+WHERE a.[AttemptStatus] IN ('completed', 'graded')
+  AND NOT EXISTS (SELECT 1 FROM [dbo].[AttemptAnswer] x WHERE x.[AttemptId] = a.[AttemptId] AND x.[QuestionId] = q.[QuestionId]);
+
+-- an attempt whose earlier answers were all marked correct (and that has at least one answer)
+SELECT a.[AttemptId] INTO #TcAllCorrect FROM [dbo].[Attempt] a
+WHERE EXISTS (SELECT 1 FROM [dbo].[AttemptAnswer] x WHERE x.[AttemptId] = a.[AttemptId])
+  AND NOT EXISTS (SELECT 1 FROM [dbo].[AttemptAnswer] x WHERE x.[AttemptId] = a.[AttemptId] AND x.[IsCorrect] <> 'correct');
+
+INSERT INTO [dbo].[AttemptAnswer] ([AttemptId], [QuestionId], [AnswerContent], [IsCorrect], [ObtainedScore], [TeacherComment])
+SELECT a.[AttemptId], q.[QuestionId],
+       CASE q.[QuestionType]
+            WHEN 'MCQ' THEN CAST((SELECT TOP 1 o.[MCQ_OptionId] FROM [dbo].[MCQ_Option] o WHERE o.[QuestionId] = q.[QuestionId] AND o.[IsCorrect] = IIF(f.[Wrong] = 1, 0, 1) ORDER BY o.[OptionOrder]) AS NVARCHAR(MAX))
+            WHEN 'FillBlank' THEN IIF(f.[Wrong] = 1, N'not sure', LTRIM(RTRIM(LEFT(q.[AcceptedAnswers] + ',', CHARINDEX(',', q.[AcceptedAnswers] + ',') - 1))))
+            ELSE IIF(f.[Wrong] = 1, LEFT(q.[ModelAnswer], CEILING(LEN(q.[ModelAnswer]) * 0.6)), q.[ModelAnswer]) END,
+       IIF(f.[Graded] = 0, 'pending', IIF(f.[Wrong] = 0, 'correct', IIF(q.[QuestionType] = 'Coding', 'partial', 'incorrect'))),
+       IIF(f.[Graded] = 0, 0, IIF(f.[Wrong] = 0, q.[QuestionScore], IIF(q.[QuestionType] = 'Coding', FLOOR(q.[QuestionScore] * 0.5), 0))),
+       IIF(f.[Graded] = 1 AND f.[Wrong] = 0, N'Well done', N'')
+FROM #TcMissing m
+INNER JOIN [dbo].[Attempt] a ON a.[AttemptId] = m.[AttemptId]
+INNER JOIN [dbo].[Question] q ON q.[QuestionId] = m.[QuestionId]
+CROSS APPLY (SELECT IIF(EXISTS (SELECT 1 FROM [dbo].[Result] r WHERE r.[AttemptId] = a.[AttemptId]), 1, 0) AS [Graded]) g
+CROSS APPLY (SELECT CASE WHEN g.[Graded] = 0 THEN IIF((q.[QuestionOrder] + a.[AttemptId]) % 3 = 0, 1, 0)
+                         WHEN EXISTS (SELECT 1 FROM #TcAllCorrect c WHERE c.[AttemptId] = a.[AttemptId]) THEN 0
+                         ELSE IIF((q.[QuestionOrder] + a.[AttemptId]) % 4 = 0, 1, 0) END AS [Wrong], g.[Graded] AS [Graded]) f;
+
+-- the Result of every graded attempt that got answers is worked out again from its answers
+UPDATE r SET r.[TotalScore] = t.[Total], r.[Average] = t.[Percent],
+       r.[Grade] = IIF(t.[Percent] >= 80, 'A', IIF(t.[Percent] >= 70, 'B', IIF(t.[Percent] >= 60, 'C', IIF(t.[Percent] >= 50, 'D', 'F'))))
+FROM [dbo].[Result] r
+INNER JOIN (SELECT s.[AttemptId], s.[Total], IIF(s.[Max] > 0, ROUND(s.[Total] * 100.0 / s.[Max], 1), 0) AS [Percent]
+            FROM (SELECT a.[AttemptId],
+                         (SELECT ISNULL(SUM(aa.[ObtainedScore]), 0) FROM [dbo].[AttemptAnswer] aa WHERE aa.[AttemptId] = a.[AttemptId]) AS [Total],
+                         (SELECT ISNULL(SUM(q.[QuestionScore]), 0) FROM [dbo].[Question] q WHERE q.[ExamId] = a.[ExamId] OR q.[QuizId] = a.[QuizId] OR q.[AssessmentId] = a.[AssessmentId]) AS [Max]
+                  FROM [dbo].[Attempt] a WHERE a.[AttemptId] IN (SELECT [AttemptId] FROM #TcMissing)) s) t ON t.[AttemptId] = r.[AttemptId];
+
+DROP TABLE #TcAllCorrect;
+DROP TABLE #TcMissing;
+
+PRINT 'Missing answers of earlier attempts added.';
