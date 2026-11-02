@@ -1510,15 +1510,15 @@ DELETE FROM [dbo].[Course_Review] WHERE LearnerId IN (@BcKylan, @BcWan);
 -- 6.4.1. ENROLLMENTS & CURRENT CHAPTER PROGRESS
 INSERT INTO [dbo].[LearnerProgress] ([LearnerId], [CourseId], [ChapNum], [EnrolledDate])
 VALUES
-    -- Kylan: Finished Python & Data Analysis, Ongoing Java (Ch 3), New Flask (Ch 1)
-    (@BcKylan, @BcPythonCourse, 6, DATEADD(DAY, -45, GETDATE())),
-    (@BcKylan, @BcDataCourse, 6, DATEADD(DAY, -30, GETDATE())),
+    -- Kylan's Progress: Finished Python & Data Analysis (Chap 7), Ongoing Java (Ch 3), New Flask (Ch 1)
+    (@BcKylan, @BcPythonCourse, 7, DATEADD(DAY, -45, GETDATE())),
+    (@BcKylan, @BcDataCourse, 7, DATEADD(DAY, -30, GETDATE())),
     (@BcKylan, @BcJavaCourse, 3, DATEADD(DAY, -15, GETDATE())),
     (@BcKylan, @BcFlaskCourse, 1, DATEADD(DAY, -2, GETDATE())),
 
-    -- Wan: Finished Java & C++, Ongoing Python (Ch 4), New Databases (Ch 1)
-    (@BcWan, @BcJavaCourse, 6, DATEADD(DAY, -50, GETDATE())),
-    (@BcWan, @BcCppCourse, 3, DATEADD(DAY, -35, GETDATE())), 
+    -- Wan's Progress: Finished Java (Chap 7) & C++ (Chap 4), Ongoing Python (Ch 4), New Databases (Ch 1)
+    (@BcWan, @BcJavaCourse, 7, DATEADD(DAY, -50, GETDATE())),
+    (@BcWan, @BcCppCourse, 4, DATEADD(DAY, -35, GETDATE())), 
     (@BcWan, @BcPythonCourse, 4, DATEADD(DAY, -12, GETDATE())),
     (@BcWan, @BcDatabaseCourse, 1, DATEADD(DAY, -1, GETDATE()));
 

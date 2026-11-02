@@ -83,12 +83,13 @@ namespace Codercept
             using (SqlConnection con = new SqlConnection(connString))
             {
                 string query = @"
-                    SELECT TOP 3
+                        SELECT TOP 3
                         c.CourseId, 
                         c.CourseTitle,
                         c.DifficultyLevel,
                         lp.ChapNum,
                         (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChapters,
+                        (SELECT COUNT(*) FROM Exam WHERE CourseId = c.CourseId) as ExamCount,
                         ISNULL((SELECT TOP 1 s.SubjectName FROM CourseSubject cs JOIN Subject s ON cs.SubjectId = s.SubjectId WHERE cs.CourseId = c.CourseId AND s.SubjectType = 'Language'), 'General') as Language,
                         ISNULL((SELECT ChapterTitle FROM Chapter WHERE CourseId = c.CourseId AND ChapterNum = lp.ChapNum), 'Course Completed') as NextChapterTitle
                     FROM LearnerProgress lp
@@ -110,11 +111,20 @@ namespace Codercept
                     {
                         int currentChapter = Convert.ToInt32(row["ChapNum"]);
                         int totalChapters = Convert.ToInt32(row["TotalChapters"]);
+                        bool hasExam = Convert.ToInt32(row["ExamCount"]) > 0;
+                        int maxAllowedChapter = totalChapters + (hasExam ? 1 : 0);
 
-                        int chaptersCompleted = currentChapter - 1;
-                        if (currentChapter > totalChapters) chaptersCompleted = totalChapters;
+                        int chaptersCompleted;
+                        if (currentChapter > maxAllowedChapter)
+                        {
+                            chaptersCompleted = maxAllowedChapter;
+                        }
+                        else
+                        {
+                            chaptersCompleted = currentChapter - 1;
+                        }
 
-                        row["ProgressPercentage"] = totalChapters > 0 ? (chaptersCompleted * 100) / totalChapters : 0;
+                        row["ProgressPercentage"] = maxAllowedChapter > 0 ? (chaptersCompleted * 100) / maxAllowedChapter : 0;
 
                         string lang = row["Language"].ToString().ToLower();
                         if (lang.Contains("c++") || lang.Contains("cpp")) row["LanguageCSS"] = "cpp";
@@ -221,10 +231,15 @@ namespace Codercept
                 string totalProgressQuery = @"
                     SELECT 
                         ISNULL(SUM(lp.ChapNum - 1), 0) as ChaptersDone,
-                        ISNULL(SUM(c.TotalChaps), 0) as TotalChapsRequired
+                        ISNULL(SUM(c.TotalChaps + c.ExamCount), 0) as TotalChapsRequired
                     FROM LearnerProgress lp
-                    JOIN (SELECT CourseId, COUNT(*) as TotalChaps FROM Chapter GROUP BY CourseId) c 
-                        ON lp.CourseId = c.CourseId
+                    JOIN (
+                        SELECT 
+                            CourseId, 
+                            (SELECT COUNT(*) FROM Chapter WHERE CourseId = c.CourseId) as TotalChaps,
+                            (SELECT COUNT(*) FROM Exam WHERE CourseId = c.CourseId) as ExamCount
+                        FROM Course c
+                    ) c ON lp.CourseId = c.CourseId
                     WHERE lp.LearnerId = @LearnerId";
 
                 using (SqlCommand cmd = new SqlCommand(totalProgressQuery, con))
