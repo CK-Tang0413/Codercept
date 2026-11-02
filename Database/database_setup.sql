@@ -710,37 +710,6 @@ VALUES
     -- Wan, C final exam: chose 'Dennis Ritchie' (right)
     (@AttWanCExam, @CExamQ1, CAST((SELECT [MCQ_OptionId] FROM [dbo].[MCQ_Option] WHERE [QuestionId] = @CExamQ1 AND [OptionOrder] = 2) AS NVARCHAR(20)), 'pending', 0, '');
 
--- ==========================================
--- Forum posts (Backend Phase 5, Step 5.1)
--- A teacher sees the posts they wrote and the posts of learners enrolled in one of their courses.
--- Kylan is in Bryan's courses, Wan is in Bryan's Python course and Sarah's C course.
--- Post_Reply.IsPinned is 'Yes' or 'No'.
--- ==========================================
-DECLARE @PostId INT, @ThreadId INT;
-
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
-VALUES ('What is String in Python?', 'I am currently going through the Python Programming Fundamentals course and I am a bit confused about strings. What exactly is a string, and how is it different from a list?', DATEADD(DAY, -2, GETDATE()), @KylanId, 'Python,Fundamental', NULL);
-SET @PostId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
-VALUES ('A string is just a sequence of characters. They are strictly immutable.', 'No', NULL, @PostId, @WanId, NULL, NULL);
-SET @ThreadId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
-VALUES ('Wan is correct! Because strings are immutable, if you want to "modify" one you actually create a brand new string.', 'Yes', DATEADD(DAY, -1, GETDATE()), @PostId, NULL, @BryanId, @ThreadId);
-
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
-VALUES ('Error setting up Visual Studio for C++', 'Every time I try to compile my first Hello World program, it throws an error. I installed Visual Studio yesterday.', DATEADD(DAY, -1, GETDATE()), @WanId, 'C++,Environment,Error', NULL);
-SET @PostId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
-VALUES ('Check that the Desktop development with C++ workload is installed in Visual Studio Installer.', 'No', NULL, @PostId, @KylanId, NULL, NULL);
-
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
-VALUES ('Welcome to Python Programming Fundamentals', 'Introduce yourself here and tell us what you would like to build with Python.', DATEADD(DAY, -5, GETDATE()), NULL, 'Announcement', @BryanId);
-SET @PostId = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId])
-VALUES ('Hi everyone! I want to build a small game.', 'No', NULL, @PostId, @KylanId, NULL, NULL);
-
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId])
-VALUES ('Reminder: C final examination', 'The final examination for C Programming Essentials covers every chapter. Revise pointers and arrays.', DATEADD(DAY, -3, GETDATE()), NULL, 'Exam,Reminder', @SarahId);
 
 -- ==========================================
 -- 4. TEACHING ASSISTANT MOCK DATA
@@ -1752,31 +1721,6 @@ SET @SdAttempt = SCOPE_IDENTITY();
 INSERT INTO [dbo].[Certificate] ([Issuer], [IssueDate], [LearnerId], [CourseId]) VALUES
     ('Bryan Yeong', DATEADD(DAY, -5, GETDATE()), @BcFarah, @BcPythonCourse),
     ('Priya Nair', DATEADD(DAY, -4, GETDATE()), @BcDivya, (SELECT [CourseId] FROM [dbo].[Course] WHERE [CourseTitle] = N'Advanced Python Patterns'));
-
--- Forum posts and replies (a teacher sees their own posts and those of learners enrolled in their courses)
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'How do list comprehensions work?', N'I keep seeing [x * 2 for x in numbers] in examples. How is a list comprehension different from a normal for loop?', DATEADD(DAY, -3, GETDATE()), @BcAisyah, N'Python,Lists', NULL);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Think of it as a for loop written on one line.', 'No', NULL, @BcPost, @BcFarah, NULL, NULL);
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Exactly. Read it from the left: build x * 2 for every x in numbers. The result is a new list.', 'Yes', DATEADD(DAY, -1, GETDATE()), @BcPost, NULL, @BcBryan, (SELECT [ThreadId] FROM [dbo].[Post_Reply] WHERE [PostId] = @BcPost AND [ReplyComment] = N'Think of it as a for loop written on one line.'));
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'That makes sense now, thank you!', 'No', NULL, @BcPost, @BcAisyah, NULL, (SELECT [ThreadId] FROM [dbo].[Post_Reply] WHERE [PostId] = @BcPost AND [ReplyComment] = N'Exactly. Read it from the left: build x * 2 for every x in numbers. The result is a new list.'));
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Why does my Flask route return 404?', N'I added @app.route("/about") but the page shows Not Found.', DATEADD(DAY, -2, GETDATE()), @BcEthan, N'Flask,Errors', NULL);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Restart the development server after you add a route, and check that the function name is unique.', 'No', NULL, @BcPost, NULL, @BcAlvin, NULL);
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Segmentation fault when using pointers', N'My program crashes with a segmentation fault when I print *p. What might be wrong?', DATEADD(DAY, -1, GETDATE()), @BcChen, N'C,Pointers', NULL);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Check that p points to valid memory before you dereference it. A pointer that was never assigned is the usual cause.', 'Yes', DATEADD(DAY, -1, GETDATE()), @BcPost, NULL, @BcSarah, NULL);
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'I had the same problem: I forgot to set p = &x.', 'No', NULL, @BcPost, @BcHana, NULL, NULL);
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'ArrayList or LinkedList?', N'When should I use a LinkedList instead of an ArrayList in Java?', DATEADD(DAY, -4, GETDATE()), @BcGavin, N'Java,Collections', NULL);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'Use ArrayList by default. A LinkedList only helps when you insert or remove a lot in the middle of a big list.', 'No', NULL, @BcPost, NULL, @BcPriya, NULL);
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'What does yield actually do?', N'I understand return, but yield confuses me. Does the function stop?', DATEADD(DAY, -2, GETDATE()), @BcDivya, N'Python,Generators', NULL);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'It pauses the function and gives back one value. The next call carries on from the same place.', 'Yes', DATEADD(DAY, -1, GETDATE()), @BcPost, NULL, @BcPriya, NULL);
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Welcome to Web Apps with Python and Flask', N'Introduce yourself and share the first small site you would like to build.', DATEADD(DAY, -9, GETDATE()), NULL, N'Announcement', @BcAlvin);
-SET @BcPost = SCOPE_IDENTITY();
-INSERT INTO [dbo].[Post_Reply] ([ReplyComment], [IsPinned], [DatePinned], [PostId], [LearnerId], [TeacherId], [ParentThreadId]) VALUES (N'I would like to build a simple to-do list.', 'No', NULL, @BcPost, @BcAisyah, NULL, NULL);
-INSERT INTO [dbo].[Forum] ([Title], [Content], [DatePosted], [LearnerId], [Tags], [TeacherId]) VALUES (N'Office hours this week', N'I will answer questions about Advanced Python Patterns and Java Collections on Thursday evening in this forum.', DATEADD(DAY, -1, GETDATE()), NULL, N'Announcement,Java,Python', @BcPriya);
-SET @BcPost = SCOPE_IDENTITY();
 
 PRINT 'Complete data for learners inserted successfully.';
 

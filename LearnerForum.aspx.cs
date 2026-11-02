@@ -44,7 +44,11 @@ namespace Codercept
                         f.DatePosted,
                         (SELECT COUNT(*) FROM Post_Reply WHERE PostId = f.PostId) as ReplyCount
                     FROM Forum f
-                    WHERE f.IsHidden = 0
+                    WHERE f.IsHidden = 0 
+                      AND NOT EXISTS (
+                          SELECT 1 FROM Moderate_Forum mf 
+                          WHERE mf.PostId = f.PostId AND mf.ModerateAction = 'Hide'
+                      )
                     ORDER BY f.DatePosted DESC";
 
                 using (SqlCommand cmd = new SqlCommand(postQuery, con))
