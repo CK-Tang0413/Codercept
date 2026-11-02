@@ -1538,9 +1538,19 @@
        selector (search, filter, paging) stay as they are. If anything goes wrong it falls back to the normal full post. */
     var partialBusy = false;
 
+    /* A LinkButton that downloads a file (Save as PDF) leaves the page in place, so the hidden __EVENTTARGET still names that button.
+       A later post that is not a __doPostBack (a course tile) would send it again and raise the button's click, downloading the file again. */
+    function clearPostbackTarget(form) {
+        ["__EVENTTARGET", "__EVENTARGUMENT"].forEach(function (name) {
+            var field = form.elements[name];
+            if (field) field.value = "";
+        });
+    }
+
     function fullSubmit(button) {
         button.setAttribute("data-tp-full", "1");
         var form = button.form || document.forms[0];
+        clearPostbackTarget(form);
         if (form.requestSubmit) form.requestSubmit(button);
         else button.click();
     }
@@ -1552,6 +1562,7 @@
 
     function partialSubmit(button) {
         var form = button.form || document.forms[0];
+        clearPostbackTarget(form);
         var data = new FormData(form);
         if (button.name) data.append(button.name, button.value);
         partialBusy = true;
