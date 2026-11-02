@@ -39,6 +39,8 @@ namespace Codercept
                     ddlTeacherAccountLevel.Items.Insert(0, new System.Web.UI.WebControls.ListItem("Select a level", ""));
                     ddlTeacherAccountLevel.SelectedValue = "";
                 }
+
+                ShowQualification(profile);
             }
 
             mdlTeacherDeleteAccount.BodyHtml = "This deactivates your account and signs you out; you will not be able to sign in again. Your courses and their learners' results are kept. Type <strong>"
@@ -86,6 +88,23 @@ namespace Codercept
 
             Session["UserName"] = name;
             Response.Redirect("~/TeacherAccount.aspx?saved=1");
+        }
+
+        private void ShowQualification(TeacherProfile profile)
+        {
+            bool has = !string.IsNullOrWhiteSpace(profile.QualificationName);
+            phTeacherQualEmpty.Visible = !has;
+            phTeacherQual.Visible = has;
+            if (!has) return;
+
+            litQualName.Text = HttpUtility.HtmlEncode(profile.QualificationName);
+            DateTime verified = profile.QualificationVerified ?? profile.DateJoined;
+            litQualDate.Text = "Verified on " + verified.ToString("MMMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture);
+
+            string url = TeacherAccountData.DocumentUrl(profile.QualificationDocument);
+            lnkQualDocument.Visible = url.Length > 0;
+            spnQualNoDocument.Visible = url.Length == 0;
+            if (url.Length > 0) lnkQualDocument.HRef = url;
         }
 
         private static void MarkError(HtmlGenericControl field, HtmlGenericControl hint, bool error, string message)

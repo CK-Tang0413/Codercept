@@ -6732,6 +6732,42 @@
   box-shadow: 0 1px 3px rgba(76, 29, 149, 0.06);
 }
 
+.tp-app .account-card + h2 {
+  margin-top: 32px;
+}
+
+.tp-app .qual-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tp-app .qual-row:last-child {
+  border-bottom: none;
+}
+
+.tp-app .qual-info strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--heading);
+  font-size: 15px;
+}
+
+.tp-app .qual-info span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tp-app .qual-empty {
+  padding: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
 .tp-app .account-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

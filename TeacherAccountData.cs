@@ -14,6 +14,12 @@ namespace Codercept
         /// <summary>Beginner, Intermediate or Advanced; null when it was never set.</summary>
         public string TeachingLevel { get; set; }
         public DateTime DateJoined { get; set; }
+        /// <summary>Teacher.QualificationName, or null when the teacher has none on record.</summary>
+        public string QualificationName { get; set; }
+        /// <summary>The stored path of the qualification document (Teacher.QualificationDocument), or null.</summary>
+        public string QualificationDocument { get; set; }
+        /// <summary>When the application was reviewed (Application.DateReviewed); null for accounts that never had one.</summary>
+        public DateTime? QualificationVerified { get; set; }
     }
 
     /// <summary>
@@ -63,13 +69,33 @@ namespace Codercept
             }
         }
 
+        /// <summary>
+        /// The browser URL of a stored qualification document, or "" when there is none, the path is not one of the upload folders or the file is missing.
+        /// Registration stores "~/media/uploads/qualifications/qual_x.pdf", the sample data "~/UploadedCertificates/x.pdf"; "media/..." and "/media/..." also work.
+        /// </summary>
+        public static string DocumentUrl(string stored)
+        {
+            if (string.IsNullOrWhiteSpace(stored)) return "";
+            string path = stored.Trim().Replace('\\', '/');
+            if (path.StartsWith("~/")) path = path.Substring(2);
+            path = path.TrimStart('/');
+            if (path.Contains("..") || path.Contains(":")) return "";
+            bool known = path.StartsWith("media/uploads/", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("UploadedCertificates/", StringComparison.OrdinalIgnoreCase);
+            if (!known) return "";
+            string virtualPath = "~/" + path;
+            if (!System.IO.File.Exists(System.Web.HttpContext.Current.Server.MapPath(virtualPath))) return "";
+            return System.Web.VirtualPathUtility.ToAbsolute(virtualPath);
+        }
+
         /// <summary>The signed-in teacher's details, or null when the account no longer exists.</summary>
         public static TeacherProfile GetProfile()
         {
             int teacherId = TeacherDb.GetTeacherId();
             using (SqlConnection con = TeacherDb.GetConnection())
             using (SqlCommand cmd = new SqlCommand(
-                "SELECT Name, Email, Age, Region, TeachingLevel, DateJoined FROM Teacher WHERE TeacherId = @TeacherId", con))
+                "SELECT t.Name, t.Email, t.Age, t.Region, t.TeachingLevel, t.DateJoined, t.QualificationName, t.QualificationDocument, a.DateReviewed " +
+                "FROM Teacher t LEFT JOIN Application a ON a.ApplicationId = t.ApplicationId WHERE t.TeacherId = @TeacherId", con))
             {
                 cmd.Parameters.AddWithValue("@TeacherId", teacherId);
                 con.Open();
@@ -83,7 +109,10 @@ namespace Codercept
                         Age = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
                         Region = reader.IsDBNull(3) ? "" : reader.GetString(3),
                         TeachingLevel = reader.IsDBNull(4) ? null : reader.GetString(4),
-                        DateJoined = reader.GetDateTime(5)
+                        DateJoined = reader.GetDateTime(5),
+                        QualificationName = reader.IsDBNull(6) ? null : reader.GetString(6),
+                        QualificationDocument = reader.IsDBNull(7) ? null : reader.GetString(7),
+                        QualificationVerified = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8)
                     };
                 }
             }

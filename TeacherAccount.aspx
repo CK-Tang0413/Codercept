@@ -9,7 +9,7 @@
     <div class="account-screen">
         <div class="account-heading">
             <h1>My Account</h1>
-            <p>View and update your personal information and contact details.</p>
+            <p>View and update your personal information and contact details, and see your qualifications.</p>
         </div>
 
         <h2>Personal Details</h2>
@@ -53,6 +53,27 @@
                     <small id="hintTeacherAccountAddress" runat="server"></small>
                 </label>
             </div>
+        </div>
+
+        <h2>Qualifications &amp; Credentials</h2>
+        <div class="account-card">
+            <asp:PlaceHolder ID="phTeacherQualEmpty" runat="server" Visible="false">
+                <div class="qual-empty">No qualifications on record.</div>
+            </asp:PlaceHolder>
+            <asp:PlaceHolder ID="phTeacherQual" runat="server" Visible="false">
+                <div class="qual-row">
+                    <div class="qual-info">
+                        <strong><asp:Literal ID="litQualName" runat="server"></asp:Literal></strong>
+                        <span><asp:Literal ID="litQualDate" runat="server"></asp:Literal></span>
+                    </div>
+                    <div>
+                        <a id="lnkQualDocument" runat="server" target="_blank" rel="noopener" class="button button--ghost" visible="false">
+                            <%= TeacherIcons.Svg("link", 14) %><span>View Document</span>
+                        </a>
+                        <span id="spnQualNoDocument" runat="server" class="badge" visible="false">No document</span>
+                    </div>
+                </div>
+            </asp:PlaceHolder>
         </div>
 
         <div class="account-actions">
