@@ -15,9 +15,10 @@
     function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
     /* ------------------------------------------------------------------ [core] toast */
-    function toast(message) {
+    function toast(message, isError) {
         var el = qs("[data-tp-toast]");
         if (!el) return;
+        el.classList.toggle("is-error", !!isError);   // a refused action shows a red cross instead of the green tick
         var text = qs("[data-tp-toast-text]", el);
         if (text) text.textContent = message;
         el.classList.add("is-visible");

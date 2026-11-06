@@ -98,7 +98,7 @@ namespace Codercept
                 string problem = TeacherTestData.Validate(Mode, questions);
                 if (problem != null)
                 {
-                    Master.ShowToast(problem);
+                    Master.ShowError(problem);
                     return;
                 }
             }
@@ -112,7 +112,7 @@ namespace Codercept
                 newMedia = TeacherMediaStore.Save(dzTeacherTestFile.PostedFile, Chapter.CourseId, out error);
                 if (newMedia == null)
                 {
-                    Master.ShowToast(error);
+                    Master.ShowError(error);
                     return;
                 }
                 changeMedia = true;
@@ -138,7 +138,7 @@ namespace Codercept
             if (result != TeacherTestData.SaveResult.Saved)
             {
                 if (newMedia != null) TeacherMediaStore.Delete(newMedia); // nothing was saved, so the new file is not kept
-                Master.ShowToast(result == TeacherTestData.SaveResult.QuestionsLocked
+                Master.ShowError(result == TeacherTestData.SaveResult.QuestionsLocked
                     ? "Learners have attempted this " + Mode + " in the meantime, so its questions can no longer be changed. Reload the page."
                     : "That " + Mode + " was not found. Reload the page and try again.");
                 return;
@@ -157,12 +157,12 @@ namespace Codercept
             TeacherTestData.DeleteResult result = TeacherTestData.DeleteTest(Chapter.Id, Mode, out file);
             if (result == TeacherTestData.DeleteResult.HasAttempts)
             {
-                Master.ShowToast("This " + Mode + " cannot be deleted because learners have attempted it. Their results are kept.");
+                Master.ShowError("This " + Mode + " cannot be deleted because learners have attempted it. Their results are kept.");
                 return;
             }
             if (result == TeacherTestData.DeleteResult.NotFound)
             {
-                Master.ShowToast("That " + Mode + " was not found. Reload the page and try again.");
+                Master.ShowError("That " + Mode + " was not found. Reload the page and try again.");
                 return;
             }
 

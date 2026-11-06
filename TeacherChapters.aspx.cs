@@ -132,7 +132,7 @@ namespace Codercept
             TeacherChapter chapter = PostedChapter();
             if (!selTeacherChapterCourse.SelectionIsValid || chapter == null)
             {
-                Master.ShowToast("That chapter was not found. Reload the page and try again.");
+                Master.ShowError("That chapter was not found. Reload the page and try again.");
                 return;
             }
 
@@ -156,7 +156,7 @@ namespace Codercept
                 newMedia = TeacherMediaStore.Save(dzTeacherChapterFile.PostedFile, courseId, out error);
                 if (newMedia == null)
                 {
-                    Master.ShowToast(error);
+                    Master.ShowError(error);
                     return;
                 }
                 changeMedia = true;
@@ -193,13 +193,13 @@ namespace Codercept
 
             if (result == TeacherChapterData.SaveResult.NotFound)
             {
-                Master.ShowToast("That chapter was not found. Reload the page and try again.");
+                Master.ShowError("That chapter was not found. Reload the page and try again.");
                 return;
             }
             if (result == TeacherChapterData.SaveResult.OrderMismatch)
             {
                 hfTeacherChapterOrder.Value = "";
-                Master.ShowToast("The chapter list has changed, so nothing was saved. Reload the page and try again.");
+                Master.ShowError("The chapter list has changed, so nothing was saved. Reload the page and try again.");
                 return;
             }
 
@@ -230,7 +230,7 @@ namespace Codercept
             TeacherChapter chapter = PostedChapter();
             if (!selTeacherChapterCourse.SelectionIsValid || chapter == null)
             {
-                Master.ShowToast("That chapter was not found. Reload the page and try again.");
+                Master.ShowError("That chapter was not found. Reload the page and try again.");
                 return;
             }
 
@@ -238,12 +238,12 @@ namespace Codercept
             TeacherChapterData.DeleteResult result = TeacherChapterData.DeleteChapter(chapter.Id, out files);
             if (result == TeacherChapterData.DeleteResult.HasAttempts)
             {
-                Master.ShowToast("This chapter cannot be deleted because learners have attempted its quiz or assessment. Their results are kept.");
+                Master.ShowError("This chapter cannot be deleted because learners have attempted its quiz or assessment. Their results are kept.");
                 return;
             }
             if (result == TeacherChapterData.DeleteResult.NotFound)
             {
-                Master.ShowToast("That chapter was not found. Reload the page and try again.");
+                Master.ShowError("That chapter was not found. Reload the page and try again.");
                 return;
             }
 

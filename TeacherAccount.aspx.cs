@@ -76,13 +76,13 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not update your details. Please try again.");
+                Master.ShowError("Could not update your details. Please try again.");
                 return;
             }
 
             if (!saved)
             {
-                Master.ShowToast("Your account could not be found.");
+                Master.ShowError("Your account could not be found.");
                 return;
             }
 
@@ -118,7 +118,7 @@ namespace Codercept
         {
             if (Request.Form["tpDeleteEmail"] != Email)
             {
-                Master.ShowToast("The email you typed does not match, so your account was not deactivated.");
+                Master.ShowError("The email you typed does not match, so your account was not deactivated.");
                 return;
             }
 
@@ -129,13 +129,13 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not deactivate your account. Please try again.");
+                Master.ShowError("Could not deactivate your account. Please try again.");
                 return;
             }
 
             if (!deactivated)
             {
-                Master.ShowToast("Your account could not be found.");
+                Master.ShowError("Your account could not be found.");
                 return;
             }
 

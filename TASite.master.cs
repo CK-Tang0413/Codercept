@@ -40,5 +40,13 @@ namespace Codercept
                         + new JavaScriptSerializer().Serialize(message) + ");});";
             Page.ClientScript.RegisterStartupScript(GetType(), "tpToast" + Guid.NewGuid().ToString("N"), js, true);
         }
+
+        /// <summary>The same toast for something that did not work (a refused save, a missing value): red, with a cross instead of a tick.</summary>
+        public void ShowError(string message)
+        {
+            string js = "document.addEventListener('DOMContentLoaded',function(){TeacherPortal.toast("
+                        + new JavaScriptSerializer().Serialize(message) + ",true);});";
+            Page.ClientScript.RegisterStartupScript(GetType(), "tpToast" + Guid.NewGuid().ToString("N"), js, true);
+        }
     }
 }

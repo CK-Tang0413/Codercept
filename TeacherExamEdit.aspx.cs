@@ -124,14 +124,14 @@ namespace Codercept
                 string problem = TeacherTestData.Validate("exam", questions);
                 if (problem != null)
                 {
-                    Master.ShowToast(problem);
+                    Master.ShowError(problem);
                     return;
                 }
 
                 // The pass mark is a percentage (the page's stepper keeps it in range)
                 if (!int.TryParse(hfTeacherMinMarks.Value, out passMark) || passMark < TeacherExamData.MinPassMark || passMark > TeacherExamData.MaxPassMark)
                 {
-                    Master.ShowToast("The pass mark must be between " + TeacherExamData.MinPassMark + "% and " + TeacherExamData.MaxPassMark + "%.");
+                    Master.ShowError("The pass mark must be between " + TeacherExamData.MinPassMark + "% and " + TeacherExamData.MaxPassMark + "%.");
                     return;
                 }
             }
@@ -140,7 +140,7 @@ namespace Codercept
             int timeLimit;
             if (!int.TryParse(hfTeacherTimeLimit.Value, out timeLimit) || timeLimit < TeacherExamData.MinTimeLimit || timeLimit > TeacherExamData.MaxTimeLimit)
             {
-                Master.ShowToast("The time limit must be between " + TeacherExamData.MinTimeLimit + " and " + TeacherExamData.MaxTimeLimit + " minutes.");
+                Master.ShowError("The time limit must be between " + TeacherExamData.MinTimeLimit + " and " + TeacherExamData.MaxTimeLimit + " minutes.");
                 return;
             }
 
@@ -155,7 +155,7 @@ namespace Codercept
                 if (result == TeacherExamData.CreateResult.NotFound) Response.Redirect("~/TeacherExams.aspx");
                 if (result == TeacherExamData.CreateResult.AlreadyExists)
                 {
-                    Master.ShowToast("This course already has an exam. Reload the page to edit it.");
+                    Master.ShowError("This course already has an exam. Reload the page to edit it.");
                     return;
                 }
             }
@@ -165,7 +165,7 @@ namespace Codercept
                 if (result == TeacherExamData.SaveResult.NotFound) Response.Redirect("~/TeacherExams.aspx");
                 if (result == TeacherExamData.SaveResult.Locked)
                 {
-                    Master.ShowToast("Learners have attempted this exam in the meantime, so its pass mark and questions can no longer be changed. Reload the page.");
+                    Master.ShowError("Learners have attempted this exam in the meantime, so its pass mark and questions can no longer be changed. Reload the page.");
                     return;
                 }
             }

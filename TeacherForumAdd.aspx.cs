@@ -39,7 +39,7 @@ namespace Codercept
             int postId = TeacherForumData.CreatePost(title, description, tags);
             if (postId == 0)
             {
-                Master.ShowToast("The post could not be saved, so nothing was published.");
+                Master.ShowError("The post could not be saved, so nothing was published.");
                 return;
             }
 

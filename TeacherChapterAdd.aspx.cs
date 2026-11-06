@@ -144,7 +144,7 @@ namespace Codercept
             string description = reTeacherContentDescription.Text.Trim();
             if (description.Length == 0 && !HasQuestions)
             {
-                Master.ShowToast("Enter a description.");
+                Master.ShowError("Enter a description.");
                 return;
             }
 
@@ -156,7 +156,7 @@ namespace Codercept
                 string problem = TeacherTestData.Validate(kind, questions);
                 if (problem != null)
                 {
-                    Master.ShowToast(problem);
+                    Master.ShowError(problem);
                     return;
                 }
             }
@@ -171,14 +171,14 @@ namespace Codercept
                 if (!decimal.TryParse(txtTeacherContentDuration.Text, System.Globalization.NumberStyles.Number,
                     System.Globalization.CultureInfo.InvariantCulture, out hours) || hours < 0.5m || hours > 1000)
                 {
-                    Master.ShowToast("Enter a duration between 0.5 and 1000 hours.");
+                    Master.ShowError("Enter a duration between 0.5 and 1000 hours.");
                     return;
                 }
             }
             else if (!int.TryParse(txtTeacherContentDuration.Text, System.Globalization.NumberStyles.Integer,
                 System.Globalization.CultureInfo.InvariantCulture, out minutes) || minutes < 1 || minutes > TeacherSubChapterData.MaxMinutes)
             {
-                Master.ShowToast("Enter a duration between 1 and " + TeacherSubChapterData.MaxMinutes + " minutes.");
+                Master.ShowError("Enter a duration between 1 and " + TeacherSubChapterData.MaxMinutes + " minutes.");
                 return;
             }
 
@@ -190,7 +190,7 @@ namespace Codercept
                 mediaLink = TeacherMediaStore.Save(dzTeacherContentFile.PostedFile, courseId, out error);
                 if (mediaLink == null)
                 {
-                    Master.ShowToast(error);
+                    Master.ShowError(error);
                     return;
                 }
             }

@@ -56,7 +56,7 @@ namespace Codercept
                 int postId;
                 if (!int.TryParse(hfTeacherForumPost.Value, out postId) || !Posts.Any(p => p.Id == postId))
                 {
-                    Master.ShowToast("Choose a post first, so nothing was saved.");
+                    Master.ShowError("Choose a post first, so nothing was saved.");
                     return;
                 }
                 int parent;
@@ -72,11 +72,11 @@ namespace Codercept
                 }
                 else if (result == ForumReplyResult.TooLong)
                 {
-                    Master.ShowToast("A reply can be at most " + TeacherForumData.MaxReplyLength + " characters, so nothing was saved.");
+                    Master.ShowError("A reply can be at most " + TeacherForumData.MaxReplyLength + " characters, so nothing was saved.");
                 }
                 else
                 {
-                    Master.ShowToast("That post or comment could not be found, so nothing was saved.");
+                    Master.ShowError("That post or comment could not be found, so nothing was saved.");
                 }
                 return;
             }
@@ -87,7 +87,7 @@ namespace Codercept
                 int targetId;
                 if (!int.TryParse(parts[1], out targetId) || !Posts.Any(p => p.Id == targetId))
                 {
-                    Master.ShowToast("That post could not be found, so nothing was changed.");
+                    Master.ShowError("That post could not be found, so nothing was changed.");
                     return;
                 }
                 bool unhide = parts[0] == "unhide";
@@ -98,7 +98,7 @@ namespace Codercept
                 }
                 else
                 {
-                    Master.ShowToast("That post could not be found, so nothing was changed.");
+                    Master.ShowError("That post could not be found, so nothing was changed.");
                 }
                 return;
             }
@@ -109,7 +109,7 @@ namespace Codercept
                 int modPostId;
                 if (!int.TryParse(Request.Unvalidated.Form["tpModeratePost"], out modPostId) || !Posts.Any(p => p.Id == modPostId))
                 {
-                    Master.ShowToast("That post could not be found, so nothing was changed.");
+                    Master.ShowError("That post could not be found, so nothing was changed.");
                     return;
                 }
                 string verb = parts[1] == "hide" ? "Hide" : "Flag";
@@ -121,16 +121,16 @@ namespace Codercept
                         Master.ShowToast(verb == "Hide" ? "Post hidden" : "Post flagged");
                         break;
                     case ForumModerateResult.AlreadyFlagged:
-                        Master.ShowToast("This post is already flagged.");
+                        Master.ShowError("This post is already flagged.");
                         break;
                     case ForumModerateResult.ReasonMissing:
-                        Master.ShowToast("Enter the reason for this action, so nothing was changed.");
+                        Master.ShowError("Enter the reason for this action, so nothing was changed.");
                         break;
                     case ForumModerateResult.ReasonTooLong:
-                        Master.ShowToast("The reason can be at most " + TeacherForumData.MaxReasonLength + " characters, so nothing was changed.");
+                        Master.ShowError("The reason can be at most " + TeacherForumData.MaxReasonLength + " characters, so nothing was changed.");
                         break;
                     default:
-                        Master.ShowToast("That post could not be found, so nothing was changed.");
+                        Master.ShowError("That post could not be found, so nothing was changed.");
                         break;
                 }
                 return;
@@ -146,7 +146,7 @@ namespace Codercept
             if (parts[0] == "pin")
             {
                 // saved in SQL only for a reply of a post this teacher can see; the page then shows the new state
-                if (TeacherForumData.TogglePin(post.Id, comment.Id) == null) Master.ShowToast("That comment could not be found, so nothing was saved.");
+                if (TeacherForumData.TogglePin(post.Id, comment.Id) == null) Master.ShowError("That comment could not be found, so nothing was saved.");
                 else ReloadPosts();
             }
         }
