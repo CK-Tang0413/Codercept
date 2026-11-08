@@ -47,7 +47,7 @@ namespace Codercept
                     JOIN Course c ON e.CourseId = c.CourseId
                     JOIN Teacher t ON c.TeacherId = t.TeacherId
                     WHERE a.LearnerId = @LearnerId 
-                      AND r.Grade IN ('A', 'B', 'C', 'D') -- Excluding 'F'
+                      AND r.Grade IN ('A', 'B', 'C', 'D')
                       AND NOT EXISTS (
                           SELECT 1 FROM Certificate cert 
                           WHERE cert.LearnerId = @LearnerId AND cert.CourseId = e.CourseId

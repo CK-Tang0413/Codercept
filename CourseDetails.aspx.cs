@@ -218,7 +218,103 @@ namespace Codercept
                     rptChapters.DataSource = dt;
                     rptChapters.DataBind();
                 }
+
+                LoadCourseReviews(courseId, con);
             }
+        }
+
+        private void LoadCourseReviews(int courseId, SqlConnection con)
+        {
+            string reviewQuery = @"
+                SELECT 
+                    r.ReviewId, 
+                    r.CourseFeedBack, 
+                    r.Rating, 
+                    r.SubmissionDate, 
+                    l.Name as LearnerName
+                FROM Course_Review r
+                JOIN Learner l ON r.LearnerId = l.LearnerId
+                WHERE r.CourseId = @CourseId
+                ORDER BY r.SubmissionDate DESC";
+
+            using (SqlCommand cmd = new SqlCommand(reviewQuery, con))
+            {
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                if (dt.Rows.Count > 0)
+                {
+                    lblNoReviews.Visible = false;
+                    pnlReviewSummary.Visible = true;
+
+                    // Calculate average and distribution
+                    double totalRating = 0;
+                    int[] starsCount = new int[6]; // Index 1-5 will hold the counts
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        double rating = Convert.ToDouble(row["Rating"]);
+                        totalRating += rating;
+                        int starKey = (int)Math.Round(rating);
+                        if (starKey >= 1 && starKey <= 5) starsCount[starKey]++;
+                    }
+
+                    double avgRating = Math.Round(totalRating / dt.Rows.Count, 1);
+
+                    litAvgRatingLarge.Text = avgRating.ToString("0.0");
+                    litSummaryStars.Text = GetStars(avgRating);
+                    litTotalReviews.Text = dt.Rows.Count.ToString();
+
+                    // Generate Progress Bars (5 stars down to 1 star)
+                    string barsHtml = "";
+                    for (int i = 5; i >= 1; i--)
+                    {
+                        int count = starsCount[i];
+                        int pct = (int)Math.Round((double)count / dt.Rows.Count * 100);
+
+                        barsHtml += $@"
+                        <div class='bar-row'>
+                            <div class='bar-label'>{i} ★</div>
+                            <div class='bar-bg'><div class='bar-fill' style='width: {pct}%;'></div></div>
+                            <div class='bar-count'>{count}</div>
+                        </div>";
+                    }
+                    litRatingBars.Text = barsHtml;
+
+                    rptReviews.DataSource = dt;
+                    rptReviews.DataBind();
+                }
+                else
+                {
+                    lblNoReviews.Visible = true;
+                    pnlReviewSummary.Visible = false;
+                }
+            }
+        }
+
+        protected string GetInitials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "U";
+            string[] parts = name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+            return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+        }
+
+        protected string GetStars(double rating)
+        {
+            int fullStars = (int)Math.Floor(rating);
+            bool hasHalfStar = (rating - fullStars) >= 0.3 && (rating - fullStars) <= 0.7;
+            if ((rating - fullStars) > 0.7) fullStars++;
+
+            string stars = "";
+            for (int i = 0; i < fullStars; i++) stars += "★";
+            if (hasHalfStar) stars += "★"; // For simplicity, using a full star character for half in standard fonts, or you can use FontAwesome half stars if you have it loaded
+
+            while (stars.Length < 5) stars += "☆";
+
+            return stars;
         }
 
         protected void btnCourseAction_Click(object sender, EventArgs e)

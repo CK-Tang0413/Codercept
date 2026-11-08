@@ -143,10 +143,57 @@
         .ch-meta { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.85rem; }
         .ch-icon { width: 16px; height: 16px; }
 
+        /* Review Section Styles */
+        .reviews-container { margin-top: 3rem; }
+        .reviews-summary { 
+            display: flex; 
+            align-items: center; 
+            gap: 2rem; 
+            padding: 2rem; 
+            background: var(--bg-surface); 
+            border: 1px solid var(--border-light); 
+            border-radius: 12px; 
+            margin-bottom: 2rem;
+        }
+        .rating-large { 
+            text-align: center; 
+            min-width: 150px; 
+        }
+        .rating-large h2 { font-size: 3.5rem; color: var(--text-primary); line-height: 1; margin-bottom: 0.5rem; }
+        .rating-stars { color: #fbbf24; font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .rating-count { color: var(--text-secondary); font-size: 0.9rem; }
+        
+        .rating-bars { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .bar-row { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary); }
+        .bar-label { display: flex; align-items: center; gap: 0.25rem; width: 35px; }
+        .bar-bg { flex: 1; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; background: #fbbf24; border-radius: 4px; }
+        .bar-count { width: 25px; text-align: right; }
+
+        .review-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .review-item { 
+            padding-bottom: 1.5rem; 
+            border-bottom: 1px solid var(--border-light); 
+        }
+        .review-item:last-child { border-bottom: none; }
+        .reviewer-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+        .reviewer-avatar { 
+            width: 40px; height: 40px; 
+            border-radius: 50%; 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #fbbf24; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 600; font-size: 0.9rem; 
+        }
+        .reviewer-info h4 { color: var(--text-primary); font-size: 1rem; margin-bottom: 0.25rem; }
+        .review-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+        .review-text { color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; margin-left: 56px; }
+
         @media (max-width: 768px) {
             .course-hero { padding: 1.5rem; }
             .chapter-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .ch-meta { width: 100%; justify-content: space-between; margin-top: 0.5rem; }
+            .reviews-summary { flex-direction: column; align-items: stretch; gap: 1.5rem; }
         }
     </style>
 </head>
@@ -258,6 +305,49 @@
 
                         </ItemTemplate>
                     </asp:Repeater>
+                </div>
+
+                <div class="reviews-container">
+                    <h2 class="section-title">Learner reviews</h2>
+
+                    <div class="reviews-summary" id="pnlReviewSummary" runat="server">
+                        <div class="rating-large">
+                            <h2><asp:Literal ID="litAvgRatingLarge" runat="server"></asp:Literal></h2>
+                            <div class="rating-stars">
+                                <asp:Literal ID="litSummaryStars" runat="server"></asp:Literal>
+                            </div>
+                            <div class="rating-count"><asp:Literal ID="litTotalReviews" runat="server"></asp:Literal> reviews</div>
+                        </div>
+                        <div class="rating-bars">
+                            <asp:Literal ID="litRatingBars" runat="server"></asp:Literal>
+                        </div>
+                    </div>
+
+                    <asp:Label ID="lblNoReviews" runat="server" Visible="false" style="color: var(--text-muted); font-size: 0.95rem; display: block; padding: 2rem; text-align: center; border: 1px dashed var(--border-light); border-radius: 12px;">No reviews yet. Be the first to review this course!</asp:Label>
+
+                    <div class="review-list">
+                        <asp:Repeater ID="rptReviews" runat="server">
+                            <ItemTemplate>
+                                <div class="review-item">
+                                    <div class="reviewer-header">
+                                        <div class="reviewer-avatar"><%# GetInitials(Eval("LearnerName").ToString()) %></div>
+                                        <div class="reviewer-info">
+                                            <h4><%# Eval("LearnerName") %></h4>
+                                            <div class="review-meta">
+                                                <span style="color: #fbbf24;"><%# GetStars(Convert.ToDouble(Eval("Rating"))) %></span>
+                                                <strong style="color: var(--text-primary);"><%# Eval("Rating", "{0:0.0}") %>/5</strong>
+                                                <span>•</span>
+                                                <span><%# Eval("SubmissionDate", "{0:d MMM yyyy}") %></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="review-text">
+                                        <%# Eval("CourseFeedBack") %>
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
                 </div>
             </main>
         </div>
