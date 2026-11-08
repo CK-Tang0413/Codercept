@@ -249,9 +249,8 @@ namespace Codercept
                     lblNoReviews.Visible = false;
                     pnlReviewSummary.Visible = true;
 
-                    // Calculate average and distribution
                     double totalRating = 0;
-                    int[] starsCount = new int[6]; // Index 1-5 will hold the counts
+                    int[] starsCount = new int[6];
 
                     foreach (DataRow row in dt.Rows)
                     {
@@ -267,7 +266,6 @@ namespace Codercept
                     litSummaryStars.Text = GetStars(avgRating);
                     litTotalReviews.Text = dt.Rows.Count.ToString();
 
-                    // Generate Progress Bars (5 stars down to 1 star)
                     string barsHtml = "";
                     for (int i = 5; i >= 1; i--)
                     {
@@ -310,7 +308,7 @@ namespace Codercept
 
             string stars = "";
             for (int i = 0; i < fullStars; i++) stars += "★";
-            if (hasHalfStar) stars += "★"; // For simplicity, using a full star character for half in standard fonts, or you can use FontAwesome half stars if you have it loaded
+            if (hasHalfStar) stars += "★";
 
             while (stars.Length < 5) stars += "☆";
 

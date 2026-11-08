@@ -53,7 +53,6 @@ namespace Codercept
                 {
                     con.Open();
 
-                    // --- NEW VALIDATION: Check against default <FirstName>@1234 pattern ---
                     string nameQuery = $"SELECT Name FROM {tableName} WHERE Email = @Email";
                     using (SqlCommand nameCmd = new SqlCommand(nameQuery, con))
                     {
@@ -74,7 +73,6 @@ namespace Codercept
                             }
                         }
                     }
-                    // ----------------------------------------------------------------------
 
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
                     string query = $"UPDATE {tableName} SET Password = @Password WHERE Email = @Email";

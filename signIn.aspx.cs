@@ -60,7 +60,6 @@ namespace Codercept
                                 string role = reader["Role"].ToString();
                                 string fullName = reader["Name"].ToString();
 
-                                // --- FIRST-TIME LOGIN CHECK ---
                                 string[] nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                                 string firstName = nameParts.Length > 0 ? nameParts[0] : "Admin";
                                 string defaultPassword = $"{firstName}@1234";
@@ -69,11 +68,10 @@ namespace Codercept
                                 {
                                     reader.Close();
 
-                                    // Generate OTP and send email for forced reset
                                     SendOtpForcedReset(email, role, fullName);
                                     return;
                                 }
-                                // ------------------------------
+
 
                                 Session["UserId"] = adminId;
                                 Session["UserType"] = role;
@@ -283,13 +281,11 @@ namespace Codercept
                 smtp.EnableSsl = true;
                 smtp.Send(mail);
 
-                // Set the session variables
                 Session["ResetEmail"] = email;
                 Session["ResetRole"] = role;
                 Session["ResetOTP"] = otp;
                 Session["OTPExpiry"] = DateTime.Now.AddMinutes(5);
 
-                // INSTEAD of Response.Redirect, we trigger a browser pop-up, then redirect via JavaScript
                 string script = @"
                     alert('For security reasons, first-time administrators must change their default password. A verification code has been sent to your email.');
                     window.location.href = 'VerifyOTP.aspx';

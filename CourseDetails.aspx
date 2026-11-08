@@ -143,7 +143,6 @@
         .ch-meta { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.85rem; }
         .ch-icon { width: 16px; height: 16px; }
 
-        /* Review Section Styles */
         .reviews-container { margin-top: 3rem; }
         .reviews-summary { 
             display: flex; 
