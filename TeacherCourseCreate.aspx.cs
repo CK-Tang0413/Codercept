@@ -45,7 +45,7 @@ namespace Codercept
             string language = ddlTeacherCourseLanguage.SelectedValue;
             if (TeacherCourseData.GetLanguages().All(l => l.Language != language))
             {
-                Master.ShowToast("Please choose a programming language.");
+                Master.ShowError("Please choose a programming language.");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not create the course. Please try again.");
+                Master.ShowError("Could not create the course. Please try again.");
                 return;
             }
 

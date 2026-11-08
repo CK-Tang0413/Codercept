@@ -100,7 +100,7 @@ namespace Codercept
             string description = reTeacherSubchapterDescription.Text.Trim();
             if (description.Length == 0)
             {
-                Master.ShowToast("Enter a description.");
+                Master.ShowError("Enter a description.");
                 return;
             }
 
@@ -108,14 +108,14 @@ namespace Codercept
             if (!int.TryParse(txtTeacherSubchapterDuration.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out minutes)
                 || minutes < 1 || minutes > TeacherSubChapterData.MaxMinutes)
             {
-                Master.ShowToast("Enter a duration between 1 and " + TeacherSubChapterData.MaxMinutes + " minutes.");
+                Master.ShowError("Enter a duration between 1 and " + TeacherSubChapterData.MaxMinutes + " minutes.");
                 return;
             }
 
             TeacherContentItem sub = PostedSubchapter();
             if (sub == null)
             {
-                Master.ShowToast("That subchapter was not found. Reload the page and try again.");
+                Master.ShowError("That subchapter was not found. Reload the page and try again.");
                 return;
             }
 
@@ -127,7 +127,7 @@ namespace Codercept
                 newMedia = TeacherMediaStore.Save(dzTeacherSubchapterMedia.PostedFile, chapter.CourseId, out error);
                 if (newMedia == null)
                 {
-                    Master.ShowToast(error);
+                    Master.ShowError(error);
                     return;
                 }
                 changeMedia = true;
@@ -164,13 +164,13 @@ namespace Codercept
 
             if (result == TeacherChapterData.SaveResult.NotFound)
             {
-                Master.ShowToast("That subchapter was not found. Reload the page and try again.");
+                Master.ShowError("That subchapter was not found. Reload the page and try again.");
                 return;
             }
             if (result == TeacherChapterData.SaveResult.OrderMismatch)
             {
                 hfTeacherContentOrder.Value = "";
-                Master.ShowToast("The subchapter list has changed, so nothing was saved. Reload the page and try again.");
+                Master.ShowError("The subchapter list has changed, so nothing was saved. Reload the page and try again.");
                 return;
             }
             Master.ShowToast("Subchapter details updated");
@@ -181,14 +181,14 @@ namespace Codercept
             TeacherContentItem sub = PostedSubchapter();
             if (sub == null)
             {
-                Master.ShowToast("That subchapter was not found. Reload the page and try again.");
+                Master.ShowError("That subchapter was not found. Reload the page and try again.");
                 return;
             }
 
             string file;
             if (TeacherSubChapterData.DeleteSubChapter(sub.Id, out file) != TeacherChapterData.DeleteResult.Deleted)
             {
-                Master.ShowToast("That subchapter was not found. Reload the page and try again.");
+                Master.ShowError("That subchapter was not found. Reload the page and try again.");
                 return;
             }
 

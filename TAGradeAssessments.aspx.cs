@@ -112,7 +112,7 @@ namespace Codercept
             TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
             if (submission == null)
             {
-                Master.ShowToast("Choose a submission first, so nothing was saved.");
+                Master.ShowError("Choose a submission first, so nothing was saved.");
                 return;
             }
 
@@ -125,22 +125,22 @@ namespace Codercept
                     Master.ShowToast("Grading draft saved.");
                     break;
                 case GradingSaveResult.AlreadyGraded:
-                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    Master.ShowError("This submission has already been graded, so nothing was changed.");
                     break;
                 case GradingSaveResult.InvalidMarks:
-                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was saved.");
+                    Master.ShowError("Marks must be whole numbers from 0 up to each question's marks, so nothing was saved.");
                     break;
                 case GradingSaveResult.CommentTooLong:
-                    Master.ShowToast("A comment can be at most " + TAGradingData.MaxCommentLength + " characters, so nothing was saved.");
+                    Master.ShowError("A comment can be at most " + TAGradingData.MaxCommentLength + " characters, so nothing was saved.");
                     break;
                 case GradingSaveResult.LockedByTeacher:
-                    Master.ShowToast("The teacher has taken over this submission, so only the teacher can edit it now. Nothing was changed.");
+                    Master.ShowError("The teacher has taken over this submission, so only the teacher can edit it now. Nothing was changed.");
                     break;
                 case GradingSaveResult.NotesTooLong:
-                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was changed.");
+                    Master.ShowError("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was changed.");
                     break;
                 default:
-                    Master.ShowToast("That submission could not be found, so nothing was saved.");
+                    Master.ShowError("That submission could not be found, so nothing was saved.");
                     break;
             }
         }
@@ -150,7 +150,7 @@ namespace Codercept
             TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
             if (submission == null)
             {
-                Master.ShowToast("Choose a submission first, so nothing was submitted.");
+                Master.ShowError("Choose a submission first, so nothing was submitted.");
                 return;
             }
 
@@ -166,22 +166,22 @@ namespace Codercept
                     Master.ShowToast("Provisional review submitted (" + outcome.Total + " / " + outcome.Max + "). Awaiting teacher approval.");
                     break;
                 case GradingSaveResult.AlreadyGraded:
-                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    Master.ShowError("This submission has already been graded, so nothing was changed.");
                     break;
                 case GradingSaveResult.InvalidMarks:
-                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was submitted.");
+                    Master.ShowError("Marks must be whole numbers from 0 up to each question's marks, so nothing was submitted.");
                     break;
                 case GradingSaveResult.CommentTooLong:
-                    Master.ShowToast("A comment can be at most " + TAGradingData.MaxCommentLength + " characters, so nothing was submitted.");
+                    Master.ShowError("A comment can be at most " + TAGradingData.MaxCommentLength + " characters, so nothing was submitted.");
                     break;
                 case GradingSaveResult.LockedByTeacher:
-                    Master.ShowToast("The teacher has taken over this submission, so only the teacher can edit it now. Nothing was changed.");
+                    Master.ShowError("The teacher has taken over this submission, so only the teacher can edit it now. Nothing was changed.");
                     break;
                 case GradingSaveResult.NotesTooLong:
-                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was changed.");
+                    Master.ShowError("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was changed.");
                     break;
                 default:
-                    Master.ShowToast("That submission could not be found, so nothing was submitted.");
+                    Master.ShowError("That submission could not be found, so nothing was submitted.");
                     break;
             }
         }

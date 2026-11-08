@@ -189,7 +189,7 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not update your details. Please try again.");
+                Master.ShowError("Could not update your details. Please try again.");
             }
         }
 

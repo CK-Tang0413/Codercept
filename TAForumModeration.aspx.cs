@@ -60,7 +60,7 @@ namespace Codercept
                 int postId;
                 if (!int.TryParse(hfTeacherForumPost.Value, out postId) || !Posts.Any(p => p.Id == postId))
                 {
-                    Master.ShowToast("Choose a post first, so nothing was saved.");
+                    Master.ShowError("Choose a post first, so nothing was saved.");
                     return;
                 }
                 int parent;
@@ -126,7 +126,7 @@ namespace Codercept
             int postId;
             if (!int.TryParse(hfModeratePostId.Value, out postId))
             {
-                Master.ShowToast("No post was selected for moderation.");
+                Master.ShowError("No post was selected for moderation.");
                 return;
             }
 

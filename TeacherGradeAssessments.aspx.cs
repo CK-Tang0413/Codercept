@@ -132,7 +132,7 @@ namespace Codercept
             TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
             if (submission == null)
             {
-                Master.ShowToast("Choose a submission first, so nothing was saved.");
+                Master.ShowError("Choose a submission first, so nothing was saved.");
                 return;
             }
 
@@ -146,19 +146,19 @@ namespace Codercept
                     Master.ShowToast("Grading progress saved.");
                     break;
                 case GradingSaveResult.AlreadyGraded:
-                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    Master.ShowError("This submission has already been graded, so nothing was changed.");
                     break;
                 case GradingSaveResult.InvalidMarks:
-                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was saved.");
+                    Master.ShowError("Marks must be whole numbers from 0 up to each question's marks, so nothing was saved.");
                     break;
                 case GradingSaveResult.CommentTooLong:
-                    Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was saved.");
+                    Master.ShowError("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was saved.");
                     break;
                 case GradingSaveResult.NotesTooLong:
-                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was saved.");
+                    Master.ShowError("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was saved.");
                     break;
                 default:
-                    Master.ShowToast("That submission could not be found, so nothing was saved.");
+                    Master.ShowError("That submission could not be found, so nothing was saved.");
                     break;
             }
         }
@@ -168,7 +168,7 @@ namespace Codercept
             TeacherSubmission submission = Assessments.Count == 0 ? null : ExactSubmission();
             if (submission == null)
             {
-                Master.ShowToast("Choose a submission first, so nothing was confirmed.");
+                Master.ShowError("Choose a submission first, so nothing was confirmed.");
                 return;
             }
 
@@ -192,19 +192,19 @@ namespace Codercept
                     Master.ShowToast(message);
                     break;
                 case GradingSaveResult.AlreadyGraded:
-                    Master.ShowToast("This submission has already been graded, so nothing was changed.");
+                    Master.ShowError("This submission has already been graded, so nothing was changed.");
                     break;
                 case GradingSaveResult.InvalidMarks:
-                    Master.ShowToast("Marks must be whole numbers from 0 up to each question's marks, so nothing was confirmed.");
+                    Master.ShowError("Marks must be whole numbers from 0 up to each question's marks, so nothing was confirmed.");
                     break;
                 case GradingSaveResult.CommentTooLong:
-                    Master.ShowToast("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was confirmed.");
+                    Master.ShowError("A comment can be at most " + TeacherGradingData.MaxCommentLength + " characters, so nothing was confirmed.");
                     break;
                 case GradingSaveResult.NotesTooLong:
-                    Master.ShowToast("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was confirmed.");
+                    Master.ShowError("The grading notes can be at most " + TeacherGradingData.MaxNotesLength + " characters, so nothing was confirmed.");
                     break;
                 default:
-                    Master.ShowToast("That submission could not be found, so nothing was confirmed.");
+                    Master.ShowError("That submission could not be found, so nothing was confirmed.");
                     break;
             }
         }

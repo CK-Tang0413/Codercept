@@ -46,7 +46,8 @@
             </main>
 
             <div class="toast" role="status" data-tp-toast>
-                <span class="toast-icon"><%= TeacherIcons.Svg("check", 15) %></span>
+                <span class="toast-icon toast-icon--ok"><%= TeacherIcons.Svg("check", 15) %></span>
+                <span class="toast-icon toast-icon--error"><%= TeacherIcons.Svg("x", 15) %></span>
                 <span data-tp-toast-text></span>
             </div>
 

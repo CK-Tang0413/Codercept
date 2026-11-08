@@ -2197,6 +2197,19 @@
   background: var(--success);
 }
 
+.tp-app .toast .toast-icon--error {
+  display: none;
+  background: var(--danger);
+}
+
+.tp-app .toast.is-error .toast-icon--ok {
+  display: none;
+}
+
+.tp-app .toast.is-error .toast-icon--error {
+  display: grid;
+}
+
 .tp-app .chapter-course-selector {
   padding: 18px;
   border: 1px solid var(--border);

@@ -47,7 +47,7 @@ namespace Codercept
         {
             if (!selTeacherCourse.SelectionIsValid)
             {
-                Master.ShowToast("That course could not be found.");
+                Master.ShowError("That course could not be found.");
                 return;
             }
             Response.Redirect("TeacherCourseStatsPdf.ashx?download=1&type=" + type + "&course=" + selTeacherCourse.SelectedId);

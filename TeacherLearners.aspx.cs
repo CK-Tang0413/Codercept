@@ -78,7 +78,7 @@ namespace Codercept
             // a stale or forged course id must not enrol the learner in the first course instead
             if (!selTeacherCourse.SelectionIsValid)
             {
-                Master.ShowToast("Choose a course first, so nobody was added.");
+                Master.ShowError("Choose a course first, so nobody was added.");
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace Codercept
                 ? Learners.FirstOrDefault(l => l.Id == id) : null;
             if (learner == null)
             {
-                Master.ShowToast("Choose a course and a learner first, so nobody was removed.");
+                Master.ShowError("Choose a course and a learner first, so nobody was removed.");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace Codercept
             }
             else
             {
-                Master.ShowToast(learner.Name + " is not enrolled in this course, so nothing was removed.");
+                Master.ShowError(learner.Name + " is not enrolled in this course, so nothing was removed.");
             }
         }
     }

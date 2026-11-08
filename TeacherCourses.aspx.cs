@@ -69,7 +69,7 @@ namespace Codercept
         {
             if (!selTeacherCourse.SelectionIsValid)
             {
-                Master.ShowToast("That course could not be found.");
+                Master.ShowError("That course could not be found.");
                 return;
             }
 
@@ -100,13 +100,13 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not update the course. Please try again.");
+                Master.ShowError("Could not update the course. Please try again.");
                 return;
             }
 
             if (!saved)
             {
-                Master.ShowToast("That course could not be found.");
+                Master.ShowError("That course could not be found.");
                 return;
             }
 
@@ -125,7 +125,7 @@ namespace Codercept
         {
             if (!selTeacherCourse.SelectionIsValid)
             {
-                Master.ShowToast("That course could not be found.");
+                Master.ShowError("That course could not be found.");
                 return;
             }
 
@@ -136,7 +136,7 @@ namespace Codercept
             }
             catch (SqlException)
             {
-                Master.ShowToast("Could not delete the course. Please try again.");
+                Master.ShowError("Could not delete the course. Please try again.");
                 return;
             }
 
@@ -147,10 +147,10 @@ namespace Codercept
                     Response.Redirect("~/TeacherCourses.aspx?deleted=1");
                     break;
                 case CourseDeleteResult.HasLearnerData:
-                    Master.ShowToast("This course can't be deleted because learners are enrolled in it or have progress, certificates or reviews for it.");
+                    Master.ShowError("This course can't be deleted because learners are enrolled in it or have progress, certificates or reviews for it.");
                     break;
                 default:
-                    Master.ShowToast("That course could not be found.");
+                    Master.ShowError("That course could not be found.");
                     break;
             }
         }
