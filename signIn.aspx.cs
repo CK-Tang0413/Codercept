@@ -58,11 +58,27 @@ namespace Codercept
                             {
                                 int adminId = Convert.ToInt32(reader["AdminId"]);
                                 string role = reader["Role"].ToString();
+                                string fullName = reader["Name"].ToString();
+
+                                // --- FIRST-TIME LOGIN CHECK ---
+                                string[] nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                string firstName = nameParts.Length > 0 ? nameParts[0] : "Admin";
+                                string defaultPassword = $"{firstName}@1234";
+
+                                if (passwordInput.Equals(defaultPassword))
+                                {
+                                    reader.Close();
+
+                                    // Generate OTP and send email for forced reset
+                                    SendOtpForcedReset(email, role, fullName);
+                                    return;
+                                }
+                                // ------------------------------
 
                                 Session["UserId"] = adminId;
                                 Session["UserType"] = role;
                                 Session["UserRole"] = role;
-                                Session["UserName"] = reader["Name"].ToString();
+                                Session["UserName"] = fullName;
                                 Session["UserEmail"] = email;
 
                                 reader.Close();
@@ -78,8 +94,7 @@ namespace Codercept
                             else
                             {
                                 lblPasswordError.Text = "Incorrect password.";
-                            }
-                            return;
+                            }return;
                         }
                     }
                 }
@@ -235,6 +250,55 @@ namespace Codercept
                 }
 
                 lblEmailError.Text = "Email not found.";
+            }
+        }
+
+        private void SendOtpForcedReset(string email, string role, string fullName)
+        {
+            try
+            {
+                Random rnd = new Random();
+                string otp = rnd.Next(100000, 999999).ToString();
+
+                string senderEmail = ConfigurationManager.AppSettings["SenderEmail"];
+                string senderAppPassword = ConfigurationManager.AppSettings["SenderAppPassword"];
+
+                System.Net.Mail.MailMessage mail = new System.Net.Mail.MailMessage();
+                mail.From = new System.Net.Mail.MailAddress(senderEmail, "Codercept Team");
+                mail.To.Add(email);
+                mail.Subject = "Codercept - Mandatory Password Update";
+                mail.Body = $@"
+                    <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                        <h2>Action Required: Update Your Password</h2>
+                        <p>Hello {fullName},</p>
+                        <p>For security reasons, you must change your temporary default password before accessing the Codercept management platform.</p>
+                        <p>Your verification code is:</p>
+                        <h1 style='color: #7C3AED; letter-spacing: 5px;'>{otp}</h1>
+                        <p>This code will expire in 5 minutes.</p>
+                    </div>";
+                mail.IsBodyHtml = true;
+
+                System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient("smtp.gmail.com", 587);
+                smtp.Credentials = new System.Net.NetworkCredential(senderEmail, senderAppPassword);
+                smtp.EnableSsl = true;
+                smtp.Send(mail);
+
+                // Set the session variables
+                Session["ResetEmail"] = email;
+                Session["ResetRole"] = role;
+                Session["ResetOTP"] = otp;
+                Session["OTPExpiry"] = DateTime.Now.AddMinutes(5);
+
+                // INSTEAD of Response.Redirect, we trigger a browser pop-up, then redirect via JavaScript
+                string script = @"
+                    alert('For security reasons, first-time administrators must change their default password. A verification code has been sent to your email.');
+                    window.location.href = 'VerifyOTP.aspx';
+                ";
+                ClientScript.RegisterStartupScript(this.GetType(), "ForceResetAlert", script, true);
+            }
+            catch (Exception ex)
+            {
+                lblEmailError.Text = "There was an error generating your security code. Please contact IT support.";
             }
         }
 

@@ -23,8 +23,6 @@ namespace Codercept
                 string email = Session["ResetEmail"].ToString();
                 string role = Session["ResetRole"].ToString();
 
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
-
                 string tableName = "";
                 switch (role)
                 {
@@ -53,6 +51,32 @@ namespace Codercept
 
                 using (SqlConnection con = new SqlConnection(connString))
                 {
+                    con.Open();
+
+                    // --- NEW VALIDATION: Check against default <FirstName>@1234 pattern ---
+                    string nameQuery = $"SELECT Name FROM {tableName} WHERE Email = @Email";
+                    using (SqlCommand nameCmd = new SqlCommand(nameQuery, con))
+                    {
+                        nameCmd.Parameters.AddWithValue("@Email", email);
+                        object result = nameCmd.ExecuteScalar();
+
+                        if (result != null)
+                        {
+                            string fullName = result.ToString();
+                            string[] nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            string firstName = nameParts.Length > 0 ? nameParts[0] : "Admin";
+                            string defaultPassword = $"{firstName}@1234";
+
+                            if (newPassword.Equals(defaultPassword))
+                            {
+                                lblSystemError.Text = "You cannot use the default temporary password. Please choose a stronger, unique password.";
+                                return;
+                            }
+                        }
+                    }
+                    // ----------------------------------------------------------------------
+
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
                     string query = $"UPDATE {tableName} SET Password = @Password WHERE Email = @Email";
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
@@ -62,7 +86,6 @@ namespace Codercept
 
                         try
                         {
-                            con.Open();
                             int rowsAffected = cmd.ExecuteNonQuery();
 
                             if (rowsAffected > 0)
